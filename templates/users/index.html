@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+    <h1>Hello world</h1>
+    <p>
+        Log in to your account: <a href="{% url 'login' %}">Log in</a>
+    </p>
+    <p>
+        Don't have an account? <a href="{% url 'register' %}">Sign up</a>
+    </p>
+
+{% endblock %}
+
+
