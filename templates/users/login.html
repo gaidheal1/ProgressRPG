@@ -1,0 +1,21 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <h2>Login</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Login</button>
+    </form>
+
+    <p>
+        <a href="{% url 'index' %}">Back to home</a>
+    </p>
+    <p>
+        Don't have an account? <a href="{% url 'register' %}">Sign up</a>
+    </p>
+
+
+{% endblock %}
