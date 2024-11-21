@@ -1,0 +1,33 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<div id="gameplay-container">
+  <h1>Welcome, {{ user.profile.character_name }}</h1>
+
+  <!-- Quest Display -->
+  <div id="quest-section">
+    <h2>Current Quest: {{ quest.title }}</h2>
+    <p>{{ quest.description }}</p>
+    <button id="choose-quest-btn">Choose Quest</button>
+  </div>
+
+  <!-- Timers -->
+  <div id="timer-section">
+    <h2>Activity Timer</h2>
+    <p id="activity-timer">00:00</p>
+    <button id="start-activity-btn">Start Activity</button>
+    <button id="stop-activity-btn">Stop Activity</button>
+
+    <h2>Quest Timer</h2>
+    <p id="quest-timer">{{ quest.time_remaining }}</p>
+  </div>
+
+  <!-- Activity Input -->
+  <div id="activity-input-section">
+    <input type="text" id="activity-input" placeholder="Enter activity" />
+  </div>
+</div>
+<script src="{% static 'js/game.js' %}"></script>
+
+{% endblock %}

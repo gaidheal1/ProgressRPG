@@ -1,0 +1,132 @@
+@import "styleguide.css";
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    display: flex;
+}
+
+.container-fluid {
+	/* margin: 0 auto; */
+	max-width: 1500px;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+   /*  display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0px;
+    position: relative;
+    align-self: stretch;
+    flex: 0 0 auto;
+    background-color: #e7fff1;
+    min-width: 800px; */
+    width: 100%;
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+header nav a {
+    color: #fff;
+    margin: 0 10px;
+    text-decoration: none;
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px 0;
+    background: #333;
+    color: #fff;
+}
+
+nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: stretch;
+}
+
+/* .navbar  {
+    display: flex;
+    height: 73px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    position: relative;
+    align-self: stretch;
+    width: 100%;
+    z-index: 2;
+    background-color: #e7fff1;
+    border-radius: 4px;
+} */
+
+.link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    flex: 0 0 auto;
+    border-radius: 4px;
+    overflow: hidden;
+
+    
+}
+
+.nav-text {
+    font-family: var(--text-20-font-family);
+    font-weight: var(--text-20-font-weight);
+    color: #1e1e1e;
+    font-size: var(--text-20-font-size);
+    letter-spacing: var(--text-20-letter-spacing);
+    line-height: var(--text-20-line-height);
+    white-space: nowrap;
+    font-style: var(--text-20-font-style);
+}
+
+.left-links {
+    display: inline-flex;
+    align-items: center;
+    gap: 28px;
+    padding: 4px 8px;
+    position: relative;
+    flex: 0 0 auto;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.right-links {
+    display: inline-flex;
+    align-items: center;
+    gap: 30px;
+    padding: 5px 10px;
+    position: relative;
+    flex: 0 0 auto;
+}
+
+.navbar a {
+    /* color: var(--color-text-primary); */
+    /* color: var(--color-brand-primary); */
+}
+
+header a:hover {
+    color: var(--color-brand-primary);
+    
+}
+
+header button a {
+    color: var(--color-brand-primary);
+}

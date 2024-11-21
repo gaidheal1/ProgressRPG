@@ -129,3 +129,28 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Email settings
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mail.privateemail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'admin@progressrpg.com'
+EMAIL_HOST_PASSWORD = 'Treat-Banking2-Overdue'
+DEFAULT_FROM_EMAIL = 'admin@progressrpg.com'
+
+# Optionally, configure for error emails
+ADMINS = [('Admin', 'admin@progressrpg.com')]  # The emails to receive error notifications
+
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+
+LOGIN_REDIRECT_URL = '/'  # Or wherever you want to go after login
+LOGIN_URL = '/login/'  # Customize the login URL
+
+
+STRIPE_PUBLIC_KEY = "pk_test_51QNRgsGHaENuGVuPh70KmxNTGK3iQPJgjGO2gVcdE0dlRDG7LOZfY3zQxvEdR2hmXDKaEILIRKEnJdn69arGwKCi00bSZWzrzW"
+STRIPE_SECRET_KEY = "sk_test_51QNRgsGHaENuGVuPRRw4oDFdzV1coF6mhN91nyxSmeVIK2CNzp1IJFjHJoGk5RQ2kCAz9lHnRba1YfucyiVWB7nK00kTanCp0I"

@@ -4,24 +4,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My Django App{% endblock %}</title>
+    <title>{% block title %}Progress RPG{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+    <!-- <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script> -->
 </head>
 <body>
     <header>
         <nav>
-            {% if user.is_authenticated %}
-                {% if user.is_staff %}
-                    <a href="/admin/">Admin Panel</a>
-                {% endif %}        
-                <a href="{% url 'dashboard' %}">Dashboard</a>
-                <a href="{% url 'profile' %}">Profile</a>
-                <a href="{% url 'logout' %}">Logout</a>
-            {% else %}
-                <a href="{% url 'login' %}">Login</a>
-                <a href="{% url 'register' %}">Register</a>
-            {% endif %}
+            <div class="navbar">
+				<div class="left-links">
+				  <!-- <div class="button-comp"> -->
+					<div class="button-style-comp"><button class="impact nav-text">Progress RPG</button></div>
+				  <!-- </div> -->
+				  <div class="link"><div class="nav-text"><a href="https://gaidheal1.github.io" target="_blank">Blog</a></div></div>
+				  <!-- <div class="link"><div class="text-wrapper">Manage</div></div>
+				  <div class="link"><div class="text-wrapper">Achievements</div></div> -->
+				  
+				</div>
+				<div class="right-links">
+                    {% if user.is_authenticated %}
+				        <div class="link"><div class="text-wrapper"><a href="{% url 'logout' %}">Log out</a></div></div>
+                        <div class="button-style-comp"><button class="impact nav-text"><a href="{% url 'profile' %}">Account</a></button></div>
+                        
+                    {% else %}
+                        <a href="{% url 'login' %}">Login</a>
+                        <div class="button-style-comp"><button class="impact nav-text"><a href="{% url 'register' %}">Sign up</a></button></div>
+                        
+                    {% endif %}
+				    <div class="account">
+					<!-- <div class="button-comp"> -->
+					<!-- <img class="arrow-icon" src="img/arrow-icon.svg" /> -->
+					
+					<!-- </div> -->
+				    </div>
+				</div>
+			</div>
         </nav>
     </header>
     {% if messages %}
@@ -37,6 +54,9 @@
         {% endblock %}
     </main>
     <footer>
+        {% if user.is_staff %}
+            <p><a href="/admin/">Admin Panel</a></p>
+        {% endif %}        
         <p>&copy; 2024 My Django App</p>
     </footer>
     

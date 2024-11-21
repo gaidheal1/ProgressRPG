@@ -1,6 +1,6 @@
 {% extends "base_generic.html" %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Register{% endblock %}
 
 {% block content %}
 
@@ -10,6 +10,7 @@
         {{ form.as_p }}
         <button type="submit">Register</button>
     </form>
+    <p>Have an account already? <a href="{% url 'login' %}">Sign in here</a></p>
     
 {% endblock %}
 

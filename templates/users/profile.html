@@ -1,0 +1,38 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+    <h2>Profile</h2>
+    <p>Welcome, {{  profile.user.username }}!</p>
+
+    <p><strong>Bio:</strong> {{ profile.bio }}</p>
+
+    {% if profile.profile_picture %}
+        <img src="{{ user.player.profile_picture.url }}" alt="Profile Picture" style="max-width: 150px; max-height: 150px; object-fit: cover;">
+    {% else %}
+        <p>No profile picture uploaded.</p>
+    {% endif %}
+    <br>
+    <div>
+        <div>
+            <a href="{% url 'dashboard' %}">Go to dashboard</a>
+        </div>
+        <div>
+            <a href="{% url 'edit_profile' %}">Edit Profile</a>
+        </div>
+
+        <div>
+        {% if user.is_staff %}
+                <a href="/admin/">Go to Admin Panel</a>
+            
+        {% endif %}
+        </div>
+        <div>
+            <p>
+                <a href="{% url 'logout' %}">Log out</a>
+            </p>
+        </div>
+    </div>  
+
+{% endblock %}
