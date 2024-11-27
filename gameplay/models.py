@@ -3,10 +3,10 @@ from django.db import models
 
 class Quest(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField()
-    duration = models.PositiveIntegerField()  # Duration in minutes
-    number_stages = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(max_length=2000, blank = True)
+    duration = models.PositiveIntegerField(default=0)  # Duration in minutes
+    number_stages = models.IntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
     levelMin = models.IntegerField(default=0)
     levelMax = models.IntegerField(default=0)
@@ -49,8 +49,9 @@ class Activity(models.Model):
     profile = models.ForeignKey('users.profile', on_delete=models.CASCADE, related_name="activities")
     #quest = models.ForeignKey(Quest, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=255)
-    duration = models.PositiveIntegerField()  # Time spent
+    duration = models.PositiveIntegerField(default=0)  # Time spent
     created_at = models.DateTimeField(auto_now_add=True)
+    
 
     class Meta:
         ordering = ['-created_at'] # Most recent activities first
@@ -65,13 +66,13 @@ class Activity(models.Model):
                 old_activity.skill.time -= old_activity.time
                 old_activity.skill.save()
 
-        if self.user:
-            self.user.profile.add_activity(self.time, 1)
-            self.user.profile.save()
+        if self.profile:
+            self.profile.add_activity(self.duration, 1)
+            self.profile.save()
 
-        if self.skill:
+        """ if self.skill:
             self.skill.time += self.time
-            self.skill.save()
+            self.skill.save() """
 
 class Skill(models.Model):
     profile = models.ForeignKey('users.profile', on_delete=models.CASCADE)
@@ -85,7 +86,7 @@ class Skill(models.Model):
     
 
 class Character(models.Model):
-    user = models.ForeignKey('users.profile', on_delete=models.CASCADE)
+    profile = models.ForeignKey('users.profile', on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     quest_completions = models.ManyToManyField('gameplay.Quest', through='QuestCompletion', related_name='completed_by')
 

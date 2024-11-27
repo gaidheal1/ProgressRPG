@@ -29,6 +29,7 @@ class CustomUser(AbstractUser):
     
 class Profile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, blank=True, null=True)
     bio = models.TextField(max_length=1000, blank=True)
     profile_picture = models.ImageField(upload_to='users/profile_pics/', null=True, blank=True)
     xp = models.IntegerField(default=0)

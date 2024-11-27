@@ -12,10 +12,10 @@ class SubscriptionPlan(models.Model):
     def __str__(self):
         return self.name
     
-    class UserSubscription(models.Model):
-        user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-        plan = models.ForeignKey(SubscriptionPlan, on_delete=models.SET_NULL, null=True)
-        stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
-        active = models.BooleanField(default=False)
-        start_date = models.DateTimeField(auto_now_add=True)
-        end_date = models.DateTimeField(blank=True, null=True)
+class UserSubscription(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.SET_NULL, null=True)
+    stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
+    active = models.BooleanField(default=False)
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField(blank=True, null=True)

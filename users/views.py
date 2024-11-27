@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import UserRegisterForm
@@ -44,7 +44,12 @@ def register_view(request):
             form.save()
             username = form.cleaned_data.get('username')
             messages.success(request, f'Account created for {username}!')
-            return redirect('login')
+            new_user = authenticate(
+                username = username,
+                password = form.cleaned_data.get('password')
+            )
+            login(request, new_user)
+            return redirect('profile')
     else:
         form = UserRegisterForm()
     return render(request, 'users/register.html', {'form': form})
@@ -52,7 +57,6 @@ def register_view(request):
 # Profile view
 @login_required
 def profile_view(request):
-    #profile = Profile.objects.get(user=request.user)
     profile = request.user.profile
     return render(request, 'users/profile.html', {'profile':profile})
 

@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from .models import SubscriptionPlan
 
 # Create your views here.
-stripe.api.key = settings.STRIPE_SECRET_KEY
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 @login_required
 def create_checkout_session(request, plan_id):

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Quest, QuestRequirement, Character, QuestCompletion
+from .models import Quest, QuestRequirement, Character, QuestCompletion, Activity
 
 # Register your models here.
 @admin.register(Quest)
@@ -26,3 +26,7 @@ class CharacterAdmin(admin.ModelAdmin):
 @admin.register(QuestCompletion)
 class QuestCompletionAdmin(admin.ModelAdmin):
     list_display = ['character', 'quest', 'times_completed']
+
+@admin.register(Activity)
+class ActivityAdmin(admin.ModelAdmin):
+    list_display = ['profile', 'name', 'duration', 'created_at']
