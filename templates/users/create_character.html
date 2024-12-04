@@ -1,0 +1,21 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Create character{% endblock %}
+
+{% block content %}
+
+    <h2>Create character</h2>
+    
+    
+    <p>Your randomly generated character name is <strong>{{ random_name }}</strong></p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <!-- Hidden input to preserve the name across requests -->
+        <input type="hidden" name="character_name" value="{{ random_name }}">
+        <button type="submit">Continue</button>
+    </form>
+
+
+
+{% endblock %}

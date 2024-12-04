@@ -1,7 +1,10 @@
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from unittest import skip
 from .models import Profile
+from gameplay.models import Character
+
 
 # Create your tests here.
 
@@ -31,7 +34,83 @@ class UserCreationTest(TestCase):
 
         self.assertTrue(superuser.is_superuser)
         self.assertTrue(superuser.is_staff)
+
+class SignalsTest(TestCase):
+    def test_character_created_on_profile(self):
+        User = get_user_model()
+        user = User.objects.create(username="testuser")
         
+        self.assertTrue(Profile.objects.filter(user=user).exists())
+        self.assertTrue(Character.objects.filter(profile=user.profile).exists())
+
+class OnboardingTest(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='testpassword123'
+        )
+        self.client.login(username='testuser', password='testpassword123')
+        self.profile = self.user.profile
+        self.character = Character.objects.get(profile=self.profile)
+
+    def test_initial_onboarding(self):
+        self.assertTrue(self.user.profile.onboarding_step == 0)
+
+    def test_onboarding_profile(self):
+        url = reverse("create_profile")
+
+        data = {
+            'name': 'Test name',
+        }
+        
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 302)
+        expected_url = reverse('create_character')
+        self.assertRedirects(response, expected_url)
+        
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.onboarding_step, 2)
+        self.assertTrue(self.profile.name=='Test name')
+
+    def test_onboarding_character(self):
+        self.profile.onboarding_step = 2
+        
+        url = reverse("create_character")
+
+        data = {
+            'character_name': 'Test name',
+        }
+        
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 302)
+        expected_url = reverse('subscribe')
+        self.assertRedirects(response, expected_url)
+        
+        self.profile.refresh_from_db()
+        self.character.refresh_from_db()
+        self.assertEqual(self.profile.onboarding_step, 3)
+        self.assertTrue(self.character.name=='Test name')
+
+    def test_onboarding_subscribe(self):
+        self.profile.onboarding_step = 3
+        
+        url = reverse("subscribe")
+
+        data = {}
+        
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 302)
+        expected_url = reverse('game')
+        self.assertRedirects(response, expected_url)
+        
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.onboarding_step, 4)
+
 class ModelsTest(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -45,10 +124,6 @@ class ModelsTest(TestCase):
         self.assertTrue(isinstance(self.user.profile, Profile))
         self.assertEqual(self.user, self.user.profile.user)
         self.assertEqual(self.user.profile.xp, 0)
-
-    def test_profile_save(self):
-        self.user.save()
-
 
     def test_profile_addxp(self):
         profile = self.user.profile
@@ -154,3 +229,4 @@ class TestViews_LoggedOut(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'users/register.html')
+

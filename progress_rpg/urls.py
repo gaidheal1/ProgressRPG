@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+#from gameplay.admin import custom_admin_site
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -22,11 +23,12 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    #path('admin/timers/', custom_admin_site.urls),
+    
     #path('users/', include('users.urls')),
     path('', include('users.urls')),
     path('', include('gameplay.urls')),
-    #path('dashboard/', include('gameplay.urls')),
-    path('payments/', include('payments.urls')),
+    path('', include('payments.urls')),
     path('', TemplateView.as_view(template_name='users/index.html'), name='index'),  # Add a path for the index page
 ]
 

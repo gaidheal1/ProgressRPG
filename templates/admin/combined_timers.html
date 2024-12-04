@@ -1,0 +1,50 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+
+<h1>Combined Timers</h1>
+<h2>Activity Timers</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Profile</th>
+            <th>Start Time</th>
+            <th>Running</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for timer in activity_timers %}
+        <tr>
+            <td>{{ timer.id }}</td>
+            <td>{{ timer.profile }}</td>
+            <td>{{ timer.start_time }}</td>
+            <td>{{ timer.is_running }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Quest Timers</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Character</th>
+            <th>Start Time</th>
+            <th>Running</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for timer in quest_timers %}
+        <tr>
+            <td>{{ timer.id }}</td>
+            <td>{{ timer.profile }}</td>
+            <td>{{ timer.start_time }}</td>
+            <td>{{ timer.is_running }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

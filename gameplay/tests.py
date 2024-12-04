@@ -19,6 +19,7 @@ class TestQuestCreate(TestCase):
 
 class TestQuestOther(TestCase):
     def setUp(self):
+        
         self.quest = Quest.objects.create(
             name='Test Quest',
             description='Test Quest Description',
@@ -51,6 +52,117 @@ class TestQuestOther(TestCase):
         self.assertEqual(self.quest, req.quest)
         self.assertEqual(self.quest2, req.prerequisite)
 
+    def test_questcompletion_create(self):
+        User = get_user_model()
+        user = User.objects.create_user(
+            username='testuser1',
+            email='testuser1@example.com',
+            password='testpassword123'
+        )
+
+        char = Character.objects.create(
+            profile=user.profile,
+            name="Bob"
+        )
+
+        qc = QuestCompletion.objects.create(
+            character=char,
+            quest=self.quest,
+            times_completed=1
+        )
+
+        self.assertTrue(isinstance(qc, QuestCompletion))
+        self.assertEqual(qc.character, char)
+        self.assertEqual(qc.quest, self.quest)
+
+class TestQuestFunc(TestCase):
+    def setUp(self):
+        self.quest = Quest.objects.create(
+            name='Test Quest',
+            description='Test Quest Description',
+            duration=10,
+            levelMax=10,
+            xpReward=100,
+            canRepeat=False
+        )
+        self.quest2 = Quest.objects.create(
+            name='Test Quest 2',
+            description='Test Quest Description',
+            duration=10,
+            levelMax=10,
+            xpReward=100,
+            canRepeat=True
+        )
+        self.quest3 = Quest.objects.create(
+            name='Test Quest 3',
+            description='Test Quest Description',
+            duration=10,
+            levelMax=10,
+            xpReward=100,
+            canRepeat=False
+        )
+        self.quests=[
+            self.quest, 
+            self.quest2,
+            self.quest3
+            ]
+
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='testpassword123'
+        )
+
+        self.char = Character.objects.create(
+            profile=self.user.profile,
+            name="Bob"
+        )
+
+        self.req = QuestRequirement.objects.create(
+            quest=self.quest2,
+            prerequisite=self.quest
+        )
+
+        self.qc = QuestCompletion.objects.create(
+            character=self.char,
+            quest=self.quest,
+            times_completed=0
+        )
+        
+        self.qc = QuestCompletion.objects.create(
+            character=self.char,
+            quest=self.quest3,
+            times_completed=1
+        )
+
+    def test_quest_requirements_met(self):
+        lst = {}
+        lst[self.qc.quest] = self.qc.times_completed
+        eligible_quests = []
+        for quest in self.quests:
+            if quest.requirements_met(lst):
+                eligible_quests.append(quest)
+
+        self.assertTrue(self.quest.requirements_met(lst))
+        self.assertTrue(self.quest2.requirements_met(lst)== False)
+        self.assertEqual(len(eligible_quests), 2)
+        self.assertEqual(eligible_quests[0], self.quest)
+
+    def test_quest_repeatable(self):
+        
+        eligible_quests = []
+        for quest in self.quests:
+            if quest.not_repeating(self.char):
+                eligible_quests.append(quest)
+
+        # self.quest can't repeat, and character has completed, so should return false
+        self.assertTrue(self.quest3.not_repeating(self.char)==False)
+        self.assertTrue(self.quest2.not_repeating(self.char))
+        self.assertTrue(len(eligible_quests)==2)
+        self.assertTrue(eligible_quests[0].name == 'Test Quest')
+
+        
 class TestOtherModels(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -102,3 +214,5 @@ class TestOtherModels(TestCase):
         self.assertEqual(qc.quest, quest)
         # Again, it prints 'None'
         #print(char.quest_completions)
+
+        

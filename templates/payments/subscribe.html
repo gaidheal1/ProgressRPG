@@ -1,0 +1,23 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Subscribe{% endblock %}
+
+{% block content %}
+
+    <h1>Subscription placeholder</h1>
+
+    <div>
+        <h2>Comparison of free vs paid account</h2>
+    </div>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <!-- Hidden input to preserve the name across requests -->
+        
+        <button type="submit">Continue to game</button>
+    </form>
+    
+
+
+{% endblock %}
+

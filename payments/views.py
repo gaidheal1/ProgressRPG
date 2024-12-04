@@ -5,6 +5,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from .models import SubscriptionPlan
 
+
 # Create your views here.
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -28,3 +29,11 @@ def create_checkout_session(request, plan_id):
     
     return JsonResponse({'id': checkout_session.id})
 
+@login_required
+def subscribe_view(request):
+    user = request.user
+    if request.method =='POST':
+        user.profile.onboarding_step = 4
+        user.profile.save()
+        return redirect('game')
+    return render(request, 'payments/subscribe.html')

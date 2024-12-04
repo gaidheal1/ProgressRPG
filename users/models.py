@@ -26,20 +26,15 @@ class CustomUser(AbstractUser):
     objects = CustomUserManager()
     def __str__(self):
         return self.username
-    
-class Profile(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100, blank=True, null=True)
-    bio = models.TextField(max_length=1000, blank=True)
-    profile_picture = models.ImageField(upload_to='users/profile_pics/', null=True, blank=True)
-    xp = models.IntegerField(default=0)
-    level = models.IntegerField(default=0)
-    total_time = models.IntegerField(default=0)
-    total_activities = models.IntegerField(default=0)
 
-    def __str__(self):
-        return 'profile of user ' + self.user.username
-    
+class Person(models.Model):
+    name = models.CharField(max_length=100, blank=True, null=True)
+    xp = models.PositiveIntegerField(default=0)
+    level = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        abstract = True
+
     def add_xp(self, amount):
         """Add XP and handle level-up logic."""
         self.xp += amount
@@ -55,7 +50,30 @@ class Profile(models.Model):
     def get_xp_for_next_level(self):
         return 100 * (self.level + 1) if self.level >= 1 else 100
 
+
+class Profile(Person):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    bio = models.TextField(max_length=1000, blank=True)
+    profile_picture = models.ImageField(upload_to='users/profile_pics/', null=True, blank=True)
+    total_time = models.IntegerField(default=0)
+    total_activities = models.IntegerField(default=0)
+    current_activity = models.ForeignKey('gameplay.activity', blank=True, null=True, on_delete=models.CASCADE, related_name='profile_current_activity')
+    is_premium = models.BooleanField(default=False)
+
+    ONBOARDING_STEPS = [
+        (0, "Not started"),
+        (1, "Step 1: Profile creation"),
+        (2, "Step 2: Character generation"),
+        (3, "Step 3: Subscription"),
+        (4, "Completed"),
+    ]
+    onboarding_step = models.PositiveIntegerField(choices=ONBOARDING_STEPS, default=0)
+
+    def __str__(self):
+        return f'profile {self.name if self.name else "Unnamed profile"} of user {self.user.username}'
+
     def add_activity(self, time, num):
         self.total_time += time
         self.total_activities += num
+        self.save()
 

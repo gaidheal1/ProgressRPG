@@ -1,0 +1,20 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Create profile{% endblock %}
+
+{% block content %}
+
+    <h2>Create profile</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- Render the form fields -->
+        <button type="submit">Save and continue</button>
+    </form>
+
+    <p>
+        <a href="{% url 'logout' %}">Log out</a>
+    </p>
+
+
+
+{% endblock %}

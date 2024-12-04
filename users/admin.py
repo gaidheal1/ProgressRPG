@@ -8,5 +8,5 @@ admin.site.register(CustomUser, UserAdmin)
 
 @admin.register(Profile)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ['user', 'bio', 'profile_picture', 'xp', 'level', 'total_time', 'total_activities']
+    list_display = ['user', 'name', 'bio', 'profile_picture', 'xp', 'level', 'total_time', 'total_activities', 'onboarding_step']
     

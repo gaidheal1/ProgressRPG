@@ -3,30 +3,71 @@
 
 {% block content %}
 <div id="gameplay-container">
-  <h1>Welcome, {{ user.profile.character_name }}</h1>
+  <h1>Welcome, {{ profile.name }}</h1>
+
+  <!-- Activity -->
+  <div id="activity-section">
+    <h2>Activity</h2>
+    <div id="activity-input-div">
+      <input type="text" id="activity-input" placeholder="Enter activity" />
+      <button id="start-activity-btn">Enter Activity</button>
+    </div>
+    <p id="activity-timer">00:00</p>
+    <button id="pause-activity-btn">Pause activity</button>
+    <button id="stop-activity-btn">Stop activity and submit</button>
+    <div>
+      <h3>Today's activities</h3>
+      <ul>
+        {% for activity in activities %}
+          <li>{{ activity.name }} - {{ activity.created_at }}
+          </li>
+        {% empty %}
+          <p>No activities completed today</p>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
 
   <!-- Quest Display -->
   <div id="quest-section">
-    <h2>Current Quest: {{ quest.title }}</h2>
-    <p>{{ quest.description }}</p>
-    <button id="choose-quest-btn">Choose Quest</button>
+    <h2>Quest</h2>
+    <!-- change/test -->
+    {% if character.current_quest %}
+      <p>Current quest: <span id="quest-name">{{ character.current_quest.name }}</span></p>
+      <p>Description: <span id="quest-description">{{ character.current_quest.description }} </span></p>
+    {% else %}
+      <p>Current quest: none </p>
+      <p>Description: no quest selected </p>
+    {% endif %}
+    <div id="choose-quest">
+    <h2>Available quests:</h2>
+    <form id="choose-quest-form">
+      {% csrf_token %}
+      <fieldset>
+        <legend>Select a quest</legend>
+
+        {% for quest in quests %}
+        <label>
+          <input type="radio", name="quest" value="{{ quest.id }}" required>
+          {{ quest.name}}
+        </label><br>
+      {% empty %}
+      <p>No quests available</p>
+      {% endfor %}
+      </fieldset>
+    
+      <button type="submit" id="choose-quest-btn">Choose Quest</button>
+    </form>
+
+    <!-- placeholder for feedback after submitting -->
+    <p id="feedback-message"></p>
+    </div>
+    <p id="quest-timer">{{ quest.get_remaining_time() }}</p>
   </div>
 
-  <!-- Timers -->
-  <div id="timer-section">
-    <h2>Activity Timer</h2>
-    <p id="activity-timer">00:00</p>
-    <button id="start-activity-btn">Start Activity</button>
-    <button id="stop-activity-btn">Stop Activity</button>
 
-    <h2>Quest Timer</h2>
-    <p id="quest-timer">{{ quest.time_remaining }}</p>
-  </div>
 
-  <!-- Activity Input -->
-  <div id="activity-input-section">
-    <input type="text" id="activity-input" placeholder="Enter activity" />
-  </div>
+  
 </div>
 <script src="{% static 'js/game.js' %}"></script>
 
