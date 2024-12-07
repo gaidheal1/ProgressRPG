@@ -68,7 +68,7 @@ class ActivityAdmin(admin.ModelAdmin):
     
 @admin.register(ActivityTimer)
 class ActivityTimerAdmin(admin.ModelAdmin):
-    list_display = ['profile', 'start_time', 'is_running']
+    list_display = ['profile', 'start_time', 'elapsed_time', 'is_running']
     actions = ['stop_timers', 'delete_timers']
 
     def stop_timers(self, request, queryset):
@@ -83,7 +83,7 @@ class ActivityTimerAdmin(admin.ModelAdmin):
 
 @admin.register(QuestTimer)
 class QuestTimerAdmin(admin.ModelAdmin):
-    list_display = ['character', 'start_time', 'is_running']
+    list_display = ['character', 'start_time', 'elapsed_time', 'is_running']
 
     def stop_timers(self, request, queryset):
         queryset.update(is_running=False)

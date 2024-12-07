@@ -17,9 +17,9 @@
     <button id="stop-activity-btn">Stop activity and submit</button>
     <div>
       <h3>Today's activities</h3>
-      <ul>
+      <ul id="activity-list">
         {% for activity in activities %}
-          <li>{{ activity.name }} - {{ activity.created_at }}
+          <li>{{ activity.name }} - duration {{ activity.duration }} <!--- {{ activity.created_at }} -->
           </li>
         {% empty %}
           <p>No activities completed today</p>
@@ -31,41 +31,39 @@
   <!-- Quest Display -->
   <div id="quest-section">
     <h2>Quest</h2>
+
+    <p id="quest-timer">{{ questTimer.duration }}</p>
+
     <!-- change/test -->
-    {% if character.current_quest %}
+    
       <p>Current quest: <span id="quest-name">{{ character.current_quest.name }}</span></p>
       <p>Description: <span id="quest-description">{{ character.current_quest.description }} </span></p>
-    {% else %}
-      <p>Current quest: none </p>
-      <p>Description: no quest selected </p>
-    {% endif %}
-    <div id="choose-quest">
-    <h2>Available quests:</h2>
-    <form id="choose-quest-form">
-      {% csrf_token %}
-      <fieldset>
-        <legend>Select a quest</legend>
-
-        {% for quest in quests %}
-        <label>
-          <input type="radio", name="quest" value="{{ quest.id }}" required>
-          {{ quest.name}}
-        </label><br>
-      {% empty %}
-      <p>No quests available</p>
-      {% endfor %}
-      </fieldset>
     
-      <button type="submit" id="choose-quest-btn">Choose Quest</button>
-    </form>
+    <div id="choose-quest">
+      <h2>Available quests:</h2>
+      <form id="choose-quest-form" data-url="{% url 'choose_quest' %}">
+        {% csrf_token %}
+        <fieldset>
+          <legend>Select a quest</legend>
 
-    <!-- placeholder for feedback after submitting -->
-    <p id="feedback-message"></p>
+          {% for quest in quests %}
+            <label>
+              <input type="radio", name="quest" value="{{ quest.id }}" required>
+              {{ quest.name}}
+            </label><br>
+            {% empty %}
+            <p>No quests available</p>
+          {% endfor %}
+        </fieldset>
+      
+        <button type="submit" id="choose-quest-btn">Choose Quest</button>
+      </form>
+
+      <!-- placeholder for feedback after submitting -->
+      <p id="feedback-message"></p>
+      
     </div>
-    <p id="quest-timer">{{ quest.get_remaining_time() }}</p>
   </div>
-
-
 
   
 </div>

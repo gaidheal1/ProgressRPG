@@ -68,29 +68,21 @@ class QuestRequirement(models.Model):
 
 
 class Activity(models.Model):
-    profile = models.ForeignKey('users.profile', on_delete=models.CASCADE, related_name="activities")
+    profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name="activities")
     name = models.CharField(max_length=255)
     duration = models.PositiveIntegerField(default=0)  # Time spent
     created_at = models.DateTimeField(auto_now_add=True)
     
-
     class Meta:
         ordering = ['-created_at'] # Most recent activities first
-    def __str__(self):
-        return self.name
-    
-    def save(self, *args, **kwargs):
-        # Add the activity duration to the skill's total_time when saving the activity
-        if self.pk:
-            old_activity = Activity.objects.get(pk=self.pk)
-            
-        if self.profile:
-            self.profile.add_activity(self.duration, 1)
-            self.profile.save()
 
-        """ if self.skill:
-            self.skill.time += self.time
-            self.skill.save() """
+    def addTime(self, num):
+        self.duration += num
+        self.save()
+
+    def __str__(self):
+        return f"activity {self.name}, created {self.created_at}, duration {self.duration}, profile {self.profile.name}"
+    
 
 class Skill(models.Model):
     profile = models.ForeignKey('users.profile', on_delete=models.CASCADE)
@@ -152,6 +144,7 @@ class Timer(models.Model):
             self.start_time = now()
             self.is_running = True
             self.save()
+            #print(self)
 
     def stop(self):
         if self.is_running:
@@ -160,6 +153,7 @@ class Timer(models.Model):
             self.is_running = False
             self.start_time = None
             self.save()
+            #print(self)
 
     def reset(self):
         self.elapsed_time = 0
@@ -168,7 +162,11 @@ class Timer(models.Model):
         self.save()
 
 class ActivityTimer(Timer):
-    profile = models.OneToOneField('users.profile', on_delete=models.CASCADE, related_name='activity_timer')
+    profile = models.ForeignKey('users.profile', on_delete=models.CASCADE, related_name='activity_timer')
+    activity = models.OneToOneField(Activity, on_delete=models.CASCADE, related_name='activity_timer', null=True, blank=True)
+
+    def __str__(self):
+        return f"ActivityTimer for profile {self.profile.name}: started {self.start_time}, {self.elapsed_time} elapsed"
 
 class QuestTimer(Timer):
     character = models.OneToOneField(Character, on_delete=models.CASCADE, related_name='quest_timer')
@@ -182,3 +180,6 @@ class QuestTimer(Timer):
     
     def is_complete(self):
         return self.get_remaining_time() <= 0
+
+    def __str__(self):
+        return f"QuestTimer for profile {self.character.name}: duration {self.duration}, started {self.start_time}, {self.elapsed_time} elapsed"

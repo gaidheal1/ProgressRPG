@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -22,17 +22,16 @@ def game_view(request):
 
     character = Character.objects.get(profile=profile)
     char_quests = QuestCompletion.objects.filter(character=character)
-    
     quests_done = {}
     for completion in char_quests:
         quests_done[completion.quest] = completion.times_completed
-    print(quests_done)
+    #print(quests_done)
     
     all_quests = Quest.objects.all()
 
     eligible_quests = []
     for quest in all_quests:
-        print('quest:', quest)
+        #print('quest:', quest)
         # Test for eligibility
         if quest.checkEligible(character, profile) and \
             quest.not_repeating(character) and \
@@ -40,13 +39,23 @@ def game_view(request):
             eligible_quests.append(quest)
             print('success')
 
-    print(eligible_quests)
+    # Fetch timers
+    activityTimer = ActivityTimer.objects.filter(profile=profile)
+    questTimer = QuestTimer.objects.filter(character=character)
+    print("Quest timer 0:", questTimer[0])
+    if len(questTimer) >= 1:
+        questTimer = questTimer[0]
+
+    print("HELOOOOOOOOOOOOOOOO", questTimer)
+    
+    #print(eligible_quests)
     return render(request, 'gameplay/game.html', 
         {
             'profile': profile,
             'character': character,
             'activities': activities,
             'quests': eligible_quests,
+            'questTimer': questTimer,
         })
 
 # Choose quest AJAX
@@ -62,12 +71,18 @@ def choose_quest(request):
         character.current_quest = quest
         character.save()
         
-        quest_timer = ActivityTimer.objects.create(
+        quest_timer = QuestTimer.objects.get_or_create(
             character=character,
             duration=quest.duration,
         )
+        
+        #QuestTimer.objects.filter(character=character).delete()
         return JsonResponse({
-            "success": True, })
+            "success": True,
+            "questDuration": quest.duration,
+            "questName": quest.name,
+            "questDescription": quest.description,
+        })
 
     return JsonResponse({"success": False, "error": "Invalid request"})
         
@@ -91,22 +106,42 @@ def save_activity(request):
 def create_activity_timer(request):
     if request.method == "POST":
         profile = request.user.profile
-
         data = json.loads(request.body)
+        print(data)
         activity_name = data.get("activityName")
 
         if not activity_name:
             return JsonResponse({"error": "Activity name is required"}, status=400)
         
         # Create activity
-        # can I use profile.current_activity?
-        activity = Activity.objects.create(
-            profile=profile, 
-            name=activity_name, 
-        )
-        timer, created = ActivityTimer.objects.get_or_create(profile=profile)
+        if profile.current_activity:
+            activity = profile.current_activity
+            timer, created = ActivityTimer.objects.get_or_create(
+                profile=profile,
+                activity=activity
+            )
+            #if created:
+             #   timer.activity = activity
+        else:
+            activity = Activity.objects.create(
+                profile=profile, 
+                name=activity_name, 
+            )
+            profile.current_activity = activity
+            timer = ActivityTimer.objects.create(
+                profile=profile,
+                activity=activity,
+            )
+        print("timer for testing:", timer)
+        activity.save()
+        timer.save()
+        profile.save()
         
+        print(ActivityTimer.objects.all())
+
+
         return JsonResponse({
+            "success": True,
             "activity_id": activity.id,
             })
         
@@ -120,57 +155,114 @@ def start_activity_timer(request):
         timer.start()
         return JsonResponse({
             "status": "Activity timer started",
-            "activity_id": activity.id,
+            #"activity_id": activity.id,
             })
     return JsonResponse({"error": "Invalid method"}, status=405)
 
 
 @csrf_exempt
 def stop_activity_timer(request):
-    profile = request.user.profile
-    timer = ActivityTimer.objects.get(profile=profile)
-    timer.stop()
-    
-    return JsonResponse({
-        "status": "Activity timer stopped", 
-        "elapsed_time": timer.elapsed_time
-    })
+    if request.method == "POST":
+        print('which comes first? stop activity')
+        profile = request.user.profile
+        allTimers = ActivityTimer.objects.all()
+        print("all timers here:", allTimers)
+        # This is the problem line. All timers deleted here?
+        timer = ActivityTimer.objects.get(profile=profile)
+        timer.stop()
+        
+        return JsonResponse({
+            "status": "Activity timer stopped", 
+            #"elapsed_time": timer.elapsed_time
+        })
+    return JsonResponse({"error": "Invalid method"}, status=405)
 
 @csrf_exempt
 def submit_activity(request):
     if request.method == "POST":
+        print('which comes first? submit activity')
         profile = request.user.profile
+        activity = profile.current_activity
         timer = ActivityTimer.objects.get(profile=profile)
         timer.stop()
-    
-    return JsonResponse({
-        "status": "Activity submitted", 
-        "elapsed_time": timer.elapsed_time
-    })
+        
+        activity.addTime(timer.elapsed_time)
+        
+        profile.current_activity = None
+        profile.save()
+        ActivityTimer.objects.filter(profile=profile).delete()
 
+        activities = Activity.objects.filter(profile=profile)
+        today = timezone.now().date()
+        activities_list = list(activities.filter(created_at__date=today))
+        print("activity one:", activities[0])
+        print("type of activities:", type(activities[0]))
+        activities_list = [
+            {
+                "name": act.name,
+                "duration": act.duration,
+                "created_at": act.created_at.isoformat(),
+            }
+            for act in activities
+        ]
+        print("activities after json serialisation:", activities_list)
+        return JsonResponse({
+            "status": "Activity submitted", 
+            "activities": activities_list,
+        })
+    return JsonResponse({"error": "Invalid method"}, status=405)
 
 @csrf_exempt
-def start_quest_timer(request, quest_id):
-    character = Character.objects.get(request.user.profile)
-    timer, created = QuestTimer.objects.get_or_create(character=character, quest_id=quest_id)
+def create_quest_timer(request):
+    if request.method == "POST":
+        profile = request.user.profile
+        character = Character.objects.get(profile=profile)
+        
+        # Create activity
+        
+        timer, created = QuestTimer.objects.get_or_create(character=character)
+        
+        return JsonResponse({
+            "success": True,
+            })
+        
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+@csrf_exempt
+def start_quest_timer(request):
+    character = Character.objects.get(profile=request.user.profile)
+    timer = QuestTimer.objects.get(character=character)
     timer.start()
     return JsonResponse({"status": "Quest timer started"})
 
 @csrf_exempt
-def stop_quest_timer(request, quest_id):
-    character = Character.objects.get(request.user.profile)
-    timer = QuestTimer.objects.get(character=character, quest_id=quest_id)
+def stop_quest_timer(request):
+    character = Character.objects.get(profile=request.user.profile)
+    timer = QuestTimer.objects.get(character=character)
     timer.stop()
     return JsonResponse({
         "status": "Quest timer stopped", 
         "remaining_time": timer.get_remaining_time(),
     })
 
+@csrf_exempt
+def quest_completed(request):
+    if request.method == "POST":
+        profile = request.user.profile
+        character = Character.objects.get(profile=profile)
+        timer = QuestTimer.objects.get(character=character)
+        timer.stop()
+        
+        character.complete_quest()
+
+    return JsonResponse({
+        "status": "Quest completed", 
+    })
 
 @csrf_exempt
 def get_timer_state(request):
     profile = request.user.profile
-    character = Character.objects.get(request.user.profile)
+    character = Character.objects.get(profile=request.user.profile)
     activity_timer = ActivityTimer.objects.get(profile=profile)
     quest_timer = QuestTimer.objects.get(character=character)
 
