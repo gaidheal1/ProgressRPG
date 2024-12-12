@@ -224,7 +224,8 @@ async function createActivityTimer() {
       window.activitySelected = true;
       //console.log('Activity ready')
       startTimerIfReady();
-      console.log("test response:", data.activity_id)
+      console.log("test response:", data.activity_id);
+      document.getElementById('start-activity-btn').setAttribute("disabled", true);
     }
   })
   .catch(e => {
@@ -244,7 +245,6 @@ function startTimerIfReady() {
     startActivityTimer();
     startQuestTimer();
 
-    document.getElementById('start-activity-btn').setAttribute("disabled", true);
     //console.log('Both timers started!');
   }
 }
@@ -270,7 +270,6 @@ async function submitActivity(event) {
   event.preventDefault();
   stopQuestTimer();
   const activityInput = document.getElementById('activity-input');
-  addActivityToList(activityInput.value, window.activityTimer)
   try {
     const response = await fetch("/submit_activity/", {
       method: "POST",
@@ -283,18 +282,20 @@ async function submitActivity(event) {
       throw new Error('Network response was not ok');
     }
     const data = await response.json();
-    console.log(data.activities)
+    addActivityToList(data.activities[0]);
+    document.getElementById('start-activity-btn').removeAttribute("disabled");
+    window.activityTimer.reset();
+    activityInput.value = "";
   } catch (e) {
     console.error('There was a problem:', e);
   }
-  document.getElementById('start-activity-btn').removeAttribute("disabled");
-  window.activityTimer.reset()
-  activityInput.value = "";
 }
 
-function addActivityToList(activityName, timer) {
+function addActivityToList(activity) {
   const activityList = document.getElementById('activity-list');
-  activityList.prepend(`${activityName} - duration ${timer.elapsedTime}`)
+  const listItem = document.createElement('li');
+  listItem.textContent = `${activity.name} - duration ${activity.duration}`;
+  activityList.prepend(listItem);
 };
 
 

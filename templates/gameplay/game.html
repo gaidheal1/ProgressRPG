@@ -1,5 +1,7 @@
 {% extends 'base_generic.html' %}
 {% load static %}
+{% load custom_filters %}
+
 
 {% block content %}
 <div id="gameplay-container">
@@ -13,13 +15,13 @@
       <button id="start-activity-btn">Enter Activity</button>
     </div>
     <p id="activity-timer">00:00</p>
-    <button id="pause-activity-btn">Pause activity</button>
+    <button id="pause-activity-btn" disabled="true">Pause activity</button>
     <button id="stop-activity-btn">Stop activity and submit</button>
     <div>
       <h3>Today's activities</h3>
       <ul id="activity-list">
         {% for activity in activities %}
-          <li>{{ activity.name }} - duration {{ activity.duration }} <!--- {{ activity.created_at }} -->
+          <li>{{ activity.name }} - {{ activity.duration|format_duration }} <!--- {{ activity.created_at }} -->
           </li>
         {% empty %}
           <p>No activities completed today</p>

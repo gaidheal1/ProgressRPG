@@ -205,6 +205,7 @@ def submit_activity(request):
             }
             for act in activities
         ]
+        
         print("activities after json serialisation:", activities_list)
         return JsonResponse({
             "status": "Activity submitted", 
