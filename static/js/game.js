@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .catch(error => {
           console.error('Error:', error);
-          document.getElementById('feedback-message').textContent = An error occurred. Please try again.";
+          document.getElementById('feedback-message').textContent = "An error occurred. Please try again.";
       });
     });
   });
