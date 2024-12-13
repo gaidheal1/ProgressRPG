@@ -1,6 +1,7 @@
 from django.db import models, transaction
 from users.models import Person
 from django.utils.timezone import now
+from datetime import datetime
 
 class Quest(models.Model):
     name = models.CharField(max_length=255)
@@ -13,7 +14,18 @@ class Quest(models.Model):
     levelMax = models.IntegerField(default=0)
     canRepeat = models.BooleanField(default=False)
     xpReward = models.IntegerField(default=0)
-    # need to add requirement(s) for other quests
+
+    class Frequency(models.TextChoices):
+        NONE = 'NONE', 'No repeat'
+        DAILY = 'DAY', 'Daily'
+        WEEKLY = 'WEEK', 'Weekly'
+        MONTHLY = 'MONTH', 'Monthly'
+
+    frequency = models.CharField(
+        max_length=6,
+        choices=Frequency.choices,
+        default=Frequency.NONE
+    )
 
     def __str__(self):
         return f"Quest: {self.name}"
@@ -34,11 +46,45 @@ class Quest(models.Model):
     
     def not_repeating(self, character):
         #print("you have arrived in not_repeating")
+        completions = self.quest_completions.all()
+        # Check repeating
         if self.canRepeat == False:
-            for completion in self.quest_completions.all():
+            for completion in completions:
                 if completion.character == character:
                     if completion.times_completed >= 1:
                         return False
+        return True
+
+    def frequency_eligible(self, character):
+        # Check frequency eligibility
+        if self.frequency != 'NONE':            
+            today = now()
+            completions = self.quest_completions.all()
+
+            for completion in completions:
+                if completion.character == character:
+                    lastCompleted = completion.last_completed
+
+                    if self.frequency == 'DAY':
+                        todayDate = int(today.strftime('%d'))
+                        lastCompletedDate = int(lastCompleted.strftime('%d'))    
+                        if todayDate == lastCompletedDate:
+                            return False
+                        
+                    elif self.frequency == 'WEEK':
+                        dateDiff = today-lastCompleted
+                        if dateDiff.days < 7:
+                            if today.weekday() >= lastCompletedDate.weekday():
+                                return False
+
+                    elif self.frequency == 'MONTH':
+                        dateDiff = today-lastCompleted
+                        if dateDiff.days < 31:
+                            todayDate = int(today.strftime('%d'))
+                            lastCompletedDate = int(lastCompleted.strftime('%d'))
+                            if todayDate >= lastCompletedDate:
+                                return False
+
         return True
     
     def checkEligible(self, character, profile):

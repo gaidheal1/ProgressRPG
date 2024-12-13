@@ -19,43 +19,39 @@
     <button id="stop-activity-btn">Stop activity and submit</button>
     <div>
       <h3>Today's activities</h3>
-      <ul id="activity-list">
-        {% for activity in activities %}
-          <li>{{ activity.name }} - {{ activity.duration|format_duration }} <!--- {{ activity.created_at }} -->
-          </li>
-        {% empty %}
-          <p>No activities completed today</p>
-        {% endfor %}
-      </ul>
+      <p id="activity-totals"></p>
+      <ul id="activity-list"></ul>
     </div>
   </div>
 
   <!-- Quest Display -->
   <div id="quest-section">
     <h2>Quest</h2>
-
     <p id="quest-timer">{{ questTimer.duration }}</p>
+    <div id="quest-display">
 
-    <!-- change/test -->
-    
+      <!-- change/test -->
+      
       <p>Current quest: <span id="quest-name">{{ character.current_quest.name }}</span></p>
       <p>Description: <span id="quest-description">{{ character.current_quest.description }} </span></p>
-    
+      <button id="show-rewards-btn" hidden="true">Show rewards</button>
+    </div>
+
+    <div id="quest-rewards" hidden="true">
+      <h2>Quest rewards</h2>
+      <ul id="quest-rewards-list">
+      </ul>
+      <button id="show-quests-btn">Show quests</button>
+    </div>
+
     <div id="choose-quest">
       <h2>Available quests:</h2>
       <form id="choose-quest-form" data-url="{% url 'choose_quest' %}">
         {% csrf_token %}
         <fieldset>
           <legend>Select a quest</legend>
-
-          {% for quest in quests %}
-            <label>
-              <input type="radio", name="quest" value="{{ quest.id }}" required>
-              {{ quest.name}}
-            </label><br>
-            {% empty %}
-            <p>No quests available</p>
-          {% endfor %}
+          <ul id="quest-list" style="list-style-type:none"></ul>
+                    
         </fieldset>
       
         <button type="submit" id="choose-quest-btn">Choose Quest</button>

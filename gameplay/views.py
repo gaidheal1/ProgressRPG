@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .models import Quest, Activity, QuestCompletion, Character, ActivityTimer, QuestTimer
+from .serializers import ActivitySerializer, QuestSerializer
+from .utils import check_quest_eligibility
 from django.utils import timezone
 import json
 
@@ -11,6 +13,7 @@ import json
 def dashboard_view(request):
     profile = request.user.profile
     return render(request, 'gameplay/dashboard.html', {'profile': profile})
+
 
 # Game view
 @login_required
@@ -21,24 +24,9 @@ def game_view(request):
     activities = activities.filter(created_at__date=today)
 
     character = Character.objects.get(profile=profile)
-    char_quests = QuestCompletion.objects.filter(character=character)
-    quests_done = {}
-    for completion in char_quests:
-        quests_done[completion.quest] = completion.times_completed
-    #print(quests_done)
-    
-    all_quests = Quest.objects.all()
-
-    eligible_quests = []
-    for quest in all_quests:
-        #print('quest:', quest)
-        # Test for eligibility
-        if quest.checkEligible(character, profile) and \
-            quest.not_repeating(character) and \
-            quest.requirements_met(quests_done):
-            eligible_quests.append(quest)
-            print('success')
-
+    eligible_quests = check_quest_eligibility(character, profile)
+    serializer = QuestSerializer(eligible_quests, many=True)
+    questsJson = json.dumps(serializer.data)
     # Fetch timers
     activityTimer = ActivityTimer.objects.filter(profile=profile)
     questTimer = QuestTimer.objects.filter(character=character)
@@ -54,9 +42,35 @@ def game_view(request):
             'profile': profile,
             'character': character,
             'activities': activities,
-            'quests': eligible_quests,
+            
             'questTimer': questTimer,
         })
+
+# Fetch activities
+@login_required
+def fetch_activities(request):
+    profile = request.user.profile
+    character = Character.objects.get(profile=profile)
+
+    activities = Activity.objects.filter(profile=profile)
+    today = timezone.now().date()
+    activities = activities.filter(created_at__date=today)
+    serializer = ActivitySerializer(activities, many=True)
+    activitiesJson = json.dumps(serializer.data)
+    return JsonResponse(activitiesJson, safe=False)
+
+
+# Fetch quests
+@login_required
+def fetch_quests(request):
+    profile = request.user.profile
+    character = Character.objects.get(profile=profile)
+
+    eligible_quests = check_quest_eligibility(character, profile)
+    serializer = QuestSerializer(eligible_quests, many=True)
+    questsJson = json.dumps(serializer.data)
+    return JsonResponse(questsJson, safe=False)
+
 
 # Choose quest AJAX
 @login_required
@@ -195,8 +209,7 @@ def submit_activity(request):
         activities = Activity.objects.filter(profile=profile)
         today = timezone.now().date()
         activities_list = list(activities.filter(created_at__date=today))
-        print("activity one:", activities[0])
-        print("type of activities:", type(activities[0]))
+        
         activities_list = [
             {
                 "name": act.name,
@@ -205,8 +218,7 @@ def submit_activity(request):
             }
             for act in activities
         ]
-        
-        print("activities after json serialisation:", activities_list)
+
         return JsonResponse({
             "status": "Activity submitted", 
             "activities": activities_list,
@@ -253,12 +265,16 @@ def quest_completed(request):
         character = Character.objects.get(profile=profile)
         timer = QuestTimer.objects.get(character=character)
         timer.stop()
-        
+        quest = character.current_quest
         character.complete_quest()
-
-    return JsonResponse({
-        "status": "Quest completed", 
-    })
+        eligible_quests = check_quest_eligibility(character, profile)
+        serializer = QuestSerializer(eligible_quests, many=True)
+        return JsonResponse({
+            "status": "Quest completed", 
+            "xp_reward": quest.xpReward,
+            "eligible_quests": serializer.data,
+        }, safe=False)
+    return JsonResponse({"error": "Invalid method"}, status=405)
 
 @csrf_exempt
 def get_timer_state(request):

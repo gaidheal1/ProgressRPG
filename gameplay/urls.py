@@ -13,6 +13,8 @@ urlpatterns = [
     path('start_quest_timer/', views.start_quest_timer, name='start_quest_timer'),
     path('stop_quest_timer/', views.stop_quest_timer, name='stop_quest_timer'),
     path('quest_completed/', views.quest_completed, name='quest_completed'),
+    path('fetch_quests/', views.fetch_quests, name='fetch_quests'),
+    path('fetch_activities/', views.fetch_activities, name='fetch_activities'),
     path('get_timer_state/', views.get_timer_state, name='get_timer_state'),
 ]
 

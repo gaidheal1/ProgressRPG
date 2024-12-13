@@ -18,7 +18,9 @@ function setupEventListeners() {
   document.getElementById("start-activity-btn").addEventListener("click", createActivityTimer);
   document.getElementById("stop-activity-btn").addEventListener("click", submitActivity);
   document.getElementById('choose-quest-form').addEventListener('submit', chooseQuest);
-
+  document.getElementById('show-rewards-btn').addEventListener('click', showRewards);
+  document.getElementById('show-quests-btn').addEventListener('click', showQuests);
+  
   // Timer event listeners
   window.activityTimer.on('stopped', onActivityTimerStopped);
   //window.activityTimer.on('completed', onActivityTimerCompleted);
@@ -34,6 +36,9 @@ function updateUI() {
   document.getElementById('quest-timer').textContent = window.questTimer.remainingTime;
   //document.getElementById(window.questTimer.displayElement).textContent = window.questTimer.remainingTime;
   window.questTimer.updateDisplay();
+  
+  fetchActivities();
+  fetchQuests();
 }
 
 
@@ -169,68 +174,119 @@ function onQuestTimerCompleted(data) {
   submitQuest();
 };
 
+function formatDuration(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  let formattedDuration = "";
+
+  if (hours > 0) {
+      formattedDuration += `${hours}:`;
+  } 
+  if (seconds > 0) {
+      //if (formattedDuration) formattedDuration += " ";
+      formattedDuration += `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  } else {
+    formattedDuration = "00:00"
+  }
+
+  return formattedDuration;
+}
 
 // Select quest
-function chooseQuest(event) {
+async function chooseQuest(event) {
   event.preventDefault();
-  const url = this.dataset.url;
-  
-  const quest = document.querySelector('input[name="quest"]:checked');
-  fetch(url, {
-      method: "POST",
-      headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
-      },
-      body: JSON.stringify({ "quest_id": quest.value })
-  })
-  .then(response => response.json())
-  .then(data => {
-      if (data.success) {
-          //console.log(data)
-          window.questSelected = true;
-          document.getElementById('feedback-message').textContent = "Quest selection successful!";
-          // Can also immediately update UI to show current quest
-          document.getElementById('quest-name').textContent = data.questName;
-          document.getElementById('quest-description').textContent = data.questDescription;
-          
-          window.questTimer.reset(data.questDuration)
-          document.getElementById('choose-quest').setAttribute("hidden", true);
-          startTimerIfReady();
+
+  try {
+    const url = this.dataset.url;
+    
+    const quest = document.querySelector('input[name="quest"]:checked');
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: JSON.stringify({ "quest_id": quest.value })
+    })
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
+    if (data.success) {
+        //console.log(data)
+        window.questSelected = true;
+        //document.getElementById('feedback-message').textContent = "Quest selection successful!";
+        // Can also immediately update UI to show current quest
+        document.getElementById('quest-name').textContent = data.questName;
+        document.getElementById('quest-description').textContent = data.questDescription;
+        
+        window.questTimer.reset(data.questDuration)
+        document.getElementById('choose-quest').setAttribute("hidden", true);
+        startTimerIfReady();
       } else { document.getElementById('feedback-message').textContent = "Quest selection failed, please try again.";
       }
-  })
-  .catch(e => {
+  } catch(e) {
       console.error('Error:', e);
-      document.getElementById('feedback-message').textContent = "An error occurred. Please try again.";
-  });
+  }
   quest.checked = false;
 };
 
+// Fetch eligible activities
+async function fetchActivities() {
+  try {
+    const response = await fetch('/fetch_activities/', {
+      method: 'GET',
+    });
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    const activities = JSON.parse(data);
+    const activityList = document.getElementById('activity-list');
+    activityList.innerHTML = '';
+    
+    let activitiesNumber = 0;
+    let activitiesTime = 0;
+    activities.forEach(activity => {
+      activitiesNumber += 1;
+      activitiesTime += activity.duration;
+      const li = document.createElement('li');
+      li.textContent = `${activity.name} - ${formatDuration(activity.duration)}`;
+      activityList.appendChild(li);
+    });
+    document.getElementById('activity-totals').innerText = `Total time today: ${formatDuration(activitiesTime)}; total activites today: ${activitiesNumber}`
+  } catch (e) {
+    console.error('There was a problem:', e);
+  }
+}
 
 // Start an activity timer
 async function createActivityTimer() {
-  const activityInput = document.getElementById('activity-input');
-  await fetch("/create_activity_timer/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ activityName: activityInput.value })
-  })
-  .then(response => response.json())
-  .then(data => {
+  try {
+    const activityInput = document.getElementById('activity-input');
+    const response = await fetch("/create_activity_timer/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ activityName: activityInput.value })
+    })
+    const data = await response.json();
+    
     if (data.success) {
       window.activitySelected = true;
       //console.log('Activity ready')
       startTimerIfReady();
       console.log("test response:", data.activity_id);
       document.getElementById('start-activity-btn').setAttribute("disabled", true);
+      document.getElementById('stop-activity-btn').removeAttribute("disabled");
     }
-  })
-  .catch(e => {
+  } catch(e) {
     console.error('Error:', e);
-  });
+  };
 }
 
 
@@ -284,6 +340,7 @@ async function submitActivity(event) {
     const data = await response.json();
     addActivityToList(data.activities[0]);
     document.getElementById('start-activity-btn').removeAttribute("disabled");
+    document.getElementById('stop-activity-btn').setAttribute("disabled", true);
     window.activityTimer.reset();
     activityInput.value = "";
   } catch (e) {
@@ -294,7 +351,7 @@ async function submitActivity(event) {
 function addActivityToList(activity) {
   const activityList = document.getElementById('activity-list');
   const listItem = document.createElement('li');
-  listItem.textContent = `${activity.name} - duration ${activity.duration}`;
+  listItem.textContent = `${activity.name} - ${formatDuration(activity.duration)}`;
   activityList.prepend(listItem);
 };
 
@@ -316,12 +373,72 @@ async function stopQuestTimer() {
 
 // Submit quest
 async function submitQuest() {
-  questTimer.stop()
-  stopActivityTimer();
-  fetch('/quest_completed/', {
-    method: 'POST',
-  });
-  questSelected = false;
+  try {
+    questTimer.stop()
+    stopActivityTimer();
+    const response = await fetch('/quest_completed/', {
+      method: 'POST',
+    });
+    console.log('response ok:', response.ok);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    
+    // Show rewards
+    const rewardsList = document.getElementById('quest-rewards-list');
+    console.log('quest xp reward:', data.xp_reward)
+    rewardsList.innerHTML = `<li>${data.xp_reward} xp</li>`
+
+    questSelected = false;
+    document.getElementById('show-rewards-btn').removeAttribute("hidden");
+
+    // Fetch updated list of eligible quests
+    fetchQuests();
+
+  } catch (e) {
+    console.error('There was a problem:', e);
+  }
+}
+
+
+// Fetch eligible quests
+async function fetchQuests() {
+  try {
+    const response = await fetch('/fetch_quests/', {
+      method: 'GET',
+    });
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    const quests = JSON.parse(data);
+    const questList = document.getElementById('quest-list');
+    questList.innerHTML = '';
+
+    quests.forEach(quest => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <label>
+        <input type="radio", name="quest" value="${quest.id}" required>
+        ${quest.name}
+        </label><br>`;
+      questList.appendChild(li);
+    });
+  } catch (e) {
+    console.error('There was a problem:', e);
+  }
+}
+
+function showRewards() {
+  document.getElementById('show-rewards-btn').setAttribute("hidden", true);
+  document.getElementById('quest-rewards').removeAttribute("hidden");
+  const testElephant = document.getElementById('quest-rewards');
+  console.log(testElephant); 
+}
+
+function showQuests() {
+  document.getElementById('quest-rewards').setAttribute("hidden", true);
   document.getElementById('choose-quest').removeAttribute("hidden");
 }
 

@@ -26,6 +26,7 @@ class QuestAdmin(admin.ModelAdmin):
         'number_stages'),
         'xpReward',
         'created_at',
+        'frequency',
     ]
     list_display = [
         'name',
@@ -40,6 +41,7 @@ class QuestAdmin(admin.ModelAdmin):
     list_filter = [
         'created_at',
         'is_premium',
+        'frequency',
         ]
     
     readonly_fields = [

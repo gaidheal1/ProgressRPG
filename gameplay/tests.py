@@ -91,7 +91,8 @@ class TestQuestFunc(TestCase):
             duration=10,
             levelMax=10,
             xpReward=100,
-            canRepeat=True
+            canRepeat=True,
+            frequency='DAY',
         )
         self.quest3 = Quest.objects.create(
             name='Test Quest 3',
@@ -101,10 +102,20 @@ class TestQuestFunc(TestCase):
             xpReward=100,
             canRepeat=False
         )
+        self.quest4 = Quest.objects.create(
+            name='Test Quest 4',
+            description='Test Quest Description',
+            duration=10,
+            levelMax=10,
+            xpReward=100,
+            canRepeat=True,
+            frequency='MONTH',
+        )
         self.quests=[
             self.quest, 
             self.quest2,
-            self.quest3
+            self.quest3,
+            self.quest4,
             ]
 
         User = get_user_model()
@@ -124,21 +135,27 @@ class TestQuestFunc(TestCase):
             prerequisite=self.quest
         )
 
-        self.qc = QuestCompletion.objects.create(
+        self.qc1 = QuestCompletion.objects.create(
             character=self.char,
             quest=self.quest,
             times_completed=0
         )
         
-        self.qc = QuestCompletion.objects.create(
+        self.qc2 = QuestCompletion.objects.create(
             character=self.char,
             quest=self.quest3,
             times_completed=1
         )
 
+        self.qc3 = QuestCompletion.objects.create(
+            character=self.char,
+            quest=self.quest4,
+            times_completed=3,
+        )
+
     def test_quest_requirements_met(self):
         lst = {}
-        lst[self.qc.quest] = self.qc.times_completed
+        lst[self.qc1.quest] = self.qc1.times_completed
         eligible_quests = []
         for quest in self.quests:
             if quest.requirements_met(lst):
@@ -146,11 +163,10 @@ class TestQuestFunc(TestCase):
 
         self.assertTrue(self.quest.requirements_met(lst))
         self.assertTrue(self.quest2.requirements_met(lst)== False)
-        self.assertEqual(len(eligible_quests), 2)
+        self.assertEqual(len(eligible_quests), 3)
         self.assertEqual(eligible_quests[0], self.quest)
 
     def test_quest_repeatable(self):
-        
         eligible_quests = []
         for quest in self.quests:
             if quest.not_repeating(self.char):
@@ -159,10 +175,20 @@ class TestQuestFunc(TestCase):
         # self.quest can't repeat, and character has completed, so should return false
         self.assertTrue(self.quest3.not_repeating(self.char)==False)
         self.assertTrue(self.quest2.not_repeating(self.char))
-        self.assertTrue(len(eligible_quests)==2)
+        self.assertTrue(len(eligible_quests)==3)
         self.assertTrue(eligible_quests[0].name == 'Test Quest')
 
+    def test_frequency_eligible(self):
+        eligible_quests = []
+        for quest in self.quests:
+            if quest.frequency_eligible(self.char):
+                eligible_quests.append(quest)
+
+        #self.assertTrue(self.quest4.frequency_eligible(self.char)==False)
         
+
+    
+    
 class TestOtherModels(TestCase):
     def setUp(self):
         User = get_user_model()

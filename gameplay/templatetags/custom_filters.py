@@ -15,4 +15,4 @@ def format_duration(seconds):
         else:
             return f"{minutes:2}:{seconds:02}"
     except (ValueError, TypeError):
-        return "00:00:00"
+        return "00:00"
