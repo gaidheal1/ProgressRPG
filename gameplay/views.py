@@ -1,17 +1,22 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.dispatch import receiver
 from django.http import JsonResponse
+from django.utils import timezone
 from .models import Quest, Activity, QuestCompletion, Character, ActivityTimer, QuestTimer
 from .serializers import ActivitySerializer, QuestSerializer
 from .utils import check_quest_eligibility
-from django.utils import timezone
 import json
 
 # Dashboard view
 @login_required
 def dashboard_view(request):
     profile = request.user.profile
+    
+    #profile.login_streak = 1
+    #profile.save()
+    
     return render(request, 'gameplay/dashboard.html', {'profile': profile})
 
 
@@ -19,6 +24,10 @@ def dashboard_view(request):
 @login_required
 def game_view(request):
     profile = request.user.profile
+    
+    #profile.login_streak = 1
+    #profile.save()
+    
     activities = Activity.objects.filter(profile=profile) #.order_by('-created_at') # Optional ordering instead of in model
     today = timezone.now().date()
     activities = activities.filter(created_at__date=today)
@@ -30,11 +39,10 @@ def game_view(request):
     # Fetch timers
     activityTimer = ActivityTimer.objects.filter(profile=profile)
     questTimer = QuestTimer.objects.filter(character=character)
-    print("Quest timer 0:", questTimer[0])
+    
     if len(questTimer) >= 1:
         questTimer = questTimer[0]
 
-    print("HELOOOOOOOOOOOOOOOO", questTimer)
     
     #print(eligible_quests)
     return render(request, 'gameplay/game.html', 
@@ -85,10 +93,15 @@ def choose_quest(request):
         character.current_quest = quest
         character.save()
         
-        quest_timer = QuestTimer.objects.get_or_create(
+        # One-off:
+        #QuestTimer.objects.filter(character=character).delete()
+        
+        quest_timer, created = QuestTimer.objects.get_or_create(
             character=character,
-            duration=quest.duration,
         )
+        if created:
+            quest_timer.duration = quest.duration
+        
         
         #QuestTimer.objects.filter(character=character).delete()
         return JsonResponse({
@@ -225,21 +238,6 @@ def submit_activity(request):
         })
     return JsonResponse({"error": "Invalid method"}, status=405)
 
-@csrf_exempt
-def create_quest_timer(request):
-    if request.method == "POST":
-        profile = request.user.profile
-        character = Character.objects.get(profile=profile)
-        
-        # Create activity
-        
-        timer, created = QuestTimer.objects.get_or_create(character=character)
-        
-        return JsonResponse({
-            "success": True,
-            })
-        
-    return JsonResponse({"error": "Invalid method"}, status=405)
 
 @csrf_exempt
 def start_quest_timer(request):
@@ -265,13 +263,19 @@ def quest_completed(request):
         character = Character.objects.get(profile=profile)
         timer = QuestTimer.objects.get(character=character)
         timer.stop()
+        # deleteing all quest timers in case extra created accidentally
+        QuestTimer.objects.filter(character=character).delete()
+
         quest = character.current_quest
         character.complete_quest()
+        
+        quest_results = quest.results
+        print(quest_results)
         eligible_quests = check_quest_eligibility(character, profile)
         serializer = QuestSerializer(eligible_quests, many=True)
         return JsonResponse({
             "status": "Quest completed", 
-            "xp_reward": quest.xpReward,
+            "xp_reward": 5,
             "eligible_quests": serializer.data,
         }, safe=False)
     return JsonResponse({"error": "Invalid method"}, status=405)
@@ -289,3 +293,5 @@ def get_timer_state(request):
         },
     }
     return JsonResponse(response)
+
+

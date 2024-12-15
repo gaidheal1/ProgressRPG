@@ -2,18 +2,17 @@ from django.db import models, transaction
 from users.models import Person
 from django.utils.timezone import now
 from datetime import datetime
+import json
 
 class Quest(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(max_length=2000, blank = True)
     duration = models.PositiveIntegerField(default=0)  # Duration in minutes
-    number_stages = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     is_premium = models.BooleanField(default=True)
     levelMin = models.IntegerField(default=0)
     levelMax = models.IntegerField(default=0)
     canRepeat = models.BooleanField(default=False)
-    xpReward = models.IntegerField(default=0)
 
     class Frequency(models.TextChoices):
         NONE = 'NONE', 'No repeat'
@@ -98,11 +97,31 @@ class Quest(models.Model):
         # Quest passed the test
         return True
     
+    def activate_next_stage(quest):
+        pass
+    
+class QuestResults(models.Model):
+    quest = models.OneToOneField(Quest, on_delete=models.CASCADE, related_name='results')
+    rewards = models.JSONField(default=dict)
+
+    def __str__(self):
+        return f"Quest results for '{self.quest.name}': {json.dumps(self.rewards, indent=2)}"
+
+    def apply_to_character(self, character):
+        """Apply rewards/results to a given character"""
+        for key, value in self.rewards.items():
+            if hasattr(character, key):
+                setattr(character, key, getattr(character, key) + value if isinstance(value, (int, float)) else value)
+        character.save()
+
 class QuestStage(models.Model):
-    quest = models.ForeignKey(Quest, on_delete=models.CASCADE, related_name='quest_stages')
-    stage_num = models.IntegerField(default=0)
+    quest = models.ForeignKey(Quest, on_delete=models.CASCADE, related_name='stages')
+    order = models.IntegerField(default=0)
     stage_time = models.IntegerField(default=0)
     stage_text = models.TextField(default="Stage default text")
+    is_active = models.BooleanField(default=False)
+    is_completed = models.BooleanField(default=False)
+    unlock_time = models.PositiveIntegerField(default=0)
 
 class QuestRequirement(models.Model):
     quest = models.ForeignKey(Quest, on_delete=models.CASCADE, related_name="quest_requirements")
@@ -143,8 +162,10 @@ class Skill(models.Model):
 class Character(Person):
     profile = models.ForeignKey('users.profile', on_delete=models.CASCADE, related_name='character')
     quest_completions = models.ManyToManyField('gameplay.Quest', through='QuestCompletion', related_name='completed_by')
+    total_quests = models.PositiveIntegerField(default=0)
     current_quest = models.ForeignKey(Quest, on_delete=models.SET_NULL, blank=True, null=True)
     coins = models.PositiveIntegerField(default=0)
+    role = models.CharField(max_length=50, default="Ne'er-do-well")
 
     def __str__(self):
         return self.name if self.name else "Unnamed character"
@@ -166,6 +187,7 @@ class Character(Person):
                 completion.times_completed += 1
                 completion.save()
         self.current_quest = None
+        self.total_quests += 1
         self.save()
 
 class QuestCompletion(models.Model):
@@ -215,8 +237,8 @@ class ActivityTimer(Timer):
         return f"ActivityTimer for profile {self.profile.name}: started {self.start_time}, {self.elapsed_time} elapsed"
 
 class QuestTimer(Timer):
-    character = models.OneToOneField(Character, on_delete=models.CASCADE, related_name='quest_timer')
-    duration = models.IntegerField()
+    character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='quest_timer')
+    duration = models.IntegerField(default=0)
 
     def get_remaining_time(self):
         if self.is_running:

@@ -21,7 +21,12 @@
         <div>
             <a href="{% url 'edit_profile' %}">Edit Profile</a>
         </div>
-
+        <div>
+            <a href="{% url 'download_user_data' %}">Download my data</a>
+        </div>
+        <div>
+            <a href="{% url 'delete_account' %}">Delete account</a>
+        </div>
         <div>
         {% if user.is_staff %}
                 <a href="/admin/">Go to Admin Panel</a>

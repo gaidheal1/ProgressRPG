@@ -9,7 +9,6 @@ urlpatterns = [
     path('start_activity_timer/', views.start_activity_timer, name='start_activity_timer'),
     path('stop_activity_timer/', views.stop_activity_timer, name='stop_activity_timer'),
     path('submit_activity/', views.submit_activity, name='submit_activity'),
-    path('create_quest_timer/', views.create_quest_timer, name='create_quest_timer'),
     path('start_quest_timer/', views.start_quest_timer, name='start_quest_timer'),
     path('stop_quest_timer/', views.stop_quest_timer, name='stop_quest_timer'),
     path('quest_completed/', views.quest_completed, name='quest_completed'),

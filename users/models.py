@@ -59,6 +59,9 @@ class Profile(Person):
     total_activities = models.IntegerField(default=0)
     current_activity = models.ForeignKey('gameplay.activity', blank=True, null=True, on_delete=models.CASCADE, related_name='profile_current_activity')
     is_premium = models.BooleanField(default=False)
+    last_login = models.DateTimeField(auto_now=True)
+    login_streak = models.PositiveIntegerField(default=1)
+    login_streak_max = models.PositiveIntegerField(default=1)
 
     ONBOARDING_STEPS = [
         (0, "Not started"),

@@ -5,20 +5,18 @@
 {% block content %}
   <!-- stats not displaying properly yet -->
     <h2>Game totals: total time {{stats.total_time}}, total activities {{stats.total_activities}}</h2>
-    <h2>Dashboard - {{user.username}}</h2>
+    <h2>Dashboard - {{profile.name}}</h2>
     
     <h3>Player details</h3>
     <ul>
-        <li>Level: {{ user.profile.level }}</li>
-        <li>XP: {{ user.profile.xp }}/{{ user.profile.get_xp_for_next_level }}</li>
-      <li>Total time tracked: {{ user.profile.total_time }}</li>
-      <li>Total activities tracked: {{ user.profile.total_activities }}</li>
+      <li>Level: {{ profile.level }}</li>
+      <li>XP: {{ profile.xp }}/{{ profile.get_xp_for_next_level }}</li>
+      <li>Total time tracked: {{ profile.total_time }}</li>
+      <li>Total activities tracked: {{ profile.total_activities }}</li>
+      <li>Current login streak: {{ profile.login_streak }} days</li>
     </ul>
     <hr>
     
-    <p>
-        <a href="{% url 'logout' %}">Log out</a>
-    </p>
 
 
 

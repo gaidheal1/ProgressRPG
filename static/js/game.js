@@ -197,7 +197,6 @@ function formatDuration(seconds) {
 // Select quest
 async function chooseQuest(event) {
   event.preventDefault();
-
   try {
     const url = this.dataset.url;
     
@@ -226,12 +225,13 @@ async function chooseQuest(event) {
         window.questTimer.reset(data.questDuration)
         document.getElementById('choose-quest').setAttribute("hidden", true);
         startTimerIfReady();
+        quest.checked = false;
       } else { document.getElementById('feedback-message').textContent = "Quest selection failed, please try again.";
       }
   } catch(e) {
       console.error('Error:', e);
   }
-  quest.checked = false;
+  
 };
 
 // Fetch eligible activities
@@ -433,8 +433,6 @@ async function fetchQuests() {
 function showRewards() {
   document.getElementById('show-rewards-btn').setAttribute("hidden", true);
   document.getElementById('quest-rewards').removeAttribute("hidden");
-  const testElephant = document.getElementById('quest-rewards');
-  console.log(testElephant); 
 }
 
 function showQuests() {
