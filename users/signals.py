@@ -21,6 +21,7 @@ def save_profile(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Profile)
 def create_character(sender, instance, created, **kwargs):
+    """Create character when profile saved if not already existing"""
     if created:
         create_character_for_profile(instance)
 

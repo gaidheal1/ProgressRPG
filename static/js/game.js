@@ -12,6 +12,7 @@ function initialiseTimers() {
   window.questTimer = new Timer('quest-timer', mode="quest", duration=0);
   window.activitySelected = false;
   window.questSelected = false;
+  
 }
   
 function setupEventListeners() {
@@ -41,7 +42,61 @@ function updateUI() {
   fetchQuests();
 }
 
+class Quest {
+  constructor(id, name, description, duration, stages, currentStageIndex = 0, elapsedTime = 0) {
+    this.id = id;
+    this.name = name;
+    this.description = description;
+    this.duration = duration;
+    this.stages = stages;
+    this.currentStageIndex = currentStageIndex;
+    this.elapsedTime = elapsedTime;
+  }
 
+  getCurrentStage() {
+    return this.stages[this.currentStageIndex];
+  }
+
+  advanceStage() {
+    if (this.currentStageIndex < this.stages.length -1) {
+      this.renderPreviousStage();
+      this.currentStageIndex++;
+      document.getElementById('quest-current-stage').textContent = this.stages[this.currentStageIndex].text;
+    } else {
+      console.log("Quest complete!");
+    }
+  }
+
+  updateProgress(elapsedTime) {
+    this.elapsedTime = elapsedTime;
+    while (
+      this.currentStageIndex < this.stages.length -1 &&
+      this.elapsedTime >= this.stages[this.currentStageIndex].endTime
+    ) {
+      this.advanceStage();
+    }
+  }
+
+  renderPreviousStage() {
+    const stagesList = document.getElementById('quest-stages-list');
+    if (stagesList.getAttribute('hidden')) {
+      stagesList.removeAttribute('hidden');
+    }
+    stagesList.innerHTML += `<li>${this.stages[this.currentStageIndex].text}</li>`;
+  }
+
+  initialDisplay() {
+    document.getElementById('quest-name').textContent = this.name;
+    document.getElementById('quest-description').textContent = this.description;
+    document.getElementById('quest-current-stage').textContent = this.stages[0].text;
+  }
+
+  resetDisplay() {
+    const stagesList = document.getElementById('quest-stages-list');
+    stagesList.setAttribute('hidden', true);
+    stagesList.innerHTML = "";
+  }
+}
 
 class EventEmitter {
   constructor() {
@@ -87,18 +142,20 @@ class Timer extends EventEmitter {
     
     this.isRunning = true;
     this.intervalId = setInterval(() => {
-        if (this.mode === "quest") {
-            this.remainingTime -= 1;
-            this.updateDisplay();
+      this.elapsedTime += 1;  
+      if (this.mode === "quest") {
+        this.remainingTime -= 1;
+        //this.updateDisplay();
 
-            if (this.remainingTime <= 0) {
-                this.stop();
-                this.onComplete();
-            }
-        } else if (this.mode === "activity") {
-            this.elapsedTime += 1;
-            this.updateDisplay();
+        window.currentQuest.updateProgress(this.elapsedTime)
+
+        if (this.remainingTime <= 0) {
+            this.stop();
+            this.onComplete();
         }
+      } //else if (this.mode === "activity") {
+        
+      this.updateDisplay();
     }, 1000);
   }
   
@@ -155,16 +212,14 @@ function onActivityTimerStopped(data) {
   // Handle when the activity timer stops
   console.log("function onActivityTimerStopped");
   window.questTimer.stop();  // Stop the quest timer
-  //stopActivityTimer();
-  //stopQuestTimer();
+
 }
 
 function onQuestTimerStopped(data) {
   // Handle when the activity timer stops
   console.log("function onQuestTimerStopped!");
   window.activityTimer.stop();  // Stop the activity timer
-  //stopActivityTimer();
-  //stopQuestTimer();
+
 }
 
 function onQuestTimerCompleted(data) {
@@ -197,7 +252,11 @@ function formatDuration(seconds) {
 // Select quest
 async function chooseQuest(event) {
   event.preventDefault();
+  if (window.currentQuest) {
+    window.currentQuest.resetDisplay();
+  }
   try {
+    // Server url for choosing quest 
     const url = this.dataset.url;
     
     const quest = document.querySelector('input[name="quest"]:checked');
@@ -215,19 +274,16 @@ async function chooseQuest(event) {
 
     const data = await response.json();
     if (data.success) {
-        //console.log(data)
-        window.questSelected = true;
-        //document.getElementById('feedback-message').textContent = "Quest selection successful!";
-        // Can also immediately update UI to show current quest
-        document.getElementById('quest-name').textContent = data.questName;
-        document.getElementById('quest-description').textContent = data.questDescription;
-        
-        window.questTimer.reset(data.questDuration)
-        document.getElementById('choose-quest').setAttribute("hidden", true);
-        startTimerIfReady();
-        quest.checked = false;
-      } else { document.getElementById('feedback-message').textContent = "Quest selection failed, please try again.";
-      }
+      window.currentQuest = new Quest(data.questId, data.questName, data.questDescription, data.questDuration, data.questStages);
+      window.currentQuest.initialDisplay();
+      window.questSelected = true;
+      
+      window.questTimer.reset(window.currentQuest.duration);
+      document.getElementById('choose-quest').setAttribute("hidden", true);
+      startTimerIfReady();
+      quest.checked = false;
+    } else { document.getElementById('feedback-message').textContent = "Quest selection failed, please try again.";
+    }
   } catch(e) {
       console.error('Error:', e);
   }
@@ -280,7 +336,6 @@ async function createActivityTimer() {
       window.activitySelected = true;
       //console.log('Activity ready')
       startTimerIfReady();
-      console.log("test response:", data.activity_id);
       document.getElementById('start-activity-btn').setAttribute("disabled", true);
       document.getElementById('stop-activity-btn').removeAttribute("disabled");
     }
@@ -324,7 +379,9 @@ async function stopActivityTimer() {
 // Submit an activity
 async function submitActivity(event) {
   event.preventDefault();
-  stopQuestTimer();
+  if (window.questSelected === true) {
+    stopQuestTimer();
+  }
   const activityInput = document.getElementById('activity-input');
   try {
     const response = await fetch("/submit_activity/", {
@@ -342,6 +399,7 @@ async function submitActivity(event) {
     document.getElementById('start-activity-btn').removeAttribute("disabled");
     document.getElementById('stop-activity-btn').setAttribute("disabled", true);
     window.activityTimer.reset();
+    window.activitySelected = false;
     activityInput.value = "";
   } catch (e) {
     console.error('There was a problem:', e);
@@ -365,7 +423,7 @@ async function startQuestTimer() {
 
 // Stop a quest timer
 async function stopQuestTimer() {
-  questTimer.stop()
+  window.questTimer.stop()
   const response = await fetch("/stop_quest_timer/", {method: "POST"});
   const data = await response.json();
   //console.log("Elapsed time: ", data.elapsed_time);
@@ -374,7 +432,7 @@ async function stopQuestTimer() {
 // Submit quest
 async function submitQuest() {
   try {
-    questTimer.stop()
+    window.questTimer.stop()
     stopActivityTimer();
     const response = await fetch('/quest_completed/', {
       method: 'POST',
@@ -390,7 +448,7 @@ async function submitQuest() {
     console.log('quest xp reward:', data.xp_reward)
     rewardsList.innerHTML = `<li>${data.xp_reward} xp</li>`
 
-    questSelected = false;
+    window.questSelected = false;
     document.getElementById('show-rewards-btn').removeAttribute("hidden");
 
     // Fetch updated list of eligible quests

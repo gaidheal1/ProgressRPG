@@ -3,15 +3,13 @@ from django.shortcuts import render
 from django.contrib import admin
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
-from .models import Quest, QuestStage, QuestRequirement, Character, QuestCompletion, Activity, ActivityTimer, QuestTimer, QuestResults
+from .models import Quest, QuestRequirement, Character, QuestCompletion, Activity, ActivityTimer, QuestTimer, QuestResults
 
 # Register your models here.
     
 class QuestCompletionsInline(admin.TabularInline):
     model = QuestCompletion
 
-class QuestStagesInline(admin.TabularInline):
-    model = QuestStage
 
 @admin.register(Quest)
 class QuestAdmin(admin.ModelAdmin):
@@ -22,10 +20,10 @@ class QuestAdmin(admin.ModelAdmin):
         'is_premium'),
         ('levelMin',
         'levelMax'),
-        ('duration',
-        'number_stages'),
+        'duration',
         'created_at',
         'frequency',
+        'stages',
     ]
     list_display = [
         'name',
@@ -45,14 +43,13 @@ class QuestAdmin(admin.ModelAdmin):
     readonly_fields = [
         'created_at',
     ]
-    inlines = [QuestStagesInline]
+    inlines = [QuestCompletionsInline]
     
 @admin.register(QuestResults)
 class QuestResultsAdmin(admin.ModelAdmin):
-    list_display = ['quest', 'rewards']
+    list_display = ['quest', 'xp_reward', 'coin_reward', 'dynamic_rewards', 'buffs']
 
-class QuestCompletionsInline(admin.TabularInline):
-    model = QuestCompletion
+
 
 @admin.register(QuestRequirement)
 class QuestRequirementAdmin(admin.ModelAdmin):

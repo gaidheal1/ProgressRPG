@@ -6,7 +6,13 @@
 {% block content %}
 <div id="gameplay-container">
   <h1>Welcome, {{ profile.name }}</h1>
-
+  <div id="info-bar">
+    <div id="player-info">
+      <span id="player-name">{{ profile.name }}</span> 
+      <span id="player-level">{{ profile.level }}</span>
+      <span id="player-xp">{{ profile.xp }}</span>
+    </div>
+  </div>
   <!-- Activity -->
   <div id="activity-section">
     <h2>Activity</h2>
@@ -34,6 +40,10 @@
       
       <p>Current quest: <span id="quest-name">{{ character.current_quest.name }}</span></p>
       <p>Description: <span id="quest-description">{{ character.current_quest.description }} </span></p>
+      <p>Current stage: <span id="quest-current-stage"></span></p>
+      
+      <ul id="quest-stages-list" hidden="true">
+      </ul>
       <button id="show-rewards-btn" hidden="true">Show rewards</button>
     </div>
 

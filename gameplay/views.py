@@ -3,9 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.dispatch import receiver
 from django.http import JsonResponse
+from django.db import transaction
 from django.utils import timezone
 from .models import Quest, Activity, QuestCompletion, Character, ActivityTimer, QuestTimer
 from .serializers import ActivitySerializer, QuestSerializer
+from users.serializers import ProfileSerializer
 from .utils import check_quest_eligibility
 import json
 
@@ -21,6 +23,7 @@ def dashboard_view(request):
 
 
 # Game view
+@transaction.atomic
 @login_required
 def game_view(request):
     profile = request.user.profile
@@ -81,9 +84,11 @@ def fetch_quests(request):
 
 
 # Choose quest AJAX
+@transaction.atomic
 @login_required
 def choose_quest(request):
     if request.method == "POST" and request.headers.get('Content-Type') == 'application/json':
+        print("testing invisible choose quests problem")
         data = json.loads(request.body)
         quest_id = data.get('quest_id')
         
@@ -101,19 +106,25 @@ def choose_quest(request):
         )
         if created:
             quest_timer.duration = quest.duration
+
+        print("choose_quest func, quest timer:", quest_timer)
+
+
         
-        
-        #QuestTimer.objects.filter(character=character).delete()
         return JsonResponse({
             "success": True,
-            "questDuration": quest.duration,
+            "questId": quest.id,
             "questName": quest.name,
             "questDescription": quest.description,
+            "questDuration": quest.duration,
+            "questStages": quest.stages,
         })
 
     return JsonResponse({"success": False, "error": "Invalid request"})
         
 
+# Save activity view
+@transaction.atomic
 @login_required
 def save_activity(request):
     if request.method == 'POST':
@@ -129,6 +140,7 @@ def save_activity(request):
         return JsonResponse({'status': 'success'})
 
 
+@transaction.atomic
 @csrf_exempt
 def create_activity_timer(request):
     if request.method == "POST":
@@ -163,16 +175,13 @@ def create_activity_timer(request):
         activity.save()
         timer.save()
         profile.save()
-        
-        print(ActivityTimer.objects.all())
-
-
         return JsonResponse({
             "success": True,
             "activity_id": activity.id,
             })
         
     return JsonResponse({"error": "Invalid method"}, status=405)
+
 
 @csrf_exempt
 def start_activity_timer(request):
@@ -190,10 +199,9 @@ def start_activity_timer(request):
 @csrf_exempt
 def stop_activity_timer(request):
     if request.method == "POST":
-        print('which comes first? stop activity')
         profile = request.user.profile
         allTimers = ActivityTimer.objects.all()
-        print("all timers here:", allTimers)
+        
         # This is the problem line. All timers deleted here?
         timer = ActivityTimer.objects.get(profile=profile)
         timer.stop()
@@ -204,6 +212,7 @@ def stop_activity_timer(request):
         })
     return JsonResponse({"error": "Invalid method"}, status=405)
 
+@transaction.atomic
 @csrf_exempt
 def submit_activity(request):
     if request.method == "POST":
@@ -215,8 +224,8 @@ def submit_activity(request):
         
         activity.addTime(timer.elapsed_time)
         
-        profile.current_activity = None
-        profile.save()
+        rewards = profile.submit_activity()
+
         ActivityTimer.objects.filter(profile=profile).delete()
 
         activities = Activity.objects.filter(profile=profile)
@@ -231,10 +240,12 @@ def submit_activity(request):
             }
             for act in activities
         ]
-
+        serializer = ProfileSerializer(profile)
         return JsonResponse({
             "status": "Activity submitted", 
+            "profile": serializer.data,
             "activities": activities_list,
+            "activity_rewards": rewards,
         })
     return JsonResponse({"error": "Invalid method"}, status=405)
 
@@ -249,13 +260,16 @@ def start_quest_timer(request):
 @csrf_exempt
 def stop_quest_timer(request):
     character = Character.objects.get(profile=request.user.profile)
+
     timer = QuestTimer.objects.get(character=character)
+    print("quest timer or 404:", timer)
     timer.stop()
     return JsonResponse({
         "status": "Quest timer stopped", 
         "remaining_time": timer.get_remaining_time(),
     })
 
+@transaction.atomic
 @csrf_exempt
 def quest_completed(request):
     if request.method == "POST":
@@ -263,14 +277,17 @@ def quest_completed(request):
         character = Character.objects.get(profile=profile)
         timer = QuestTimer.objects.get(character=character)
         timer.stop()
+        print("quest_completed func, quest timer:", timer)
         # deleteing all quest timers in case extra created accidentally
         QuestTimer.objects.filter(character=character).delete()
 
         quest = character.current_quest
         character.complete_quest()
+        # New quest method: testing!
+        #quest.complete()
         
-        quest_results = quest.results
-        print(quest_results)
+        #quest_results = quest.results
+        #print(quest_results)
         eligible_quests = check_quest_eligibility(character, profile)
         serializer = QuestSerializer(eligible_quests, many=True)
         return JsonResponse({

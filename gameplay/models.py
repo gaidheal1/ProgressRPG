@@ -1,6 +1,6 @@
 from django.db import models, transaction
 from users.models import Person
-from django.utils.timezone import now
+from django.utils.timezone import now, timedelta
 from datetime import datetime
 import json
 
@@ -9,6 +9,9 @@ class Quest(models.Model):
     description = models.TextField(max_length=2000, blank = True)
     duration = models.PositiveIntegerField(default=0)  # Duration in minutes
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    stages = models.JSONField(default=list)
+
+    # Eligibility criteria
     is_premium = models.BooleanField(default=True)
     levelMin = models.IntegerField(default=0)
     levelMax = models.IntegerField(default=0)
@@ -29,6 +32,26 @@ class Quest(models.Model):
     def __str__(self):
         return f"Quest: {self.name}"
     
+    def apply_results(self, results, character):
+        """
+        Apply a list of quest results (key-value pairs) to the character.
+        """
+        actions = {
+            'xp': lambda char, value: char.add_xp(value),  # Call add_xp method
+            'coins': lambda char, value: setattr(char, 'coins', char.coins + value),
+            'role': lambda char, value: setattr(char, 'role', value),
+        }
+
+        for result in results:
+            for key, value in result.items():
+                handler = actions.get(key)
+                if handler:
+                    handler(character, value)  # Execute the handler
+                else:
+                    print(f"Warning: No handler for key '{key}'.")
+
+        character.save()  # Ensure all changes are persisted
+
     def requirements_met(self, completed_quests):
         """
         Check if all requirements are satisfied based on completed quests.
@@ -97,31 +120,45 @@ class Quest(models.Model):
         # Quest passed the test
         return True
     
-    def activate_next_stage(quest):
-        pass
+    
+
     
 class QuestResults(models.Model):
     quest = models.OneToOneField(Quest, on_delete=models.CASCADE, related_name='results')
-    rewards = models.JSONField(default=dict)
+    dynamic_rewards = models.JSONField(default=dict)
+    xp_reward = models.PositiveIntegerField(default=0)
+    coin_reward = models.IntegerField(default=0)
+    buffs = models.JSONField(default=list, blank=True)
 
     def __str__(self):
-        return f"Quest results for '{self.quest.name}': {json.dumps(self.rewards, indent=2)}"
+        return f"Quest results for Quest '{self.quest.id}': {json.dumps(self.rewards, indent=2)}"
 
-    def apply_to_character(self, character):
+    @transaction.atomic
+    def apply(self, person):
         """Apply rewards/results to a given character"""
-        for key, value in self.rewards.items():
-            if hasattr(character, key):
-                setattr(character, key, getattr(character, key) + value if isinstance(value, (int, float)) else value)
-        character.save()
+        if self.xp_reward > 0:
+            person.add_xp(self.xp_reward)
 
-class QuestStage(models.Model):
-    quest = models.ForeignKey(Quest, on_delete=models.CASCADE, related_name='stages')
-    order = models.IntegerField(default=0)
-    stage_time = models.IntegerField(default=0)
-    stage_text = models.TextField(default="Stage default text")
-    is_active = models.BooleanField(default=False)
-    is_completed = models.BooleanField(default=False)
-    unlock_time = models.PositiveIntegerField(default=0)
+        if self.coin_reward != 0:
+            person.add_coins(self.coin_reward)
+
+        for key, value in self.dynamic_rewards.items():
+            if hasattr(person, f"apply_{key}"):
+                method = getattr(person, f"apply_{key}")
+                method(value)
+            elif hasattr(person, key):
+                setattr(person, key, getattr(person, key) + value if isinstance(value, (int, float)) else value)
+
+        for buff_data in self.buffs:
+            buff = Buff.objects.create(
+                name=buff_data['name'],
+                duration= timedelta(seconds=buff_data['duration']),
+                amount=buff_data['amount'],
+                buff_type=buff_data['buff_type'],
+                attribute=buff_data['attribute'],
+            )
+            person.buffs.add(buff)
+        person.save()
 
 class QuestRequirement(models.Model):
     quest = models.ForeignKey(Quest, on_delete=models.CASCADE, related_name="quest_requirements")
@@ -137,6 +174,7 @@ class Activity(models.Model):
     name = models.CharField(max_length=255)
     duration = models.PositiveIntegerField(default=0)  # Time spent
     created_at = models.DateTimeField(auto_now_add=True)
+    xp_rate = models.FloatField(default=0.2)
     
     class Meta:
         ordering = ['-created_at'] # Most recent activities first
@@ -144,6 +182,14 @@ class Activity(models.Model):
     def addTime(self, num):
         self.duration += num
         self.save()
+
+    def calculate_xp_reward(self, person):
+        """
+        Calculate XP reward for this activity, considering buffs.
+        """
+        base_xp = self.duration * self.xp_rate
+        final_xp = person.apply_buffs(base_xp, 'xp')
+        return final_xp
 
     def __str__(self):
         return f"activity {self.name}, created {self.created_at}, duration {self.duration}, profile {self.profile.name}"
@@ -166,6 +212,7 @@ class Character(Person):
     current_quest = models.ForeignKey(Quest, on_delete=models.SET_NULL, blank=True, null=True)
     coins = models.PositiveIntegerField(default=0)
     role = models.CharField(max_length=50, default="Ne'er-do-well")
+    buffs = models.ManyToManyField('Buff', related_name='characters', blank=True)
 
     def __str__(self):
         return self.name if self.name else "Unnamed character"
@@ -174,6 +221,7 @@ class Character(Person):
         self.current_quest = quest
         self.save()
 
+    @transaction.atomic
     def complete_quest(self):
         if not self.current_quest:
             raise ValueError("No active quest.")
@@ -188,6 +236,8 @@ class Character(Person):
                 completion.save()
         self.current_quest = None
         self.total_quests += 1
+        # ??? fix when sorting out new rewards
+        # self.add_xp(quest.results.xp)
         self.save()
 
 class QuestCompletion(models.Model):
@@ -251,3 +301,32 @@ class QuestTimer(Timer):
 
     def __str__(self):
         return f"QuestTimer for profile {self.character.name}: duration {self.duration}, started {self.start_time}, {self.elapsed_time} elapsed"
+    
+
+class Buff(models.Model):
+    BUFF_TYPE_CHOICES = [
+        ('additive', 'Additive'),
+        ('multiplicative', 'Multiplicative'),
+    ]
+
+    name = models.CharField(max_length=100, default="Default buff name")
+    attribute = models.CharField(max_length=50, default="Default buff attribute")
+    duration = models.PositiveIntegerField(default=0)
+    amount = models.FloatField(null=True, blank=True)
+    buff_type = models.CharField(max_length=20, choices=BUFF_TYPE_CHOICES, default='additive')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_active(self):
+        """Check if buff is still active."""
+        return now() < self.created_at + self.duration
+    
+    def calc_value(self, total_value):
+        if self.is_active():
+            if self.buff_type == 'additive':
+                total_value += self.amount
+            elif self.buff_type == 'multiplicative':
+                total_value *= self.amount
+        return int(total_value)
+    
+
+                    

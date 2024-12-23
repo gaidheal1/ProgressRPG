@@ -1,6 +1,7 @@
 from django.forms import BaseModelForm
 from django.http import HttpResponse
 from django.urls import reverse_lazy
+from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
@@ -23,6 +24,7 @@ def index_view(request):
 
 
 # Login view
+@transaction.atomic
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
@@ -69,6 +71,7 @@ class RegisterView(CreateView):
         else: print('Authentication failed')
         return redirect(self.success_url)
     
+@transaction.atomic
 def register_view(request):
     if request.user.is_authenticated:
         return redirect('game')
@@ -77,17 +80,17 @@ def register_view(request):
         if form.is_valid():
             new_user = form.save()
             
-            print(new_user)
+            #print(new_user)
             username = form.cleaned_data.get('username')
             messages.success(request, f'Account created for {username}!')
             new_user = authenticate(
                 username = form.cleaned_data.get('username'),
                 password = form.cleaned_data.get('password1')
             )
-            print(new_user)
+            #print(new_user)
             
             if new_user is None:
-                print('Authentication failed')
+                #print('Authentication failed')
                 return redirect('login')
             login(request, new_user)
             return redirect('create_profile')
@@ -97,6 +100,7 @@ def register_view(request):
 
 
 # Create profile view
+@transaction.atomic
 @login_required
 def create_profile_view(request):
     profile = Profile.objects.get(user=request.user)
@@ -111,6 +115,7 @@ def create_profile_view(request):
         form = ProfileForm(instance=profile)
     return render(request, 'users/create_profile.html', {'form': form})
 
+@transaction.atomic
 @login_required
 def create_character_view(request):
     if request.method == "POST":
@@ -140,6 +145,7 @@ def profile_view(request):
 
 
 # Edit profile view
+@transaction.atomic
 @login_required
 def edit_profile_view(request):
     profile = Profile.objects.get(user=request.user)
@@ -153,6 +159,7 @@ def edit_profile_view(request):
     return render(request, 'users/edit_profile.html', {'form': form})
 
 # Download user data
+@transaction.atomic
 @login_required
 def download_user_data(request):
     user = request.user
@@ -192,6 +199,7 @@ def download_user_data(request):
 
 
 @login_required
+@transaction.atomic
 def delete_account(request):
     if request.method == "POST":
         user = request.user
