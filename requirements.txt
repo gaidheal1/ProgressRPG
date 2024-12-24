@@ -1,7 +1,7 @@
 asgiref==3.8.1
 certifi==2024.8.30
 charset-normalizer==3.4.0
-Django==4.2.15
+Django==4.2.17
 django-allauth==64.2.1
 django-environ==0.11.2
 django-stubs==5.1.1
