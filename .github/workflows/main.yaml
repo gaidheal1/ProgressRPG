@@ -31,7 +31,7 @@ jobs:
 
     - name: Run Tests
       run: |
-        pytest
+        python manage.py test
 
   deploy:
     needs: build
