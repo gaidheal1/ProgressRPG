@@ -8,11 +8,6 @@
 
     <p><strong>Bio:</strong> {{ profile.bio }}</p>
 
-    {% if profile.profile_picture %}
-        <img src="{{ user.player.profile_picture.url }}" alt="Profile Picture" style="max-width: 150px; max-height: 150px; object-fit: cover;">
-    {% else %}
-        <p>No profile picture uploaded.</p>
-    {% endif %}
     <br>
     <div>
         <div>

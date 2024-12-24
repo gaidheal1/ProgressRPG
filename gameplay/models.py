@@ -7,7 +7,7 @@ import json
 class Quest(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(max_length=2000, blank = True)
-    duration = models.PositiveIntegerField(default=0)  # Duration in minutes
+    duration = models.PositiveIntegerField(default=1)  # Duration in seconds
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     stages = models.JSONField(default=list)
 
@@ -18,7 +18,7 @@ class Quest(models.Model):
     canRepeat = models.BooleanField(default=False)
 
     class Frequency(models.TextChoices):
-        NONE = 'NONE', 'No repeat'
+        NONE = 'NONE', 'No limit'
         DAILY = 'DAY', 'Daily'
         WEEKLY = 'WEEK', 'Weekly'
         MONTHLY = 'MONTH', 'Monthly'
@@ -32,24 +32,8 @@ class Quest(models.Model):
     def __str__(self):
         return f"Quest: {self.name}"
     
-    def apply_results(self, results, character):
-        """
-        Apply a list of quest results (key-value pairs) to the character.
-        """
-        actions = {
-            'xp': lambda char, value: char.add_xp(value),  # Call add_xp method
-            'coins': lambda char, value: setattr(char, 'coins', char.coins + value),
-            'role': lambda char, value: setattr(char, 'role', value),
-        }
-
-        for result in results:
-            for key, value in result.items():
-                handler = actions.get(key)
-                if handler:
-                    handler(character, value)  # Execute the handler
-                else:
-                    print(f"Warning: No handler for key '{key}'.")
-
+    def apply_results(self, character):
+        self.results.apply(character)
         character.save()  # Ensure all changes are persisted
 
     def requirements_met(self, completed_quests):
@@ -86,17 +70,21 @@ class Quest(models.Model):
             for completion in completions:
                 if completion.character == character:
                     lastCompleted = completion.last_completed
+                    #print("lastCompleted:", lastCompleted)
 
                     if self.frequency == 'DAY':
+                        #print("we are here :D")
                         todayDate = int(today.strftime('%d'))
                         lastCompletedDate = int(lastCompleted.strftime('%d'))    
+                        #print("lastCompletedDate:", lastCompletedDate)
                         if todayDate == lastCompletedDate:
+                            #print("should only happen once")
                             return False
                         
                     elif self.frequency == 'WEEK':
                         dateDiff = today-lastCompleted
                         if dateDiff.days < 7:
-                            if today.weekday() >= lastCompletedDate.weekday():
+                            if today.weekday() >= lastCompleted.weekday():
                                 return False
 
                     elif self.frequency == 'MONTH':
@@ -106,7 +94,6 @@ class Quest(models.Model):
                             lastCompletedDate = int(lastCompleted.strftime('%d'))
                             if todayDate >= lastCompletedDate:
                                 return False
-
         return True
     
     def checkEligible(self, character, profile):
@@ -119,8 +106,6 @@ class Quest(models.Model):
             return False
         # Quest passed the test
         return True
-    
-    
 
     
 class QuestResults(models.Model):
@@ -131,7 +116,7 @@ class QuestResults(models.Model):
     buffs = models.JSONField(default=list, blank=True)
 
     def __str__(self):
-        return f"Quest results for Quest '{self.quest.id}': {json.dumps(self.rewards, indent=2)}"
+        return f"Quest results for Quest '{self.quest.id}': {json.dumps(self.dynamic_rewards, indent=2)}"
 
     @transaction.atomic
     def apply(self, person):
@@ -140,7 +125,8 @@ class QuestResults(models.Model):
             person.add_xp(self.xp_reward)
 
         if self.coin_reward != 0:
-            person.add_coins(self.coin_reward)
+            #person.add_coins(self.coin_reward)
+            person.coins += self.coin_reward
 
         for key, value in self.dynamic_rewards.items():
             if hasattr(person, f"apply_{key}"):
@@ -149,15 +135,19 @@ class QuestResults(models.Model):
             elif hasattr(person, key):
                 setattr(person, key, getattr(person, key) + value if isinstance(value, (int, float)) else value)
 
-        for buff_data in self.buffs:
-            buff = Buff.objects.create(
-                name=buff_data['name'],
-                duration= timedelta(seconds=buff_data['duration']),
-                amount=buff_data['amount'],
-                buff_type=buff_data['buff_type'],
-                attribute=buff_data['attribute'],
+        #print("self.buffs:", self.buffs)
+        for buff_name in self.buffs:
+            #print("buff_name:", buff_name)
+            buff = Buff.objects.get(name=buff_name)
+            #print("questresults apply method, buff:", buff)
+            applied_buff = AppliedBuff.objects.create(
+                name=buff.name,
+                duration= buff.duration,
+                amount=buff.amount,
+                buff_type=buff.buff_type,
+                attribute=buff.attribute,
             )
-            person.buffs.add(buff)
+            person.buffs.add(applied_buff)
         person.save()
 
 class QuestRequirement(models.Model):
@@ -179,7 +169,7 @@ class Activity(models.Model):
     class Meta:
         ordering = ['-created_at'] # Most recent activities first
 
-    def addTime(self, num):
+    def add_time(self, num):
         self.duration += num
         self.save()
 
@@ -229,22 +219,21 @@ class Character(Person):
         with transaction.atomic():
             completion, created = QuestCompletion.objects.get_or_create(
                 character=self,
-                quest=self.current_quest
+                quest=self.current_quest,
+                last_completed=now()
             )
             if not created:
                 completion.times_completed += 1
-                completion.save()
+            completion.save()
         self.current_quest = None
         self.total_quests += 1
-        # ??? fix when sorting out new rewards
-        # self.add_xp(quest.results.xp)
         self.save()
 
 class QuestCompletion(models.Model):
     character = models.ForeignKey(Character, on_delete=models.CASCADE)
     quest = models.ForeignKey('gameplay.Quest', on_delete=models.CASCADE, related_name='quest_completions')
     times_completed = models.PositiveIntegerField(default=1)
-    last_completed = models.DateTimeField(auto_now=True)
+    last_completed = models.DateTimeField()
     
     def __str__(self):
         return f"character {self.character.name} has done quest {self.quest.name} {self.times_completed} times"
@@ -316,9 +305,18 @@ class Buff(models.Model):
     buff_type = models.CharField(max_length=20, choices=BUFF_TYPE_CHOICES, default='additive')
     created_at = models.DateTimeField(auto_now_add=True)
 
+class AppliedBuff(Buff):
+    applied_at = models.DateTimeField(auto_now_add=True)
+    # How do you include setup method as part of creation? Signal?
+
+    def setup(self):
+        end_time = now() + timedelta(seconds=self.duration)
+        ends_at = models.DateTimeField(end_time)
+        self.save()
+
     def is_active(self):
         """Check if buff is still active."""
-        return now() < self.created_at + self.duration
+        return now() < self.applied_at + timedelta(seconds=self.duration)
     
     def calc_value(self, total_value):
         if self.is_active():
@@ -326,7 +324,4 @@ class Buff(models.Model):
                 total_value += self.amount
             elif self.buff_type == 'multiplicative':
                 total_value *= self.amount
-        return int(total_value)
-    
-
-                    
+        return total_value

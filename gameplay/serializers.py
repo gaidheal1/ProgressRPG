@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from .models import Quest, Activity
+from .models import Quest, Activity, Character
+
+
+class CharacterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Character
+        fields = ['id', 'name', 'xp', 'level', 'total_quests']
+
 
 class QuestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,3 +18,4 @@ class ActivitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = ['id', 'name', 'duration', 'created_at', 'profile']
+

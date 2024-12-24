@@ -40,6 +40,7 @@ function updateUI() {
   
   fetchActivities();
   fetchQuests();
+  fetchInfo();
 }
 
 class Quest {
@@ -483,6 +484,35 @@ async function fetchQuests() {
         </label><br>`;
       questList.appendChild(li);
     });
+  } catch (e) {
+    console.error('There was a problem:', e);
+  }
+}
+
+// Fetch player & char info
+async function fetchInfo() {
+  try {
+    const response = await fetch('/fetch_info/', {
+      method: 'GET',
+    });
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    const data = JSON.parse(data);
+    // Gotta check this is working when I can access websites again! :O
+    console.log(data);
+    const character = data.character;
+    const profile = data.profile;
+    document.getElementById('player-name').innerText = profile.name
+    document.getElementById('player-xp').innerText = profile.xp
+    document.getElementById('player-xp-next').innerText = data.profile_xp_next
+    document.getElementById('player-level').innerText = profile.level
+
+    document.getElementById('character-name').innerText = character.name
+    document.getElementById('character-xp').innerText = character.xp
+    document.getElementById('character-xp-next').innerText = data.character_xp_next
+    document.getElementById('character-level').innerText = character.level
   } catch (e) {
     console.error('There was a problem:', e);
   }

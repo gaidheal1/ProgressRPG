@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.db import transaction
 from django.utils import timezone
 from .models import Quest, Activity, QuestCompletion, Character, ActivityTimer, QuestTimer
-from .serializers import ActivitySerializer, QuestSerializer
+from .serializers import ActivitySerializer, QuestSerializer, CharacterSerializer
 from users.serializers import ProfileSerializer
 from .utils import check_quest_eligibility
 import json
@@ -53,9 +53,9 @@ def game_view(request):
             'profile': profile,
             'character': character,
             'activities': activities,
-            
             'questTimer': questTimer,
         })
+
 
 # Fetch activities
 @login_required
@@ -70,7 +70,6 @@ def fetch_activities(request):
     activitiesJson = json.dumps(serializer.data)
     return JsonResponse(activitiesJson, safe=False)
 
-
 # Fetch quests
 @login_required
 def fetch_quests(request):
@@ -81,6 +80,25 @@ def fetch_quests(request):
     serializer = QuestSerializer(eligible_quests, many=True)
     questsJson = json.dumps(serializer.data)
     return JsonResponse(questsJson, safe=False)
+
+# Fetch info
+@login_required
+def fetch_info(request):
+    profile = request.user.profile
+    profile_xp_next = profile.get_xp_for_next_level()
+    character = Character.objects.get(profile=profile)
+    character_xp_next = character.get_xp_for_next_level()
+    profile_serializer = ProfileSerializer(profile)
+    character_serializer = CharacterSerializer(character)
+    profileJson = json.dumps(profile_serializer.data)
+    charJson = json.dumps(character_serializer.data)
+    info = {
+        "character": charJson,
+        "character_xp_next": character_xp_next,
+        "profile": profileJson,
+        "profile_xp_next": profile_xp_next,
+    }
+    return JsonResponse(info, safe=False)
 
 
 # Choose quest AJAX

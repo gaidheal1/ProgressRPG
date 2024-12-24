@@ -14,6 +14,7 @@ urlpatterns = [
     path('quest_completed/', views.quest_completed, name='quest_completed'),
     path('fetch_quests/', views.fetch_quests, name='fetch_quests'),
     path('fetch_activities/', views.fetch_activities, name='fetch_activities'),
+    path('fetch_info/', views.fetch_info, name='fetch_info'),
     path('get_timer_state/', views.get_timer_state, name='get_timer_state'),
 ]
 

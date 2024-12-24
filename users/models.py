@@ -33,6 +33,7 @@ class CustomUser(AbstractUser):
 class Person(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     xp = models.PositiveIntegerField(default=0)
+    xp_modifier = models.FloatField(default=1)
     level = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -73,15 +74,14 @@ class Person(models.Model):
 class Profile(Person):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     bio = models.TextField(max_length=1000, blank=True)
-    profile_picture = models.ImageField(upload_to='users/profile_pics/', null=True, blank=True)
     total_time = models.IntegerField(default=0)
     total_activities = models.IntegerField(default=0)
-    current_activity = models.ForeignKey('gameplay.activity', blank=True, null=True, on_delete=models.CASCADE, related_name='profile_current_activity')
+    current_activity = models.ForeignKey('gameplay.Activity', blank=True, null=True, on_delete=models.CASCADE, related_name='profile_current_activity')
     is_premium = models.BooleanField(default=False)
     last_login = models.DateTimeField(auto_now=True)
     login_streak = models.PositiveIntegerField(default=1)
     login_streak_max = models.PositiveIntegerField(default=1)
-    buffs = models.ManyToManyField('gameplay.Buff', related_name='profiles', blank=True)
+    buffs = models.ManyToManyField('gameplay.AppliedBuff', related_name='profiles', blank=True)
 
     ONBOARDING_STEPS = [
         (0, "Not started"),
