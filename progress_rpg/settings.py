@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import environ
+import os
 
 # Initialise environment variables
 env = environ.Env()
@@ -83,7 +84,7 @@ WSGI_APPLICATION = 'progress_rpg.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': env.db(), # Using DATABASE_URL from the .env
+    'default': env.db('DATABASE_URL'), # Using DATABASE_URL from the .env
 }
 
 
@@ -122,9 +123,10 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = Path('/app/staticfiles')
+STATICFILES_DIRS = [Path(BASE_DIR / 'static')]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -135,13 +137,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Email settings
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'mail.privateemail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'admin@progressrpg.com'
-EMAIL_HOST_PASSWORD = 'Treat-Banking2-Overdue'
+EMAIL_HOST_PASSWORD = 'pwd'
 DEFAULT_FROM_EMAIL = 'admin@progressrpg.com'
 
 # Optionally, configure for error emails

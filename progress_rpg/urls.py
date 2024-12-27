@@ -30,7 +30,7 @@ urlpatterns = [
     path('', include('gameplay.urls')),
     path('', include('payments.urls')),
     path('', TemplateView.as_view(template_name='users/index.html'), name='index'),  # Add a path for the index page
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 """ # Serve media files during development
 if settings.DEBUG:

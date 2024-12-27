@@ -250,6 +250,33 @@ function formatDuration(seconds) {
   return formattedDuration;
 }
 
+
+// Start an activity timer
+async function createActivityTimer() {
+  try {
+    const activityInput = document.getElementById('activity-input');
+    const response = await fetch("/create_activity_timer/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ activityName: activityInput.value })
+    })
+    const data = await response.json();
+    
+    if (data.success) {
+      window.activitySelected = true;
+      //console.log('Activity ready')
+      startTimerIfReady();
+      document.getElementById('start-activity-btn').setAttribute("disabled", true);
+      document.getElementById('stop-activity-btn').removeAttribute("disabled");
+    }
+  } catch(e) {
+    console.error('Error:', e);
+  };
+}
+
+
 // Select quest
 async function chooseQuest(event) {
   event.preventDefault();
@@ -291,60 +318,6 @@ async function chooseQuest(event) {
   
 };
 
-// Fetch eligible activities
-async function fetchActivities() {
-  try {
-    const response = await fetch('/fetch_activities/', {
-      method: 'GET',
-    });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    const data = await response.json();
-    const activities = JSON.parse(data);
-    const activityList = document.getElementById('activity-list');
-    activityList.innerHTML = '';
-    
-    let activitiesNumber = 0;
-    let activitiesTime = 0;
-    activities.forEach(activity => {
-      activitiesNumber += 1;
-      activitiesTime += activity.duration;
-      const li = document.createElement('li');
-      li.textContent = `${activity.name} - ${formatDuration(activity.duration)}`;
-      activityList.appendChild(li);
-    });
-    document.getElementById('activity-totals').innerText = `Total time today: ${formatDuration(activitiesTime)}; total activites today: ${activitiesNumber}`
-  } catch (e) {
-    console.error('There was a problem:', e);
-  }
-}
-
-// Start an activity timer
-async function createActivityTimer() {
-  try {
-    const activityInput = document.getElementById('activity-input');
-    const response = await fetch("/create_activity_timer/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ activityName: activityInput.value })
-    })
-    const data = await response.json();
-    
-    if (data.success) {
-      window.activitySelected = true;
-      //console.log('Activity ready')
-      startTimerIfReady();
-      document.getElementById('start-activity-btn').setAttribute("disabled", true);
-      document.getElementById('stop-activity-btn').removeAttribute("disabled");
-    }
-  } catch(e) {
-    console.error('Error:', e);
-  };
-}
-
 
 // Start timers when both activity and quest are selected
 function startTimerIfReady() {
@@ -361,6 +334,8 @@ function startTimerIfReady() {
   }
 }
 
+
+
 // Start an activity timer
 async function startActivityTimer() {
   const response = await fetch("/start_activity_timer/", {method: "POST"});
@@ -373,9 +348,24 @@ async function stopActivityTimer() {
   stopQuestTimer()
   const response = await fetch("/stop_activity_timer/", {method: "POST"});
   const data = await response.json();
-  
+}
+
+// Start a quest timer
+async function startQuestTimer() {
+  const response = await fetch("/start_quest_timer/", {method: "POST"});
+  const data = await response.json();
+  //console.log("Remaining time:", data.remaining_time)
+}
+
+// Stop a quest timer
+async function stopQuestTimer() {
+  window.questTimer.stop()
+  const response = await fetch("/stop_quest_timer/", {method: "POST"});
+  const data = await response.json();
   //console.log("Elapsed time: ", data.elapsed_time);
 }
+
+
 
 // Submit an activity
 async function submitActivity(event) {
@@ -415,20 +405,7 @@ function addActivityToList(activity) {
 };
 
 
-// Start a quest timer
-async function startQuestTimer() {
-  const response = await fetch("/start_quest_timer/", {method: "POST"});
-  const data = await response.json();
-  //console.log("Remaining time:", data.remaining_time)
-}
 
-// Stop a quest timer
-async function stopQuestTimer() {
-  window.questTimer.stop()
-  const response = await fetch("/stop_quest_timer/", {method: "POST"});
-  const data = await response.json();
-  //console.log("Elapsed time: ", data.elapsed_time);
-}
 
 // Submit quest
 async function submitQuest() {
@@ -461,6 +438,37 @@ async function submitQuest() {
 }
 
 
+
+
+// Fetch activities
+async function fetchActivities() {
+  try {
+    const response = await fetch('/fetch_activities/', {
+      method: 'GET',
+    });
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    const activities = JSON.parse(data);
+    const activityList = document.getElementById('activity-list');
+    activityList.innerHTML = '';
+    
+    let activitiesNumber = 0;
+    let activitiesTime = 0;
+    activities.forEach(activity => {
+      activitiesNumber += 1;
+      activitiesTime += activity.duration;
+      const li = document.createElement('li');
+      li.textContent = `${activity.name} - ${formatDuration(activity.duration)}`;
+      activityList.appendChild(li);
+    });
+    document.getElementById('activity-totals').innerText = `Total time today: ${formatDuration(activitiesTime)}; total activites today: ${activitiesNumber}`
+  } catch (e) {
+    console.error('There was a problem:', e);
+  }
+}
+
 // Fetch eligible quests
 async function fetchQuests() {
   try {
@@ -489,6 +497,7 @@ async function fetchQuests() {
   }
 }
 
+
 // Fetch player & char info
 async function fetchInfo() {
   try {
@@ -498,8 +507,8 @@ async function fetchInfo() {
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
-    const data = await response.json();
-    const data = JSON.parse(data);
+    const stuff = await response.json();
+    data = JSON.parse(stuff);
     // Gotta check this is working when I can access websites again! :O
     console.log(data);
     const character = data.character;

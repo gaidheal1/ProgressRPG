@@ -1,4 +1,7 @@
 db.sqlite3
 venv
+venv-windows
+venv-linux
 __pycache__/
 .env
+.dockerignore
