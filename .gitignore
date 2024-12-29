@@ -4,4 +4,6 @@ venv-windows
 venv-linux
 __pycache__/
 .env
+env.env
+node_modules
 .dockerignore

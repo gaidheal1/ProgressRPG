@@ -1,0 +1,21 @@
+
+nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: stretch;
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding: 1rem 0;
+    text-align: center;
+
+
+    nav a {
+        color: #fff;
+        margin: 0 10px;
+        text-decoration: none;
+    }
+}
