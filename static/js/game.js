@@ -19,14 +19,17 @@ function setupEventListeners() {
   document.getElementById("start-activity-btn").addEventListener("click", createActivityTimer);
   document.getElementById("stop-activity-btn").addEventListener("click", submitActivity);
   document.getElementById('choose-quest-form').addEventListener('submit', chooseQuest);
-  document.getElementById('show-rewards-btn').addEventListener('click', showRewards);
   document.getElementById('show-quests-btn').addEventListener('click', showQuests);
   
+  const stopButton = document.getElementById("stop-activity-btn");
+  stopButton.addEventListener("click", submitActivity);
+  stopButton.classList.add("hidden");
+
   // Timer event listeners
   window.activityTimer.on('stopped', onActivityTimerStopped);
   //window.activityTimer.on('completed', onActivityTimerCompleted);
   window.questTimer.on('stopped', onQuestTimerStopped);
-  window.questTimer.on('completed', onQuestTimerCompleted)
+  window.questTimer.on('completed', onQuestTimerCompleted); 
 }
 
 function updateUI() {
@@ -302,6 +305,8 @@ async function chooseQuest(event) {
 
     const data = await response.json();
     if (data.success) {
+      document.getElementById('quest-rewards').setAttribute("hidden", true);
+
       window.currentQuest = new Quest(data.questId, data.questName, data.questDescription, data.questDuration, data.questStages);
       window.currentQuest.initialDisplay();
       window.questSelected = true;
@@ -425,10 +430,9 @@ async function submitQuest() {
     const rewardsList = document.getElementById('quest-rewards-list');
     console.log('quest xp reward:', data.xp_reward)
     rewardsList.innerHTML = `<li>${data.xp_reward} xp</li>`
-
+    document.getElementById('quest-rewards').removeAttribute("hidden");
     window.questSelected = false;
-    document.getElementById('show-rewards-btn').removeAttribute("hidden");
-
+    
     // Fetch updated list of eligible quests
     fetchQuests();
 
@@ -436,7 +440,6 @@ async function submitQuest() {
     console.error('There was a problem:', e);
   }
 }
-
 
 
 
@@ -527,13 +530,7 @@ async function fetchInfo() {
   }
 }
 
-function showRewards() {
-  document.getElementById('show-rewards-btn').setAttribute("hidden", true);
-  document.getElementById('quest-rewards').removeAttribute("hidden");
-}
-
 function showQuests() {
-  document.getElementById('quest-rewards').setAttribute("hidden", true);
   document.getElementById('choose-quest').removeAttribute("hidden");
 }
 
@@ -544,3 +541,4 @@ async function checkTimers() {
   //console.log("Activity Timer: ", data.activity_timer.elapsed_time);
   //console.log("Quest Timer: ", data.quest_timer.remaining_time);
 }
+

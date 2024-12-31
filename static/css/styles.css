@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /* _reset.scss */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -24,21 +25,35 @@ h1, h2, h3 {
 /* _global.scss */
 a {
   text-decoration: none;
-  color: #3498db;
+  color: #007a32;
 }
 a:hover {
-  color: #2ecc71;
+  color: #e7fff1;
 }
 
 /* Button */
-button {
+.button-frame {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  gap: 10px;
+  width: 100%;
+  /* Inside auto layout */
+  flex: none;
+  order: 2;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.button-filled {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 0px;
   gap: 8px;
-  width: 187px;
+  padding: 4px 8px;
   height: 40px;
   background: #006128;
   border-radius: 100px;
@@ -46,11 +61,931 @@ button {
   flex: none;
   order: 0;
   flex-grow: 0;
+  font-weight: 500;
+  /* identical to box height, or 143% */
+  text-align: center;
+  letter-spacing: 0.1px;
+  /* M3/sys/light/on-primary */
+  color: #FFFFFF;
+  &:hover {
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+  }
 }
 
-&.hover {
-  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-  border-radius: 100px;
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  flex: none;
+}
+
+/* Timer frame */
+.timer-frame {
+  box-sizing: border-box;
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 12px;
+  gap: 10px;
+  border: 1px solid #007A33;
+  border-radius: 8px;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+}
+
+/* Timer text */
+.timer-text {
+  /* M3/title/medium */
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 24px;
+  /* identical to box height, or 150% */
+  display: flex;
+  align-items: center;
+  text-align: center;
+  letter-spacing: 0.15px;
+  color: #000000;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+/* Text field
+
+Use a text field when someone needs to enter text into a UI, such as filling in contact or payment information.
+
+🛠 Additional options
+Support text - you can toggle supporting text between hide and show.
+*/
+.input-div {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  isolation: isolate;
+  width: 300px;
+  height: 56px;
+  border-radius: 4px 4px 0px 0px;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.field-div {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 10px;
+  background: #E8FFF1;
+  border-radius: 4px 4px 0px 0px;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 1;
+  z-index: 0;
+}
+
+header {
+  display: flex;
+  width: 100%;
+}
+header nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-self: stretch;
+  padding: 8px 16px;
+  justify-content: space-between;
+  width: 100%;
+  background: #FFFFFF;
+}
+header nav button > a {
+  color: #fff;
+  margin: 0 10px;
+  text-decoration: none;
+  font-size: 20px;
+}
+header nav .icons {
+  flex-direction: row;
+  align-items: center;
+  align-self: stretch;
+  justify-content: space-between;
+  padding: 16px;
+  gap: 113px;
+  width: 100%;
+  /* Inside auto layout */
+  flex: none;
+  flex-grow: 0;
+}
+header nav .icons .icon {
+  width: 36px;
+  height: 36px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: inline-block;
+}
+header nav .right-links, header nav .left-links {
+  flex-direction: row;
+  align-items: center;
+  align-self: stretch;
+  gap: 16px;
+  margin: 0 8px;
+  font-size: 20px;
+}
+header nav .left-links {
+  justify-content: flex-start;
+}
+header nav .right-links {
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  nav .icons {
+    display: flex;
+  }
+  nav .right-links, nav .left-links {
+    display: none;
+  }
+}
+@media (min-width: 769px) {
+  nav .right-links, nav .left-links {
+    display: flex;
+  }
+  nav .icons {
+    display: none;
+  }
+}
+/* _footer.scss */
+footer {
+  display: flex;
+  text-align: center;
+  margin-top: 20px;
+  background: #fff;
+  color: #007a32;
+  /* Auto layout */
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 64px;
+  gap: 28px;
+  width: 100%;
+  max-width: 100%;
+  align-self: stretch;
+}
+footer a {
+  color: #fff;
+  margin: 0 10px;
+  text-decoration: none;
+}
+
+/* Navigation Drawer */
+.nav-drawer {
+  position: fixed;
+  top: 0;
+  left: -250px; /* Hidden by default */
+  width: 250px;
+  height: 100%;
+  background: #ffffff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  transition: transform 0.3s ease-out;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-drawer.open {
+  transform: translateX(250px); /* Slides in */
+}
+
+.nav-drawer-header {
+  padding: 16px;
+  background: #e7fff1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.nav-drawer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-drawer-links li {
+  padding: 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+.nav-drawer-links a {
+  text-decoration: none;
+  color: #333;
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out;
+}
+
+.overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Button to Open Drawer */
+.open-drawer-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1500;
+}
+
+.home-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  background: #fff;
+  width: 90%;
+  gap: 32px;
+}
+.home-content .home-header {
+  font-size: 24px;
+  text-align: center;
+}
+.home-content .home-main {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.home-content .home-main .home-intro {
+  display: flex;
+  flex-direction: column;
+  font-size: text-20-font-size;
+}
+.home-content .home-main .home-intro ul {
+  text-align: left;
+  list-style-type: disc;
+  gap: 8px;
+}
+.home-content .home-main .home-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Content */
+#gameplay-container {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px;
+  gap: 8px;
+  width: 100%;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+@media (max-width: 768px) {
+  #gameplay-container {
+    max-width: 550px;
+  }
+}
+@media (min-width: 769px) {
+  #gameplay-container {
+    max-width: 1200px;
+  }
+}
+/* Game content */
+#game-content {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  align-content: flex-start;
+  padding: 0px;
+  gap: 8px;
+  width: 100%;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+@media (max-width: 768px) {
+  #game-content {
+    max-width: 100%;
+  }
+}
+@media (min-width: 769px) {
+  #game-content {
+    max-width: 1200px;
+  }
+}
+.game-section {
+  box-sizing: border-box;
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 16px;
+  gap: 8px;
+  min-width: 280px;
+  background: #E8FFF1;
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  border-radius: 8px;
+  /* Inside auto layout */
+  flex: 1;
+  flex-grow: 1;
+  align-self: stretch;
+}
+
+@media (max-width: 768px) {
+  .game-section {
+    width: 100%;
+  }
+}
+#activity-section {
+  order: 0;
+}
+
+#activity-section > * {
+  display: flex;
+}
+
+/* Quest content */
+#quest-section {
+  order: 1;
+}
+
+#activity-top-bar {
+  order: 0;
+}
+
+#current-activity-section {
+  order: 1;
+}
+
+#activity-input-div {
+  order: 2;
+}
+
+#activity-buttons {
+  order: 3;
+}
+
+#today-activities {
+  order: 4;
+}
+
+/* Game Section top bar */
+.section-top-bar {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0px;
+  gap: 10px;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+/* Section status */
+.section-status {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 0px;
+  gap: 10px;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+/* Section status header : */
+.section-status-header {
+  /* M3/title/large */
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 28px;
+  /* identical to box height, or 127% */
+  display: flex;
+  align-items: center;
+  color: #000000;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+/* Section status message */
+.section-status-message {
+  height: 28px;
+  /* M3/title/large */
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 28px;
+  /* identical to box height, or 127% */
+  display: flex;
+  align-items: center;
+  color: #000000;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+}
+
+/* Current thing */
+.current-item {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0px;
+  gap: 10px;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+  /* M3/title/small */
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  /* identical to box height, or 143% */
+  letter-spacing: 0.1px;
+  color: #000000;
+}
+
+/* Button frame */
+/* Frame 59 
+#ident {
+	/* Auto layout 
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	padding: 4px 8px;
+	gap: 10px;
+
+	//width: 203px;
+	height: 48px;
+
+	filter: drop-shadow(4px 3px 4px rgba(0, 0, 0, 0.25));
+	border-radius: 8px;
+
+	/* Inside auto layout 
+	flex: none;
+	order: 0;
+	flex-grow: 0;
+}
+
+*/
+/* Button
+
+Buttons communicate actions that users can take. They are typically placed throughout your UI, in places like Dialogs, Modal windows, Forms, Cards and Toolbars
+
+Filled buttons are high-emphasis buttons.
+They have the most visual impact after the FAB, and should be used for important, final actions that complete a flow, like &quot;Save&quot;, &quot;Join now&quot;, or &quot;Confirm&quot;.
+*/
+/* state-layer 
+#ident {
+	/* Auto layout 
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	padding: 10px 24px;
+	gap: 8px;
+
+	//width: 187px;
+	height: 40px;
+
+	/* M3/state-layers/light/on-primary/opacity-0.08 
+	background: rgba(255, 255, 255, 0.08);
+
+	/* Inside auto layout 
+	flex: none;
+	order: 0;
+	align-self: stretch;
+	flex-grow: 1;
+}
+*/
+#quest-list {
+  list-style-type: none;
+}
+
+/* Quest: */
+#ident {
+  /* M3/title/large */
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 28px;
+  /* identical to box height, or 127% */
+  display: flex;
+  align-items: center;
+  color: #000000;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+/* Quest display */
+#ident {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 0px;
+  gap: 10px;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+/* Frame 53 */
+#ident {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  gap: 10px;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+/* Active quest: 
+#ident {
+	//width: 83px;
+	//height: 20px;
+
+	/* M3/title/small 
+
+
+	font-weight: 500;
+	font-size: 14px;
+	line-height: 20px;
+	/* identical to box height, or 143% 
+	display: flex;
+	align-items: center;
+	letter-spacing: 0.1px;
+
+	color: #000000;
+
+
+	/* Inside auto layout 
+	flex: none;
+	order: 0;
+	flex-grow: 0;
+}
+
+/* Searching for scraps 
+#ident {
+	//width: 132px;
+	//height: 20px;
+
+	/* M3/title/small 
+
+
+	font-weight: 500;
+	font-size: 14px;
+	line-height: 20px;
+	/* identical to box height, or 143% 
+	display: flex;
+	align-items: center;
+	letter-spacing: 0.1px;
+
+	color: #000000;
+
+
+	/* Inside auto layout 
+	flex: none;
+	order: 1;
+	flex-grow: 0;
+}
+*/
+/* Frame 57 */
+#ident {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  gap: 10px;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+/* Description of the quest. This goes on for a little while, but not too long or the player will get bored. */
+#ident {
+  /* M3/body/medium */
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  /* or 143% */
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.25px;
+  color: #000000;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 1;
+}
+
+/* Quest stages */
+#ident {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 0px;
+  gap: 10px;
+  /* Inside auto layout */
+  flex: none;
+  order: 2;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+/* Quest stages header */
+#ident {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  gap: 10px;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+* {
+  max-width: 100%;
+}
+
+html {
+  display: flex;
+  width: 100vw;
+}
+
+.hidden {
+  display: none; /* Completely removes the button from layout */
+}
+
+body {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px;
+  gap: 8px;
+  position: relative;
+  width: 100%;
+  min-width: 260px;
+  background: #FFFFFF;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 1;
+}
+
+@media (max-width: 450px) {
+  body {
+    max-width: 450px;
+  }
+}
+main {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Top infobar */
+#info-bar {
+  box-sizing: border-box;
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 12px;
+  max-width: 1200px;
+  height: 64px;
+  background: #E8FFF1;
+  border-radius: 0px 0px 8px 8px;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+@media (max-width: 450px) {
+  #info-bar {
+    width: 100%;
+  }
+}
+/* info box class */
+.info-box {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0px;
+  gap: 10px;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+#player-info {
+  display: flex;
+  flex-direction: row;
+  order: 0;
+}
+
+.left-info, .right-info {
+  display: flex;
+  flex-direction: row;
+}
+
+.left-info {
+  justify-content: flex-start;
+}
+
+.right-info {
+  justify-content: flex-end;
+}
+
+#character-info {
+  order: 1;
+}
+
+/* name display */
+.name-disp {
+  /* M3/body/small
+
+  0.4
+  */
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  /* or 133% */
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.4px;
+  color: #000000;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+/* Level disp */
+.level-disp {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  /* or 133% */
+  display: flex;
+  align-items: center;
+  text-align: right;
+  letter-spacing: 0.4px;
+  color: #000000;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+}
+
+/* List section */
+.list-section {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 0px;
+  gap: 10px;
+  width: 100%;
+  /* Inside auto layout */
+  flex: none;
+  order: 3;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+/* Today’s activities */
+.list-section-header {
+  width: 100%;
+  /* M3/title/small */
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  /* identical to box height, or 143% */
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.1px;
+  color: #000000;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+/* List  */
+.list {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 4px;
+  width: 100%;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+/* List item */
+.list li {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  gap: 10px;
+  width: 100%;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  /* M3/body/medium */
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  /* identical to box height, or 143% */
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.25px;
+  color: #000000;
 }
 
 /*# sourceMappingURL=styles.css.map */

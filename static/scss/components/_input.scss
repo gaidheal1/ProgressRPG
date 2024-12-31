@@ -1,0 +1,47 @@
+/* Text field
+
+Use a text field when someone needs to enter text into a UI, such as filling in contact or payment information.
+
+🛠 Additional options
+Support text - you can toggle supporting text between hide and show.
+*/
+
+.input-div {
+	/* Auto layout */
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 0px;
+	isolation: isolate;
+
+	width: 300px;
+	height: 56px;
+
+	border-radius: 4px 4px 0px 0px;
+
+	/* Inside auto layout */
+	flex: none;
+	order: 0;
+	flex-grow: 0;
+}
+
+.field-div {
+
+	/* Auto layout */
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 0px;
+	gap: 10px;
+
+
+	background: #E8FFF1;
+	border-radius: 4px 4px 0px 0px;
+
+	/* Inside auto layout */
+	flex: none;
+	order: 0;
+	align-self: stretch;
+	flex-grow: 1;
+	z-index: 0;
+}

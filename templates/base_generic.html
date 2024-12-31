@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Progress RPG{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="icon" type="image/png" href="{% static '/images/favicon.png' %}">
 
     <!-- <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script> -->
@@ -14,36 +13,57 @@
 <body>
     <header>
         <nav>
-            <div class="navbar">
-				<div class="left-links">
-				  <!-- <div class="button-comp"> -->
-					<div class="button-style-comp"><button class="impact nav-text"><a href="{% url 'game' %}">Progress RPG</a></button></div>
-				  <!-- </div> -->
-				  <div class="link"><div class="nav-text"><a href="https://gaidheal1.github.io" target="_blank">Blog</a></div></div>
-				  <!-- <div class="link"><div class="text-wrapper">Manage</div></div>
-				  <div class="link"><div class="text-wrapper">Achievements</div></div> -->
-				  
-				</div>
-				<div class="right-links">
-                    {% if user.is_authenticated %}
-				        <div class="link"><div class="text-wrapper"><a href="{% url 'logout' %}">Log out</a></div></div>
-                        <div class="button-style-comp"><button class="impact nav-text"><a href="{% url 'profile' %}">Account</a></button></div>
-                        
-                    {% else %}
-                        <a href="{% url 'login' %}">Login</a>
-                        <div class="button-style-comp"><button class="impact nav-text"><a href="{% url 'register' %}">Sign up</a></button></div>
-                        
-                    {% endif %}
-				    <div class="account">
-					<!-- <div class="button-comp"> -->
-					<!-- <img class="arrow-icon" src="img/arrow-icon.svg" /> -->
-					
-					<!-- </div> -->
-				    </div>
-				</div>
+
+			<div class="left-links">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'game' %}">Activities</a>
+                    
+                {% else %}
+                    <a href="{% url 'index' %}">Home</a>
+                    <a href="https://gaidheal1.github.io" target="_blank">Blog</a>
+                    
+                {% endif %}
+				
 			</div>
+
+			<div class="right-links">
+                {% if user.is_authenticated %}
+			        <div class="link"><div class="text-wrapper"><a href="{% url 'logout' %}">Log out</a></div></div>
+                    <div class="button-style-comp"><button class="button-filled"><a href="{% url 'profile' %}">Account</a></button></div>
+                    
+                {% else %}
+                    <a href="{% url 'login' %}">Login</a>
+                    <button class="button-filled"><a href="{% url 'register' %}">Sign up</a></button>
+                    
+                {% endif %}
+			    <div class="account">
+				<!-- <div class="button-comp"> -->
+				<!-- <img class="arrow-icon" src="img/arrow-icon.svg" /> -->
+				
+				<!-- </div> -->
+			    </div>
+			</div>
+
+            <div class="icons">
+                 <a href=""><img class="icon open-drawer-btn" src="{% static 'images/menu-icon.png' %}" alt="Menu Icon"></a>
+                 <a href="{% url 'game' %}"><img class="icon" src="{% static 'images/home-icon.png' %}" alt="Home Icon"></a>
+                 <a href="{% url 'profile' %}"><img class="icon" src="{% static 'images/account-icon.png' %}" alt="Account Icon"></a>
+            </div>
+			
         </nav>
     </header>
+    <div class="nav-drawer">
+        <div class="nav-drawer-header">
+            <h2>Menu</h2>
+        </div>
+        <ul class="nav-drawer-links">
+            <li><a href="{% url 'game' %}">Play the game</a></li>
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+        </ul>
+    </div>
+
+    <div class="overlay hidden"></div>
+    
     {% if messages %}
     <div>
         {% for message in messages %}
@@ -58,11 +78,11 @@
     </main>
     <footer>
         {% if user.is_staff %}
-            <p><a href="/admin/">Admin Panel</a></p>
+            <button class="button-filled"><a href="/admin/">Admin Panel</a></button>
         {% endif %}        
         <p>&copy; 2024 Progress RPG</p>
     </footer>
     
-
+    <script src="{% static 'js/base.js' %}"></script>
 </body>
 </html>

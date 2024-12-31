@@ -2,84 +2,124 @@
 {% load static %}
 {% load custom_filters %}
 
-
 {% block content %}
 <div id="gameplay-container">
-  <h1>Welcome, {{ profile.name }}</h1>
-  <div id="info-bar">
-    <div id="player-info">
-      <span id="player-name">{{ profile.name }}</span> 
-      <span id="player-level">{{ profile.level }}</span>
-      <span id="player-xp">{{ profile.xp }}</span>/<span id="player-xp-next"></span>
-    </div>
-    <div id="character-info">
-      <span id="character-name">{{ character.name }}</span> 
-      <span id="character-level">{{ character.level }}</span>
-      <span id="character-xp">{{ character.xp }}</span>/<span id="character-xp-next"></span>
-    </div>
-  </div>
-  <hr>
-  <!-- Activity -->
-  <div id="activity-section">
-    <h2>Activity</h2>
-    <div id="activity-input-div">
-      <input type="text" id="activity-input" placeholder="Enter activity" />
-      <button id="start-activity-btn">Enter Activity</button>
-    </div>
-    <p id="activity-timer">00:00</p>
-    <button id="pause-activity-btn" disabled="true">Pause activity</button>
-    <button id="stop-activity-btn">Stop activity and submit</button>
-    <div>
-      <h3>Today's activities</h3>
-      <p id="activity-totals"></p>
-      <ul id="activity-list"></ul>
-    </div>
-  </div>
-
-  <!-- Quest Display -->
-  <div id="quest-section">
-    <h2>Quest</h2>
-    <p id="quest-timer">{{ questTimer.duration }}</p>
-    <div id="quest-display">
-
-      <!-- change/test -->
-      
-      <p>Current quest: <span id="quest-name">{{ character.current_quest.name }}</span></p>
-      <p>Description: <span id="quest-description">{{ character.current_quest.description }} </span></p>
-      <p>Current stage: <span id="quest-current-stage"></span></p>
-      
-      <ul id="quest-stages-list" hidden="true">
-      </ul>
-      <button id="show-rewards-btn" hidden="true">Show rewards</button>
-    </div>
-
-    <div id="quest-rewards" hidden="true">
-      <h2>Quest rewards</h2>
-      <ul id="quest-rewards-list">
-      </ul>
-      <button id="show-quests-btn">Show quests</button>
-    </div>
-
-    <div id="choose-quest">
-      <h2>Available quests:</h2>
-      <form id="choose-quest-form" data-url="{% url 'choose_quest' %}">
-        {% csrf_token %}
-        <fieldset>
-          <legend>Select a quest</legend>
-          <ul id="quest-list" style="list-style-type:none"></ul>
-                    
-        </fieldset>
-      
-        <button type="submit" id="choose-quest-btn">Choose Quest</button>
-      </form>
-
-      <!-- placeholder for feedback after submitting -->
-      <p id="feedback-message"></p>
-      
-    </div>
-  </div>
-
   
+  <div id="info-bar">
+
+    <div id="player-info" class="info-box">
+      <div class="left-info">
+        <span id="player-name" class="name-disp">{{ profile.name }}</span> 
+        <span id="player-level" class="level-disp">{{ profile.level }}</span>
+        <span id="player-xp" class="level-disp">{{ profile.xp }}</span>/<span id="player-xp-next" class="level-disp"></span>
+      </div>
+    </div>
+
+    <div id="character-info" class="info-box">
+      <div class="left-info">
+            <span id="character-name" class="name-disp">{{ character.name }}</span> 
+            <span id="character-level" class="level-disp">{{ character.level }}</span>
+            <span id="character-xp" class="level-disp">{{ character.xp }}</span>/<span id="character-xp-next" class="level-disp"></span>
+      </div>
+    </div>
+
+  </div>
+  
+
+  <div id="game-content">
+
+    <!-- Activity -->
+    <div id="activity-section" class="game-section">
+      
+      <div id="activity-top-bar" class="section-top-bar">
+        <div class="section-status">
+          <span class="section-status-header">Activity:</span><span class="section-status-message">waiting</span>
+        </div>
+        <div class="timer-frame">
+          <span id="activity-timer" class="timer-text">00:00</span>
+        </div>
+      </div>
+
+      <div class="current-item" id="current-activity-section">
+        <span class="current-item-header">Current activity:</span> <span class="current-item-message">None</span>
+      </div>
+
+      <div class="input-div" id="activity-input-div">
+        <input class="field-div" type="text" id="activity-input" placeholder="Enter activity" />
+      </div>
+      <div class="button-frame" id="activity-buttons">
+        <button class="button-filled" id="start-activity-btn" >Enter Activity</button>
+        <button class="button-filled" id="stop-activity-btn" disabled="true">Stop activity and submit</button>
+      </div>
+      
+      
+      
+      <div class="list-section" id="today-activities">
+        <span class="list-section-header">Today's activities</span>
+        <p id="activity-totals"></p>
+        <ul class="list" id="activity-list"></ul>
+      </div>
+    </div>
+    <!-- End of activity section -->
+
+    <!-- Quest Display -->
+    <div id="quest-section" class="game-section">
+      <div class="section-top-bar">
+        <div class="section-status">
+          <span class="section-status-header">Quest:</span><span class="section-status-message">waiting</span>
+        </div>
+        
+        <div class="timer-frame">
+          <span id="quest-timer" class="timer-text">{{ questTimer.duration }}</span>
+        </div>
+      </div>
+
+      <div id="quest-display">
+        <div class="current-item">
+          <span class="current-item-header">Current activity:</span> <span class="current-item-message">{{ character.current_quest.name }}</span>
+        </div>
+
+        <p>Description: <span id="quest-description">{{ character.current_quest.description }} </span></p>
+        
+        <div class="list-section">  
+          <span class="list-section-header">Current stage:</span> <span id="quest-current-stage"></span>
+          <ul class="list" id="quest-stages-list" hidden="true">
+          </ul>
+          <button class="button-filled" id="show-rewards-btn" hidden="true">Show rewards</button>
+        </div>
+
+      </div>
+
+      <div class="list-section hidden" id="quest-rewards">
+        <h2 class="list-section-header">Quest rewards</h2>
+        <ul class="list" id="quest-rewards-list">
+        </ul>
+        <button class="button-filled" id="show-quests-btn">Show quests</button>
+      </div>
+
+      <div class="list-section" id="choose-quest">
+        <h2 class="list-section-header">Available quests:</h2>
+        <form class="form" id="choose-quest-form" data-url="{% url 'choose_quest' %}">
+          {% csrf_token %}
+          <fieldset>
+            <legend>Select a quest</legend>
+            <ul class="list" id="quest-list"></ul>
+                      
+          </fieldset>
+        
+          <button class="button-filled" type="submit" id="choose-quest-btn">Choose Quest</button>
+        </form>
+
+        <!-- placeholder for feedback after submitting -->
+        <p id="feedback-message"></p>
+        
+      </div>
+    </div>
+    <!-- End of section Quest Display -->
+
+  </div>
+  <!-- End of section 'game-content' -->
+
 </div>
 <script src="{% static 'js/game.js' %}"></script>
 
