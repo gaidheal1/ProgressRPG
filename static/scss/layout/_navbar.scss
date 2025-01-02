@@ -3,6 +3,7 @@
 header {
     display: flex;
     width: 100%;
+    max-width: 100%;
 
     nav {
         display: flex;
@@ -11,15 +12,17 @@ header {
         align-self: stretch;
         padding: 8px 16px;
         justify-content: space-between;
-        
+        max-width: 100%;
         width: 100%;
         background: #FFFFFF;
 
         button > a {
             color: #fff;
             margin: 0 10px;
+            align-self: center;
             text-decoration: none;
             font-size: $text-20-font-size;
+
         }
 
         .icons {
@@ -29,22 +32,28 @@ header {
             justify-content: space-between;
 
             padding: 16px;
-            gap: 113px;
-
-            width: 100%;
             
+            max-width: 100%;
+            width: 100%;
 
             /* Inside auto layout */
             flex: none;
             flex-grow: 0;
 
+            a {
+                display: flex;
+                align-items: center;
+                
+                .icon {
+                    width: 36px;
+                    min-width: 36px;
+                    height: 36px;
+                    background-size: cover;
+                    background-repeat: no-repeat;
+                    display: inline-block;
+                    align-items: center;
+                }
 
-            .icon {
-                width: 36px;
-                height: 36px;
-                background-size: cover;
-                background-repeat: no-repeat;
-                display: inline-block;
             }
         }
 
@@ -64,28 +73,23 @@ header {
         .right-links {
             justify-content: flex-end;
         }
-    }
-}
 
-@media (max-width: 768px) {
-    nav {
-        .icons {
+        @include respond-to(small) {
+            .icons {
             display: flex;
+            }
+            .right-links, .left-links {
+                display: none;
+            }
         }
-        .right-links, .left-links {
-            display: none;
-        }
-    }
-}
 
-@media (min-width: 769px) {
-    nav {
-        .right-links, .left-links {
+        @include respond-to(big) {
+            .right-links, .left-links {
             display: flex;
+            }
+            .icons {
+                display: none;
+            }
         }
-        .icons {
-            display: none;
-        }
-
     }
 }

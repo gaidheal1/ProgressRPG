@@ -1,7 +1,9 @@
-from django.test import TestCase
-from .models import Quest, QuestRequirement, Activity, Character, QuestCompletion, QuestResults, Buff, AppliedBuff, ActivityTimer, QuestTimer
+from django.test import TestCase, Client
+from django.urls import reverse
+from .models import Quest, QuestRequirement, Activity, Character, QuestCompletion, QuestResults, Buff, AppliedBuff, ActivityTimer, QuestTimer, DailyStats, GameWorld
 from django.contrib.auth import get_user_model
 from datetime import datetime
+from time import sleep
 from django.utils.timezone import now, timedelta
 
 # Create your tests here.
@@ -443,7 +445,7 @@ class TestOtherModels(TestCase):
 
         #print(result1)
 
-class TimerTest(TestCase):
+class TestTimer(TestCase):
     def setUp(self):
         User = get_user_model()
         user = User.objects.create_user(
@@ -538,3 +540,131 @@ class TimerTest(TestCase):
 
         self.assertTrue(timer.get_remaining_time() > 0)
         self.assertTrue(timer.is_complete() == False)
+
+class TestDailyStats(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        user = User.objects.create_user(
+            username='testuser1',
+            email='testuser1@example.com',
+            password='testpassword123'
+        )
+        self.profile = user.profile
+
+        self.stat = DailyStats.objects.create(
+            recordDate = now().date(),
+        )
+        self.stat.save()
+
+    def test_dailystats_create(self):
+        stat = DailyStats.objects.create(
+            recordDate = now().date(),
+        )
+        stat.save()
+        
+        self.assertTrue(isinstance(stat, DailyStats))
+        self.assertTrue(stat.newUsers == 0)
+
+    def test_dailystats_func(self):
+        today = now().date()
+        
+
+        dailystat = DailyStats.objects.get(recordDate=today)
+        print("dailystat:", dailystat)
+        
+class TestStatsView(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+        # urls
+        self.index_url = reverse('index')
+        self.profile_url = reverse('profile')
+        self.editprofile_url = reverse('edit_profile')
+        self.statistics_url = reverse('get_game_statistics')
+        User = get_user_model()
+        user1 = User.objects.create_user(
+            username='testuser1',
+            email='testuser1@example.com',
+            password='testpassword123'
+        )
+        user2 = User.objects.create_user(
+            username='testuser2',
+            email='testuser2@example.com',
+            password='testpassword123'
+        )
+
+        self.client.login(username='testuser1', password='testpassword123')
+
+        self.profile1 = user1.profile
+        self.activity = Activity.objects.create(
+            profile=self.profile1,
+            name='Writing tests',
+            duration=10
+        )
+        self.profile2 = user2.profile
+        self.activity = Activity.objects.create(
+            profile=self.profile2,
+            name='Writing tests',
+            duration=10
+        )
+
+        self.quest1 = Quest.objects.create(
+            name='Test Quest 1',
+            description='Test Quest Description 1',
+            duration=10,
+            levelMax=10,
+            canRepeat=True,
+        )
+
+        self.quest2 = Quest.objects.create(
+            name='Test Quest 2',
+            description='Test Quest Description 2',
+            duration=10,
+            levelMax=10,
+            canRepeat=False,
+        )
+        self.char1 = Character.objects.create(
+            profile=self.profile1,
+            name="Bob"
+        )
+
+        qc1 = QuestCompletion.objects.create(
+            character=self.char1,
+            quest=self.quest1,
+            times_completed=1,
+            last_completed=now(),
+        )
+
+        self.char2 = Character.objects.create(
+            profile=self.profile2,
+            name="Bob"
+        )
+
+        qc2 = QuestCompletion.objects.create(
+            character=self.char2,
+            quest=self.quest1,
+            times_completed=5,
+            last_completed=now(),
+        )
+
+        qc2 = QuestCompletion.objects.create(
+            character=self.char2,
+            quest=self.quest2,
+            times_completed=1,
+            last_completed=now(),
+        )
+    def test_statistics_GET(self):
+        response = self.client.get(self.statistics_url)
+        #self.assertEqual(response.status_code, 200)
+        #self.assertTemplateUsed(response, 'users/index.html')
+
+class TestGameWorld(TestCase):
+
+
+    def test_gameworld_create(self):
+        gw = GameWorld.objects.create()
+        today = now()
+        tomorrow = today + timedelta(days=1)
+
+        print(gw)
+        self.assertTrue(isinstance(gw, GameWorld))

@@ -12,7 +12,6 @@
 	
 	/* Inside auto layout */
 	flex: none;
-	order: 2;
 	align-self: stretch;
 	flex-grow: 0;
 }
@@ -33,7 +32,7 @@
 
 	/* Inside auto layout */
 	flex: none;
-	order: 0;
+	
 	flex-grow: 0;
 
 

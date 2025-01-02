@@ -7,24 +7,57 @@
   
   <div id="info-bar">
 
+    <!-- Player info -->
     <div id="player-info" class="info-box">
-      <div class="left-info">
-        <span id="player-name" class="name-disp">{{ profile.name }}</span> 
-        <span id="player-level" class="level-disp">{{ profile.level }}</span>
-        <span id="player-xp" class="level-disp">{{ profile.xp }}</span>/<span id="player-xp-next" class="level-disp"></span>
+            
+      <div class="info-block left">
+        <div class="info-line" >
+          <span>Player:</span>
+          <span id="player-name" class="name-disp"></span> 
+        </div>
       </div>
-    </div>
 
-    <div id="character-info" class="info-box">
-      <div class="left-info">
-            <span id="character-name" class="name-disp">{{ character.name }}</span> 
-            <span id="character-level" class="level-disp">{{ character.level }}</span>
-            <span id="character-xp" class="level-disp">{{ character.xp }}</span>/<span id="character-xp-next" class="level-disp"></span>
+      <div class="info-block right">
+        <div class="info-line">
+          <div class="level-info"><span>Level</span>
+            <span id="player-level" ></span>
+          </div>
+          <div class="xp-info"><span>XP:</span>
+            <span id="player-xp" ></span> / <span id="player-xp-next"></span>
+          </div>
+        </div>
       </div>
+
     </div>
+    <!-- end of player info -->
+
+    <!-- Character info -->
+    <div id="character-info" class="info-box">
+
+      <div class="info-block left">
+        <div class="info-line person" >
+          <span>Character:</span>
+          <span id="character-name" class="name-disp"></span> 
+        </div>
+      </div>
+
+      <div class="info-block right">
+        <div class="info-line">
+          <div class="level-info"><span>Level</span>
+            <span id="character-level" ></span>
+          </div>
+          <div class="xp-info"><span>XP:</span>
+            <span id="character-xp" ></span> / <span id="character-xp-next"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- end of character info -->
 
   </div>
-  
+  <!-- end of info-bar -->
+
 
   <div id="game-content">
 
@@ -33,7 +66,7 @@
       
       <div id="activity-top-bar" class="section-top-bar">
         <div class="section-status">
-          <span class="section-status-header">Activity:</span><span class="section-status-message">waiting</span>
+          <span class="section-status-header">Activity:</span><span class="section-status-message" id="activity-status-text">waiting</span>
         </div>
         <div class="timer-frame">
           <span id="activity-timer" class="timer-text">00:00</span>
@@ -41,7 +74,7 @@
       </div>
 
       <div class="current-item" id="current-activity-section">
-        <span class="current-item-header">Current activity:</span> <span class="current-item-message">None</span>
+        <span class="current-item-header">Current activity:</span> <span class="current-item-message" id="activity-name">None</span>
       </div>
 
       <div class="input-div" id="activity-input-div">
@@ -53,47 +86,53 @@
       </div>
       
       
-      
       <div class="list-section" id="today-activities">
-        <span class="list-section-header">Today's activities</span>
-        <p id="activity-totals"></p>
-        <ul class="list" id="activity-list"></ul>
+        <h3 class="list-section-header">Today's activities</h3>
+        <div id="activity-totals">
+          <span id="activities-time-message"></span>
+          <span id="activities-time-data"></span>
+          <span id="activities-total-message"></span>
+          <span id="activities-total-data"></span>
+        </div>
+        <ul class="list" id="activity-list">
+          
+        </ul>
       </div>
     </div>
     <!-- End of activity section -->
 
-    <!-- Quest Display -->
+    <!-- Quest -->
     <div id="quest-section" class="game-section">
       <div class="section-top-bar">
         <div class="section-status">
-          <span class="section-status-header">Quest:</span><span class="section-status-message">waiting</span>
+          <span class="section-status-header">Quest:</span><span class="section-status-message" id="quest-status-text">waiting</span>
         </div>
         
         <div class="timer-frame">
-          <span id="quest-timer" class="timer-text">{{ questTimer.duration }}</span>
+          <span id="quest-timer" class="timer-text">00:00</span>
         </div>
       </div>
 
-      <div id="quest-display">
-        <div class="current-item">
-          <span class="current-item-header">Current activity:</span> <span class="current-item-message">{{ character.current_quest.name }}</span>
-        </div>
+      <div class="current-item" id="current-quest-section">
+        <span class="current-item-header">Current quest:</span> <span class="current-item-message" id="quest-name">None</span>
+      </div>
 
-        <p>Description: <span id="quest-description">{{ character.current_quest.description }} </span></p>
+      <div id="quest-description">None</div>
+      
+      <div class="list-section" id="quest-stages">  
+        <span class="list-section-header">Current stage:</span> <span id="quest-current-stage"></span>
+        <ul class="list" id="quest-stages-list" hidden="true">
+        </ul>
         
-        <div class="list-section">  
-          <span class="list-section-header">Current stage:</span> <span id="quest-current-stage"></span>
-          <ul class="list" id="quest-stages-list" hidden="true">
-          </ul>
-          <button class="button-filled" id="show-rewards-btn" hidden="true">Show rewards</button>
-        </div>
-
-      </div>
+      </div>      
 
       <div class="list-section hidden" id="quest-rewards">
         <h2 class="list-section-header">Quest rewards</h2>
         <ul class="list" id="quest-rewards-list">
         </ul>
+      </div>
+
+      <div class="button-frame" id="show-quests-btn-frame">
         <button class="button-filled" id="show-quests-btn">Show quests</button>
       </div>
 
@@ -104,9 +143,7 @@
           <fieldset>
             <legend>Select a quest</legend>
             <ul class="list" id="quest-list"></ul>
-                      
           </fieldset>
-        
           <button class="button-filled" type="submit" id="choose-quest-btn">Choose Quest</button>
         </form>
 

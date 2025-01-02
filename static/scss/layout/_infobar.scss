@@ -1,0 +1,126 @@
+
+
+/* Top infobar */
+
+ #info-bar {
+	/* Auto layout */
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 4px 12px;
+
+	background: #E8FFF1;
+	border-radius: 0px 0px 8px 8px;
+
+	/* Inside auto layout */
+	flex: none;
+	order: 0;
+	align-self: stretch;
+	flex-grow: 0;
+}
+
+@media (max-width: 450px) {
+	#info-bar {
+		width: 100%;	
+	}
+}
+
+/* info box (one each for player and character) */
+/* should be column for mobile, row for desktop */
+
+.info-box {
+	/* Auto layout */
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding: 4px 0px;
+	gap: 10px;
+
+	/* Inside auto layout */
+	flex: none;
+	align-self: stretch;
+	flex-grow: 0;
+}
+
+#player-info {	
+	order: 0;
+}
+#character-info {	
+	order: 1;
+}
+
+.info-block {
+	display: flex;
+	flex-direction: column;
+	align-self: stretch;
+	padding: 0px;
+	gap: 4px;
+
+	/* Inside auto layout */
+	flex: none;
+	
+}
+
+.left {
+	justify-content: flex-start;
+	order: 0;
+}
+
+.right {
+	justify-content: flex-end;
+	order: 1;
+}
+
+
+.info-line {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding: 0px;
+	gap: 10px;
+
+	/* Inside auto layout */
+	flex: none;
+	flex-grow: 1;
+}
+
+/* name display */
+
+.name-disp {
+	
+	/* or 133% */
+	display: flex;
+	align-items: center;
+	letter-spacing: 0.4px;
+
+	color: #000000;
+
+
+	/* Inside auto layout */
+	flex: none;
+	order: 0;
+	flex-grow: 0;
+}
+
+/* Level disp */
+
+.level-disp {
+	font-weight: 400;
+	font-size: 12px;
+	line-height: 16px;
+	/* or 133% */
+	display: flex;
+	align-items: center;
+	text-align: right;
+	letter-spacing: 0.4px;
+
+	color: #000000;
+
+
+	/* Inside auto layout */
+	flex: none;
+	order: 1;
+	flex-grow: 0;
+}
+

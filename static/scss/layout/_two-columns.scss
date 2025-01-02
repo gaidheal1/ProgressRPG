@@ -1,0 +1,97 @@
+
+/* Content */
+#gameplay-container {
+	/* Auto layout */
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 0px;
+	gap: 8px;
+
+	width: 100%;
+
+	/* Inside auto layout */
+	flex: none;
+	order: 1;
+	align-self: stretch;
+	flex-grow: 0;
+
+
+	@include respond-to (small) {
+		#gameplay-container {
+			max-width: 550px;
+		}
+	}
+
+	@include respond-to (big) {
+		#gameplay-container {
+			max-width: 1200px;
+		}
+	}
+}
+
+
+/* Game content */
+#game-content {
+	/* Auto layout */
+	display: flex;
+	
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: flex-start;
+	align-content: flex-start;
+	padding: 0px;
+	gap: 8px;
+	width: 100%;
+
+	/* Inside auto layout */
+	flex: none;
+	order: 1;
+	align-self: stretch;
+	flex-grow: 0;
+
+	@include respond-to (small) {
+		#game-content {
+			flex-direction: column;
+		}
+	}
+
+	@include respond-to(big) {
+		#game-content {
+			max-width: 1200px;
+			flex-direction: row;
+		}
+	}
+}
+
+.game-section {
+	/* Auto layout */
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 8px 16px;
+	gap: 8px;
+	
+
+	background: #E8FFF1;
+	border: 1px solid rgba(0, 0, 0, 0.45);
+	border-radius: 8px;
+
+	/* Inside auto layout */
+	flex: 1;
+	flex-grow: 1;
+	align-self: stretch;
+
+	@include respond-to(small) {
+		.game-section {
+			width: 100%;
+		}
+	}
+
+	@include respond-to(big) {
+		.game-section {
+			//width: 50%;
+		}
+	}
+
+}

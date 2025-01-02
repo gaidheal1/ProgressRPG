@@ -42,7 +42,6 @@ a:hover {
   width: 100%;
   /* Inside auto layout */
   flex: none;
-  order: 2;
   align-self: stretch;
   flex-grow: 0;
 }
@@ -59,7 +58,6 @@ a:hover {
   border-radius: 100px;
   /* Inside auto layout */
   flex: none;
-  order: 0;
   flex-grow: 0;
   font-weight: 500;
   /* identical to box height, or 143% */
@@ -128,15 +126,25 @@ Support text - you can toggle supporting text between hide and show.
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: center;
   padding: 0px;
   isolation: isolate;
-  width: 300px;
   height: 56px;
   border-radius: 4px 4px 0px 0px;
   /* Inside auto layout */
   flex: none;
   order: 0;
   flex-grow: 0;
+}
+@media (max-width: 576px) {
+  .input-div {
+    width: 100%;
+  }
+}
+@media (min-width: 577px) {
+  .input-div {
+    width: 300px;
+  }
 }
 
 .field-div {
@@ -159,6 +167,7 @@ Support text - you can toggle supporting text between hide and show.
 header {
   display: flex;
   width: 100%;
+  max-width: 100%;
 }
 header nav {
   display: flex;
@@ -167,12 +176,14 @@ header nav {
   align-self: stretch;
   padding: 8px 16px;
   justify-content: space-between;
+  max-width: 100%;
   width: 100%;
   background: #FFFFFF;
 }
 header nav button > a {
   color: #fff;
   margin: 0 10px;
+  align-self: center;
   text-decoration: none;
   font-size: 20px;
 }
@@ -182,18 +193,24 @@ header nav .icons {
   align-self: stretch;
   justify-content: space-between;
   padding: 16px;
-  gap: 113px;
+  max-width: 100%;
   width: 100%;
   /* Inside auto layout */
   flex: none;
   flex-grow: 0;
 }
-header nav .icons .icon {
+header nav .icons a {
+  display: flex;
+  align-items: center;
+}
+header nav .icons a .icon {
   width: 36px;
+  min-width: 36px;
   height: 36px;
   background-size: cover;
   background-repeat: no-repeat;
   display: inline-block;
+  align-items: center;
 }
 header nav .right-links, header nav .left-links {
   flex-direction: row;
@@ -209,23 +226,23 @@ header nav .left-links {
 header nav .right-links {
   justify-content: flex-end;
 }
+@media (max-width: 576px) {
+  header nav .icons {
+    display: flex;
+  }
+  header nav .right-links, header nav .left-links {
+    display: none;
+  }
+}
+@media (min-width: 577px) {
+  header nav .right-links, header nav .left-links {
+    display: flex;
+  }
+  header nav .icons {
+    display: none;
+  }
+}
 
-@media (max-width: 768px) {
-  nav .icons {
-    display: flex;
-  }
-  nav .right-links, nav .left-links {
-    display: none;
-  }
-}
-@media (min-width: 769px) {
-  nav .right-links, nav .left-links {
-    display: flex;
-  }
-  nav .icons {
-    display: none;
-  }
-}
 /* _footer.scss */
 footer {
   display: flex;
@@ -242,10 +259,12 @@ footer {
   max-width: 100%;
   align-self: stretch;
 }
-footer a {
+footer button > a {
   color: #fff;
   margin: 0 10px;
+  align-self: center;
   text-decoration: none;
+  font-size: 20px;
 }
 
 /* Navigation Drawer */
@@ -319,6 +338,253 @@ footer a {
   z-index: 1500;
 }
 
+/* List section */
+.list-section {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 0px;
+  gap: 10px;
+  width: 100%;
+  /* Inside auto layout */
+  flex: none;
+  order: 3;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+/* List section header */
+.list-section-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.1px;
+  color: #000000;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+/* List  */
+.list {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 4px;
+  width: 100%;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+/* List item */
+.list li {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  gap: 10px;
+  width: 100%;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  /* identical to box height, or 143% */
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.25px;
+  color: #000000;
+}
+
+/* Content */
+#gameplay-container {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px;
+  gap: 8px;
+  width: 100%;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+@media (max-width: 576px) {
+  #gameplay-container #gameplay-container {
+    max-width: 550px;
+  }
+}
+@media (min-width: 577px) {
+  #gameplay-container #gameplay-container {
+    max-width: 1200px;
+  }
+}
+
+/* Game content */
+#game-content {
+  /* Auto layout */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  align-content: flex-start;
+  padding: 0px;
+  gap: 8px;
+  width: 100%;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+@media (max-width: 576px) {
+  #game-content #game-content {
+    flex-direction: column;
+  }
+}
+@media (min-width: 577px) {
+  #game-content #game-content {
+    max-width: 1200px;
+    flex-direction: row;
+  }
+}
+
+.game-section {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 16px;
+  gap: 8px;
+  background: #E8FFF1;
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  border-radius: 8px;
+  /* Inside auto layout */
+  flex: 1;
+  flex-grow: 1;
+  align-self: stretch;
+}
+@media (max-width: 576px) {
+  .game-section .game-section {
+    width: 100%;
+  }
+}
+/* Top infobar */
+#info-bar {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 12px;
+  background: #E8FFF1;
+  border-radius: 0px 0px 8px 8px;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+@media (max-width: 450px) {
+  #info-bar {
+    width: 100%;
+  }
+}
+/* info box (one each for player and character) */
+/* should be column for mobile, row for desktop */
+.info-box {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0px;
+  gap: 10px;
+  /* Inside auto layout */
+  flex: none;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+#player-info {
+  order: 0;
+}
+
+#character-info {
+  order: 1;
+}
+
+.info-block {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  padding: 0px;
+  gap: 4px;
+  /* Inside auto layout */
+  flex: none;
+}
+
+.left {
+  justify-content: flex-start;
+  order: 0;
+}
+
+.right {
+  justify-content: flex-end;
+  order: 1;
+}
+
+.info-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+  gap: 10px;
+  /* Inside auto layout */
+  flex: none;
+  flex-grow: 1;
+}
+
+/* name display */
+.name-disp {
+  /* or 133% */
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.4px;
+  color: #000000;
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+/* Level disp */
+.level-disp {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  /* or 133% */
+  display: flex;
+  align-items: center;
+  text-align: right;
+  letter-spacing: 0.4px;
+  color: #000000;
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+}
+
 .home-content {
   display: flex;
   flex-direction: column;
@@ -355,84 +621,6 @@ footer a {
   gap: 12px;
 }
 
-/* Content */
-#gameplay-container {
-  /* Auto layout */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0px;
-  gap: 8px;
-  width: 100%;
-  /* Inside auto layout */
-  flex: none;
-  order: 1;
-  align-self: stretch;
-  flex-grow: 0;
-}
-
-@media (max-width: 768px) {
-  #gameplay-container {
-    max-width: 550px;
-  }
-}
-@media (min-width: 769px) {
-  #gameplay-container {
-    max-width: 1200px;
-  }
-}
-/* Game content */
-#game-content {
-  /* Auto layout */
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: flex-start;
-  align-content: flex-start;
-  padding: 0px;
-  gap: 8px;
-  width: 100%;
-  /* Inside auto layout */
-  flex: none;
-  order: 1;
-  align-self: stretch;
-  flex-grow: 0;
-}
-
-@media (max-width: 768px) {
-  #game-content {
-    max-width: 100%;
-  }
-}
-@media (min-width: 769px) {
-  #game-content {
-    max-width: 1200px;
-  }
-}
-.game-section {
-  box-sizing: border-box;
-  /* Auto layout */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 8px 16px;
-  gap: 8px;
-  min-width: 280px;
-  background: #E8FFF1;
-  border: 1px solid rgba(0, 0, 0, 0.45);
-  border-radius: 8px;
-  /* Inside auto layout */
-  flex: 1;
-  flex-grow: 1;
-  align-self: stretch;
-}
-
-@media (max-width: 768px) {
-  .game-section {
-    width: 100%;
-  }
-}
 #activity-section {
   order: 0;
 }
@@ -446,24 +634,33 @@ footer a {
   order: 1;
 }
 
-#activity-top-bar {
+.section-top-bar {
   order: 0;
 }
 
-#current-activity-section {
+.current-item {
   order: 1;
 }
 
-#activity-input-div {
+#activity-input-div, #quest-description {
   order: 2;
 }
 
-#activity-buttons {
+#activity-buttons, #quest-stages {
   order: 3;
 }
 
-#today-activities {
+#today-activities, #quest-rewards {
   order: 4;
+}
+
+#show-quests-btn-frame {
+  order: 5;
+  display: none;
+}
+
+#choose-quest {
+  order: 6;
 }
 
 /* Game Section top bar */
@@ -789,7 +986,6 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 0px;
-  gap: 8px;
   position: relative;
   width: 100%;
   min-width: 260px;
@@ -811,181 +1007,6 @@ main {
   width: 100%;
   align-items: center;
   justify-content: center;
-}
-
-/* Top infobar */
-#info-bar {
-  box-sizing: border-box;
-  /* Auto layout */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 4px 12px;
-  max-width: 1200px;
-  height: 64px;
-  background: #E8FFF1;
-  border-radius: 0px 0px 8px 8px;
-  /* Inside auto layout */
-  flex: none;
-  order: 0;
-  align-self: stretch;
-  flex-grow: 0;
-}
-
-@media (max-width: 450px) {
-  #info-bar {
-    width: 100%;
-  }
-}
-/* info box class */
-.info-box {
-  /* Auto layout */
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 0px;
-  gap: 10px;
-  /* Inside auto layout */
-  flex: none;
-  order: 1;
-  align-self: stretch;
-  flex-grow: 0;
-}
-
-#player-info {
-  display: flex;
-  flex-direction: row;
-  order: 0;
-}
-
-.left-info, .right-info {
-  display: flex;
-  flex-direction: row;
-}
-
-.left-info {
-  justify-content: flex-start;
-}
-
-.right-info {
-  justify-content: flex-end;
-}
-
-#character-info {
-  order: 1;
-}
-
-/* name display */
-.name-disp {
-  /* M3/body/small
-
-  0.4
-  */
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 16px;
-  /* or 133% */
-  display: flex;
-  align-items: center;
-  letter-spacing: 0.4px;
-  color: #000000;
-  /* Inside auto layout */
-  flex: none;
-  order: 0;
-  flex-grow: 0;
-}
-
-/* Level disp */
-.level-disp {
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 16px;
-  /* or 133% */
-  display: flex;
-  align-items: center;
-  text-align: right;
-  letter-spacing: 0.4px;
-  color: #000000;
-  /* Inside auto layout */
-  flex: none;
-  order: 1;
-  flex-grow: 0;
-}
-
-/* List section */
-.list-section {
-  /* Auto layout */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 4px 0px;
-  gap: 10px;
-  width: 100%;
-  /* Inside auto layout */
-  flex: none;
-  order: 3;
-  align-self: stretch;
-  flex-grow: 0;
-}
-
-/* Today’s activities */
-.list-section-header {
-  width: 100%;
-  /* M3/title/small */
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 20px;
-  /* identical to box height, or 143% */
-  display: flex;
-  align-items: center;
-  letter-spacing: 0.1px;
-  color: #000000;
-  /* Inside auto layout */
-  flex: none;
-  order: 0;
-  flex-grow: 0;
-}
-
-/* List  */
-.list {
-  /* Auto layout */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 0px;
-  gap: 4px;
-  width: 100%;
-  /* Inside auto layout */
-  flex: none;
-  order: 1;
-  align-self: stretch;
-  flex-grow: 0;
-}
-
-/* List item */
-.list li {
-  /* Auto layout */
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  padding: 0px;
-  gap: 10px;
-  width: 100%;
-  /* Inside auto layout */
-  flex: none;
-  order: 0;
-  flex-grow: 0;
-  /* M3/body/medium */
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
-  /* identical to box height, or 143% */
-  display: flex;
-  align-items: center;
-  letter-spacing: 0.25px;
-  color: #000000;
 }
 
 /*# sourceMappingURL=styles.css.map */

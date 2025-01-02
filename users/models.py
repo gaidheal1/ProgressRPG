@@ -25,7 +25,7 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractUser):
     date_of_birth = models.DateField(blank=True, null=True)
-    
+    created_at = models.DateTimeField(auto_now_add=True)
     objects = CustomUserManager()
     def __str__(self):
         return self.username
@@ -33,8 +33,10 @@ class CustomUser(AbstractUser):
 class Person(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     xp = models.PositiveIntegerField(default=0)
+    xp_next_level = models.PositiveIntegerField(default=0)
     xp_modifier = models.FloatField(default=1)
     level = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         abstract = True
@@ -45,6 +47,7 @@ class Person(models.Model):
         self.xp += amount
         while self.xp >= self.get_xp_for_next_level():
             self.level_up()
+        self.xp_next_level = self.get_xp_for_next_level()
         self.save()
         
     def level_up(self):

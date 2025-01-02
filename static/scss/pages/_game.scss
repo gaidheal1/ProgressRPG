@@ -1,107 +1,5 @@
 
 
-/* Content */
-#gameplay-container {
-	/* Auto layout */
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	padding: 0px;
-	gap: 8px;
-
-	width: 100%;
-
-	/* Inside auto layout */
-	flex: none;
-	order: 1;
-	align-self: stretch;
-	flex-grow: 0;
-}
-
-@media (max-width: 768px) {
-	#gameplay-container {
-		max-width: 550px;
-	}
-}
-
-@media (min-width: 769px) {
-	#gameplay-container {
-		max-width: 1200px;
-	}
-}
-
-
-
-/* Game content */
-#game-content {
-	/* Auto layout */
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	justify-content: center;
-	align-items: flex-start;
-	align-content: flex-start;
-	padding: 0px;
-	gap: 8px;
-	width: 100%;
-
-	/* Inside auto layout */
-	flex: none;
-	order: 1;
-	align-self: stretch;
-	flex-grow: 0;
-
-}
-
-@media (max-width: 768px) {
-	#game-content {
-		max-width: 100%;
-
-	}
-}
-
-@media (min-width: 769px) {
-	#game-content {
-		max-width: 1200px;
-	}
-}
-
-.game-section {
-	box-sizing: border-box;
-
-	/* Auto layout */
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	padding: 8px 16px;
-	gap: 8px;
-
-	//width: 360px;
-	min-width: 280px;
-
-	background: #E8FFF1;
-	border: 1px solid rgba(0, 0, 0, 0.45);
-	border-radius: 8px;
-
-	/* Inside auto layout */
-	flex: 1;
-	flex-grow: 1;
-	align-self: stretch;
-	
-
-}
-
-@media (max-width: 768px) {
-	.game-section {
-		width: 100%;
-	}
-}
-
-@media (min-width: 769px) {
-	.game-section {
-		//width: 50%;
-	}
-}
 
 #activity-section {
 	order: 0;
@@ -116,25 +14,35 @@
 	order: 1;
 }
 
-#activity-top-bar {
+.section-top-bar {
 	order: 0;
 }
 
-#current-activity-section {
+.current-item {
 	order: 1;
 }
 
-#activity-input-div {
+#activity-input-div, #quest-description {
 	order: 2;
 }
 
-#activity-buttons {
+#activity-buttons, #quest-stages {
 	order: 3;
 }
 
-#today-activities {
+#today-activities, #quest-rewards {
 	order: 4;
 }
+
+#show-quests-btn-frame {
+	order: 5;
+	display: none;
+}
+
+#choose-quest {
+	order: 6;
+}
+
 
 /* Game Section top bar */
 .section-top-bar {

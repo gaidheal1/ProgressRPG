@@ -114,6 +114,7 @@ class QuestResults(models.Model):
     xp_reward = models.PositiveIntegerField(default=0)
     coin_reward = models.IntegerField(default=0)
     buffs = models.JSONField(default=list, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Quest results for Quest '{self.quest.id}': {json.dumps(self.dynamic_rewards, indent=2)}"
@@ -154,6 +155,7 @@ class QuestRequirement(models.Model):
     quest = models.ForeignKey(Quest, on_delete=models.CASCADE, related_name="quest_requirements")
     prerequisite = models.ForeignKey(Quest, on_delete=models.CASCADE, related_name="required_for") 
     times_required = models.PositiveIntegerField(default=1)
+    last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.prerequisite.name} required {self.times_required} time(s) for {self.quest.name}"
@@ -163,7 +165,8 @@ class Activity(models.Model):
     profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name="activities")
     name = models.CharField(max_length=255)
     duration = models.PositiveIntegerField(default=0)  # Time spent
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=now()) #auto_now_add=True
+    last_updated = models.DateTimeField(auto_now=True)
     xp_rate = models.FloatField(default=0.2)
     
     class Meta:
@@ -191,6 +194,8 @@ class Skill(models.Model):
     time = models.PositiveIntegerField(default=0)
     xp = models.IntegerField(default=0)
     level = models.IntegerField(default=0)
+    last_updated = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -242,6 +247,8 @@ class Timer(models.Model):
     start_time = models.DateTimeField(null=True, blank=True)
     elapsed_time = models.IntegerField(default=0)  # Time in seconds
     is_running = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
@@ -304,6 +311,7 @@ class Buff(models.Model):
     amount = models.FloatField(null=True, blank=True)
     buff_type = models.CharField(max_length=20, choices=BUFF_TYPE_CHOICES, default='additive')
     created_at = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
 
 class AppliedBuff(Buff):
     applied_at = models.DateTimeField(auto_now_add=True)
@@ -325,3 +333,29 @@ class AppliedBuff(Buff):
             elif self.buff_type == 'multiplicative':
                 total_value *= self.amount
         return total_value
+
+# Don't think I actually need this after all!
+# I can use created_at fields which have time too
+class DailyStats(models.Model):
+    newUsers = models.PositiveIntegerField(default=0)
+    questsCompleted = models.PositiveIntegerField(default=0)
+    activitiesCompleted = models.PositiveIntegerField(default=0)
+    activityTimeLogged = models.PositiveIntegerField(default=0)
+    today = now().date()
+    recordDate = models.DateField(default=today)
+
+    def __str__(self):
+        return f"Daily Stats for {self.recordDate} \
+            {self.newUsers} new users, "
+
+class GameWorld(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def time_up(self):
+        return now()-self.created_at
+
+    def update(self):
+        pass
+
+    def __str__(self):
+        return f"This game has been running for {self.time_up()} since {self.created_at}"

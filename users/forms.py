@@ -6,6 +6,7 @@ from .models import Profile
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
+    agree_to_terms = forms.BooleanField(required=True, label="I agree to the terms and conditions.")
 
     class Meta:
         model = CustomUser
