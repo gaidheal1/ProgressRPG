@@ -84,7 +84,7 @@ class TestQuestEligible(TestCase):
             duration=10,
             levelMax=10,
             canRepeat=True,
-            frequency='DAY',
+            frequency=Quest.Frequency.DAILY,
         )
         self.quest3 = Quest.objects.create(
             name='Test Quest 3',
@@ -99,7 +99,7 @@ class TestQuestEligible(TestCase):
             duration=10,
             levelMax=10,
             canRepeat=True,
-            frequency='DAY',
+            frequency=Quest.Frequency.DAILY,
         )
         self.quest5 = Quest.objects.create(
             name='Test Quest 5',
@@ -107,7 +107,7 @@ class TestQuestEligible(TestCase):
             duration=10,
             levelMax=10,
             canRepeat=True,
-            frequency='WEEK',
+            frequency=Quest.Frequency.WEEKLY,
         )
         self.quest6 = Quest.objects.create(
             name='Test Quest 6',
@@ -115,7 +115,7 @@ class TestQuestEligible(TestCase):
             duration=10,
             levelMax=10,
             canRepeat=True,
-            frequency='MONTH',
+            frequency=Quest.Frequency.MONTHLY,
         )
         self.questslist1=[
             self.quest1, 

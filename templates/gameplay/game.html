@@ -95,7 +95,7 @@
           <span id="activities-total-data"></span>
         </div>
         <ul class="list" id="activity-list">
-          
+          Searching for activities completed today...
         </ul>
       </div>
     </div>
@@ -115,6 +115,7 @@
 
       <div class="current-item" id="current-quest-section">
         <span class="current-item-header">Current quest:</span> <span class="current-item-message" id="quest-name">None</span>
+        <button class="button-filled" id="show-quests-modal-btn">Show quests (modal)</button>
       </div>
 
       <div id="quest-description">None</div>
@@ -133,7 +134,37 @@
       </div>
 
       <div class="button-frame" id="show-quests-btn-frame">
-        <button class="button-filled" id="show-quests-btn">Show quests</button>
+        <button class="button-filled" id="show-quests-btn">Show quests (list at bottom)</button>
+        
+      </div>
+
+      <div class="modal" id="quest-modal">
+        <div class="modal-content">
+          <button id="close-modal-btn" class=""close-btn>x</button>
+
+          <!-- Quest Categories and list-->
+           <div class="quest-pane">
+            <h2 id="quest-list-title">Available quests</h2>
+            <div class="quest-tabs">
+              <button class="tab" data-category="main">Main quests</button>
+              <button class="tab" data-category="side">Side quests</button>
+              <button class="tab" data-category="daily">Daily quests</button>
+            </div>
+            <ul id="quest-list-modal" class="quest-list-modal">
+              <!-- Quests dynamically loaded here -->
+            </ul>
+           </div>
+
+           <!-- Quest details -->
+            <div class="details-pane">
+              <h2 id="quest-title-modal">Quest title</h2>
+              <p id="quest-description-modal">Select a quest to view its details</p>
+              <ul id="quest-rewards">
+                <!-- quest rewards dynamically loaded here -->
+              </ul>
+            </div>
+
+        </div>
       </div>
 
       <div class="list-section" id="choose-quest">

@@ -16,16 +16,21 @@ function setupEventListeners() {
   document.getElementById("start-activity-btn").addEventListener("click", createActivityTimer);
   document.getElementById('choose-quest-form').addEventListener('submit', chooseQuest);
   document.getElementById('show-quests-btn').addEventListener('click', showQuests);
+  document.getElementById('show-quests-modal-btn').addEventListener('click', openModal);
+  document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+  document.getElementById('quest-modal').addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
   
   const stopButton = document.getElementById("stop-activity-btn");
   stopButton.addEventListener("click", submitActivity);
   stopButton.style.display = "none";
 
   // Timer event listeners
-  window.activityTimer.on('stopped', onActivityTimerStopped);
-  //window.activityTimer.on('completed', onActivityTimerCompleted);
-  window.questTimer.on('stopped', onQuestTimerStopped);
-  window.questTimer.on('completed', onQuestTimerCompleted); 
+  //window.activityTimer.on('stopped', onActivityTimerStopped);
+  window.activityTimer.on('completed', onActivitySubmitted);
+  //window.questTimer.on('stopped', onQuestTimerStopped);
+  window.questTimer.on('completed', onQuestCompleted); 
 }
 
 function updateUI() {
@@ -41,6 +46,60 @@ function updateUI() {
   fetchQuests();
   fetchInfo();
 }
+
+
+const questsModal = [
+  { id: 1, title: "Save the Village", category: "Main", description: "Defeat the bandits!", rewards: ["Gold", "XP"] },
+  { id: 2, title: "Find the Lost Sword", category: "Side", description: "Explore the ancient ruins.", rewards: ["Relic", "XP"]  },
+  { id: 3, title: "Collect Herbs", category: "Daily", description: "Collect 10 herbs.", rewards: ["Potion", "XP"] },
+  { id: 4, title: "Messenger", category: "Side", description: "Deliver the letter.", rewards: ["Gold"] }
+  { id: 5, title: "Defeat the Bandits", category: "Main", description: "Deliver the letter (not really).", rewards: ["Gold"] },
+  { id: 6, title: "Deliver Supplies", category: "Side", description: "Deliver the letter (only joking).", rewards: ["Gold"] }
+];
+const modal = document.getElementById('quest-modal');
+
+function openModal() {
+  modal.style.display = "block";
+}
+
+function closeModal() {
+  modal.style.display = "none";
+}
+
+function loadQuests(category) {
+  const questList = document.getElementById('quest-list-modal');
+  questList.innerHTML = "";
+  questsModal[category].forEach((quest, index) => {
+    const li = document.createElement("li");
+    li.textContent = quest.title;
+    li.dataset.index = index;
+    li.addEventListener("click", () => showQuestDetails(category, index));
+    questList.appendChild(li);
+  });
+}
+
+function showQuestDetails(category, index) {
+  const quest = questsModal[category][index];
+  const questList = document.getElementById('quest-list-modal');
+  document.getElementById('quest-title-modal').textContent = quest.title;
+  document.getElementById('quest-description-modal').textContent = quest.description;
+  document.getElementById('quest-rewards').innerHTML = quest.rewards.map(reward => `<li>${reward}</li>`).join("");
+  document.querySelectorAll(".quest-list li").forEach(li => li.classList.remove("selected"));
+  questList.children[index].classList.add("selected");
+}
+
+// Tab switching
+const tabs = document.querySelectorAll(".tab");
+
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    tabs.forEach(t => t.classList.remove("selected"));
+    tab.classList.add("selected");
+    loadQuests(tab.dataset.category);
+  })
+})
+
+loadQuests("main");
 
 class Quest {
   constructor(id, name, description, duration, stages, currentStageIndex = 0, elapsedTime = 0) {
@@ -87,7 +146,7 @@ class Quest {
 
   initialDisplay() {
     document.getElementById('quest-name').textContent = this.name;
-    document.getElementById('quest-description').textContent = this.description;
+    document.getElementById('`quest-description`').textContent = this.description;
     document.getElementById('quest-current-stage').textContent = this.stages[0].text;
   }
 
@@ -158,7 +217,9 @@ class Timer extends EventEmitter {
     }, 1000);
     // Start sync timer
     this.intervalIdSync = setInterval(() => {
-      this.elapsedTime = syncTimer(this.mode);
+      syncTimer(this.mode);
+      //const diff = serverTime - this.elapsedTime;
+      //console.log("diff", diff)
     }, 3000); // 300000 for 5 minutes, smaller for testing
   }
   
@@ -171,9 +232,9 @@ class Timer extends EventEmitter {
     clearInterval(this.intervalIdSync)
   }
 
-  reset(newDuration = this.duration) {
+  reset(newDuration = this.duration, elapsedTime = 0) {
     this.stop();
-    this.elapsedTime = 0;
+    this.elapsedTime = elapsedTime;
     this.remainingTime = this.mode === "quest" ? newDuration : 0;
     this.updateDisplay();
     this.emit('reset', {timer: this});
@@ -216,8 +277,16 @@ function onActivityTimerStopped(data) {
   // Handle when the activity timer stops
   console.log("function onActivityTimerStopped");
   window.questTimer.stop();  // Stop the quest timer
-
 }
+
+function onActivitySubmitted(data) {
+  // Handle when the quest timer completes
+  console.log("function onActivitySubmitted");
+  window.activityTimer.reset();
+  window.questTimer.stop();
+  //stopTimer('activity');
+  submitActivity();
+};
 
 function onQuestTimerStopped(data) {
   // Handle when the activity timer stops
@@ -226,10 +295,11 @@ function onQuestTimerStopped(data) {
 
 }
 
-function onQuestTimerCompleted(data) {
+function onQuestCompleted(data) {
   // Handle when the quest timer completes
   console.log("function onQuestTimerCompleted");
-  window.activityTimer.stop();  // Stop the activity timer
+  window.activityTimer.stop();
+  //stopTimer('activity');
   submitQuest();
 };
 
@@ -353,7 +423,7 @@ function startTimerIfReady() {
 
 
 
-// Start an activity timer
+// Start a timer
 async function startTimer(mode) {
   try {
     const response = await fetch("/start_timer/", {
@@ -376,10 +446,10 @@ async function startTimer(mode) {
   };
 };
 
-// Stop an activity timer
+// Stop a timer
 async function stopTimer(mode) {
   try {
-    activityTimer.stop()
+    //activityTimer.stop()
     const response = await fetch("/stop_timer/", {
         method: 'POST',
         headers: {"Content-Type": "text/plain"},
@@ -403,9 +473,9 @@ async function stopTimer(mode) {
 // Submit an activity
 async function submitActivity(event) {
   event.preventDefault();
-  if (window.questSelected === true) {
-    stopQuestTimer();
-  }
+  //if (window.questSelected === true) {
+  //  stopTimer('quest');
+  //}
   const activityInput = document.getElementById('activity-input');
   try {
     const response = await fetch("/submit_activity/", {
@@ -427,9 +497,14 @@ async function submitActivity(event) {
       }
       addActivityToList(data.activities[0]);
       // Adjust display
-      document.getElementById('start-activity-btn').removeAttribute("disabled");
-      document.getElementById('stop-activity-btn').setAttribute("disabled", true);
-      activityInput.style.display = "flex";
+      const startActivityButton = document.getElementById('start-activity-btn')
+      startActivityButton.removeAttribute("disabled");
+      startActivityButton.style.display = "flex";
+      const stopActivityButton = document.getElementById('stop-activity-btn')
+      stopActivityButton.setAttribute("disabled", true);
+      stopActivityButton.style.display = "none";
+
+      document.getElementById('activity-input-div').style.display = "flex";
 
       window.activityTimer.reset();
       window.activitySelected = false;
@@ -473,8 +548,7 @@ function addActivityToList(activity) {
 // Submit quest
 async function submitQuest() {
   try {
-    window.questTimer.stop()
-    stopActivityTimer();
+    //stopTimer('activity');
     const response = await fetch('/quest_completed/', {
       method: 'POST',
     });
@@ -502,8 +576,6 @@ async function submitQuest() {
     } else {
       console.error(data.messsage)
     }
-    
-    
 
   } catch (e) {
     console.error('There was a problem:', e);
@@ -530,7 +602,7 @@ async function fetchActivities() {
       window.activitiesNumber = 0;
       window.activitiesTime = 0;
       if (activities.length == 0) {
-        document.getElementById('activity-totals').innerText = "No activities done today!"
+        document.getElementById('activity-list').innerText = "No activities done today!"
       } else {
         activities.forEach(activity => {
           window.activitiesNumber += 1;
@@ -584,6 +656,10 @@ async function fetchQuests() {
           questList.appendChild(li);
         });
       };
+
+      // Quest modal stuff
+
+
     } else {
       console.error(data.message)
     }
@@ -615,12 +691,49 @@ async function fetchInfo() {
       document.getElementById('character-xp').innerText = character.xp
       document.getElementById('character-xp-next').innerText = character.xp_next_level
       document.getElementById('character-level').innerText = character.level
+
+      if (data.current_activity) {
+        console.log('current activity detected, name:', data.current_activity.name);
+        document.getElementById('activity-name').innerText = data.current_activity.name;
+        window.activityTimer.reset(elapsedTime = data.current_activity.duration);
+        window.activitySelected = true;
+        hideInput();
+      }
+      if (data.current_quest) {
+        console.log('current quest detected, name:', data.current_quest.name);
+        //document.getElementById('activity-name').innerText = data.current_activity.name;
+        window.questTimer.reset(newDuration = data.current_quest.duration);
+        //document.getElementById('activity-timer').innerText = data.current_activity.duration;
+      }
     } else {
       console.error(data.message)
     }
   } catch (e) {
     console.error('There was a problem:', e);
   }
+}
+
+function showInput() {
+  const startActivityButton = document.getElementById('start-activity-btn')
+  startActivityButton.removeAttribute("disabled");
+  startActivityButton.style.display = "flex";
+  const stopActivityButton = document.getElementById('stop-activity-btn')
+  stopActivityButton.setAttribute("disabled", true);
+  stopActivityButton.style.display = "none";
+
+  document.getElementById('activity-input-div').style.display = "flex";
+}
+
+function hideInput() {
+  const startActivityButton = document.getElementById('start-activity-btn')
+  startActivityButton.setAttribute("disabled", true);
+  startActivityButton.style.display = "none";
+  const stopActivityButton = document.getElementById('stop-activity-btn')
+  stopActivityButton.removeAttribute("disabled");
+  stopActivityButton.style.display = "flex";
+
+  document.getElementById('activity-input-div').style.display = "none";
+
 }
 
 function showQuests() {
@@ -630,7 +743,7 @@ function showQuests() {
 
 // Check state
 async function syncTimer(mode) {
-    console.log("timer mode:", mode)
+    console.log("syncTimer func, timer mode:", mode)
     try {
     const response = await fetch("/get_timer_state/", {
       method: 'POST',
@@ -644,9 +757,19 @@ async function syncTimer(mode) {
     if (data.success) {
       console.log("syncTimer data response:", data);
       if (mode == "activity") {
-        return data.timer.elapsed_time  
+        console.log('server activity duration:', data.timer.duration);
+
+        const diff = Math.abs(data.timer.duration - window.activityTimer.elapsedTime);
+
+        console.log("diff", diff)
+        if (diff > 10) {
+          window.activityTimer.elapsedTime = Math.floor(data.timer.duration);
+        }
+        //return data.timer.duration
       } else if (mode == "quest") {
-        return data.timer.remaining_time;
+        console.log('quest duration:', data.timer.duration);
+
+        //return data.timer.remaining_time;
       }
     } else {
       console.error(data.message)

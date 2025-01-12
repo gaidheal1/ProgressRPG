@@ -11,12 +11,15 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import environ
+from decouple import Config, Csv
+#import environ
 import os
 
+config = Config('.env')
+
 # Initialise environment variables
-env = environ.Env()
-environ.Env.read_env()
+#env = environ.Env()
+#environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_beat',
     'rest_framework',
     'users',
     'gameplay',
@@ -79,13 +83,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'progress_rpg.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+#print(config('DB_USERNAME'))
+
+print('env check:', config('DB_NAME'))
 DATABASES = {
-    'default': env.db('DATABASE_URL'), # Using DATABASE_URL from the .env
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME', default='progress_rpg'),
+        'USER': config('DB_USERNAME', default='duncan'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', cast=int, default=5432),
+    }
 }
+
 
 
 # Password validation
@@ -158,3 +172,8 @@ LOGIN_URL = '/login/'  # Customize the login URL
 
 STRIPE_PUBLIC_KEY = "pk_test_51QNRgsGHaENuGVuPh70KmxNTGK3iQPJgjGO2gVcdE0dlRDG7LOZfY3zQxvEdR2hmXDKaEILIRKEnJdn69arGwKCi00bSZWzrzW"
 STRIPE_SECRET_KEY = "nope"
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'

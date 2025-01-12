@@ -14,12 +14,13 @@
 @import 'components/timer';
 @import 'components/input';
 
-@import 'layout/navbar';
 @import 'layout/footer';
-@import 'layout/nav-drawer';
-@import 'layout/lists';
-@import 'layout/two-columns';
 @import 'layout/infobar';
+@import 'layout/lists';
+@import 'layout/modal';
+@import 'layout/navbar';
+@import 'layout/nav-drawer';
+@import 'layout/two-columns';
 
 @import 'pages/index';
 @import 'pages/game';

@@ -50,7 +50,6 @@ def game_view(request):
     #if len(questTimer) >= 1:
     #    questTimer = questTimer[0]
 
-    
     #print(eligible_quests)
     return render(request, 'gameplay/game.html') # removed the dictionary as now using AJAX request to load data separately.
 
@@ -102,11 +101,28 @@ def fetch_info(request):
         
         profile_serializer = ProfileSerializer(profile)
         character_serializer = CharacterSerializer(character)
-        
+
+        if profile.current_activity:
+            current_activity = {
+                "duration": profile.current_activity.duration,
+                "name": profile.current_activity.name,
+            }
+        else: current_activity = False
+
+        if character.current_quest:
+            #current_quest = {
+            #    "duration": profile.current_activity.duration,
+            #    "name": profile.current_activity.name,
+            #}
+            current_quest = QuestSerializer(character.current_quest)
+            current_quest = current_quest.data
+        else: current_quest = False
         response = {
             "success": True,
             "profile": profile_serializer.data,
             "character": character_serializer.data,
+            "current_activity": current_activity,
+            "current_quest": current_quest,
             "message": "Profile and character fetched"
         }
         return JsonResponse(response)
@@ -169,6 +185,7 @@ def save_activity(request):
         return JsonResponse(response)
     return JsonResponse({"error": "Invalid method"}, status=405)
 
+@login_required
 @transaction.atomic
 @csrf_exempt
 def create_activity_timer(request):
@@ -180,26 +197,23 @@ def create_activity_timer(request):
 
         if not activity_name:
             return JsonResponse({"error": "Activity name is required"}, status=400)
-        
+
+        # One-off delete if necessary
+        #ActivityTimer.objects.filter(profile=profile).delete()
+
         # Create activity
         if profile.current_activity:
+            profile.current_activity.name = activity_name
             activity = profile.current_activity
-            timer, created = ActivityTimer.objects.get_or_create(
-                profile=profile,
-                activity=activity
-            )
-            #if created:
-             #   timer.activity = activity
         else:
             activity = Activity.objects.create(
                 profile=profile, 
-                name=activity_name, 
+                name=activity_name,
             )
             profile.current_activity = activity
-            timer = ActivityTimer.objects.create(
+        timer, created = ActivityTimer.objects.get_or_create(
                 profile=profile,
-                activity=activity,
-            )
+        )
         #print("timer for testing:", timer)
         activity.save()
         timer.save()
@@ -213,13 +227,13 @@ def create_activity_timer(request):
         
     return JsonResponse({"error": "Invalid method"}, status=405)
 
-
+@login_required
 @csrf_exempt
 def start_timer(request):
     if request.method == "POST":
         timer_type = request.body.decode('utf-8')
         profile = request.user.profile
-
+        print("start_timer func, timer_type:", timer_type)
         if timer_type == 'activity':
             timer = ActivityTimer.objects.filter(profile=profile)
             
@@ -249,6 +263,7 @@ def start_timer(request):
         return JsonResponse(response)
     return JsonResponse({"error": "Invalid method"}, status=405)
 
+@login_required
 @csrf_exempt
 def stop_timer(request):
     if request.method == "POST":
@@ -281,22 +296,27 @@ def stop_timer(request):
         return JsonResponse(response)
     return JsonResponse({"error": "Invalid method"}, status=405)
 
+@login_required
 @transaction.atomic
 @csrf_exempt
 def submit_activity(request):
     if request.method == "POST":
         #print('which comes first? submit activity')
         profile = request.user.profile
+        character = Character.objects.get(profile=profile)
+
         activity = profile.current_activity
 
-        timer = ActivityTimer.objects.get(profile=profile)
-        timer.stop()
-        
-        activity.add_time(timer.elapsed_time)
+        activity_timer = ActivityTimer.objects.get(profile=profile)
+        activity_timer.stop()
+        activity.add_time(activity_timer.elapsed_time)
+        activity_timer.reset()
+        quest_timer = QuestTimer.objects.get(character=character)
+        quest_timer.stop()
         
         rewards = profile.submit_activity()
         
-        ActivityTimer.objects.filter(profile=profile).delete()
+        #ActivityTimer.objects.filter(profile=profile).delete()
 
         activities = Activity.objects.filter(profile=profile)
         today = timezone.now().date()
@@ -322,18 +342,27 @@ def submit_activity(request):
         return JsonResponse(response)
     return JsonResponse({"error": "Invalid method"}, status=405)
 
-
+@login_required
 @transaction.atomic
 @csrf_exempt
 def quest_completed(request):
     if request.method == "POST":
         profile = request.user.profile
         character = Character.objects.get(profile=profile)
-        timer = QuestTimer.objects.get(character=character)
-        timer.stop()
+        quest_timer = QuestTimer.objects.get(character=character)
+        quest_timer.stop()
+        if not quest_timer.is_complete(): print("Server quest timer says not complete, but quest_completed() fired from client! Remaining time:", quest_timer.get_remaining_time())
+        quest_timer.reset()
+
+        activity_timer = ActivityTimer.objects.get(profile=profile)
+        activity_timer.stop()
+	# Not sure I need the next line. Unless I subtract the elapsed time from the timer I'm just doubling up, I think
+        #activity.add_time(timer.elapsed_time)
+
         #print("quest_completed func, quest timer:", timer)
-        # deleteing all quest timers in case extra created accidentally
-        QuestTimer.objects.filter(character=character).delete()
+        # No longer deleting Quest timer object
+        # May need to check if multiple timers being created and delete all but one
+        #QuestTimer.objects.filter(character=character).delete()
 
         quest = character.current_quest
         character.complete_quest()
@@ -355,16 +384,17 @@ def quest_completed(request):
     return JsonResponse({"error": "Invalid method"}, status=405)
 
 @csrf_exempt
+@login_required
 def get_timer_state(request):
     if request.method == 'POST': 
         timer_type = request.body.decode('utf-8')  # Decode the plain text body
         print("Received timer:", timer_type)
 
         profile = request.user.profile
-        
+        response = {}
         if timer_type == 'activity':
             timer = ActivityTimer.objects.filter(profile=profile)
-            
+        
         elif timer_type == 'quest':
             character = Character.objects.get(profile=profile)
             timer = QuestTimer.objects.filter(character=character)
@@ -373,11 +403,11 @@ def get_timer_state(request):
                 "success": False,
                 "message": "Unknown timer type"
                 }
-        
+        print("get_timer_state func, timer:", timer)
         if len(timer) == 1:
             response = {
                 "success": True,
-                "timer": {"duration": timer[0].elapsed_time},
+                "timer": {"duration": timer[0].get_elapsed_time()},
                 }
         else:
             if not response:
@@ -422,8 +452,8 @@ def get_game_statistics(request):
         
         # To add later when characters more advanced:
         # 
-        characters = Character.objects.all()
-        characters_num = len(characters)
+        #characters = Character.objects.all()
+        #characters_num = len(characters)
 
         questsCompleted = QuestCompletion.objects.all()
         unique_quests = set()
@@ -453,8 +483,8 @@ def get_game_statistics(request):
             ax.set_title(f"Object count by {timescale}")
             return fig
 
-        fig = create_timeseries_graph(activities, 'created_at')
-        plt.show()
+        #fig = create_timeseries_graph(activities, 'created_at')
+        #plt.show()
 
         response = {
             "success": True,
