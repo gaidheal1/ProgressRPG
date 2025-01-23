@@ -11,11 +11,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-from decouple import Config, Csv
+from decouple import Config, RepositoryEnv
 #import environ
 import os
 
-config = Config('.env')
+DOTENV_FILE = '.env'
+env_config = Config(RepositoryEnv(DOTENV_FILE))
+
+
 
 # Initialise environment variables
 #env = environ.Env()
@@ -32,9 +35,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$qj&(5ri-$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env_config.get('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '.localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition
@@ -51,6 +57,8 @@ INSTALLED_APPS = [
     'users',
     'gameplay',
     'payments',
+
+    'decouple',
 ]
 
 MIDDLEWARE = [
@@ -86,17 +94,15 @@ WSGI_APPLICATION = 'progress_rpg.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-#print(config('DB_USERNAME'))
 
-print('env check:', config('DB_NAME'))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='progress_rpg'),
-        'USER': config('DB_USERNAME', default='duncan'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', cast=int, default=5432),
+        'NAME': env_config.get('DB_NAME', default='progress_rpg'),
+        'USER': env_config.get('DB_USERNAME', default='duncan'),
+        'PASSWORD': env_config.get('DB_PASSWORD'),
+        'HOST': env_config.get('DB_HOST', default='localhost'),
+        'PORT': env_config.get('DB_PORT', cast=int, default=5432),
     }
 }
 
@@ -152,11 +158,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mail.privateemail.com'
-EMAIL_PORT = 587
+EMAIL_HOST = env_config.get('EMAIL_HOST')
+EMAIL_PORT = env_config.get('EMAIL_PORT', cast=int)
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'admin@progressrpg.com'
-EMAIL_HOST_PASSWORD = 'pwd'
+EMAIL_HOST_PASSWORD = env_config.get('EMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = 'admin@progressrpg.com'
 
 # Optionally, configure for error emails

@@ -5,6 +5,24 @@
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 8px;
-
 	flex: none;
+}
+
+.form-group {
+    margin-bottom: 15px;
+
+	label {
+		display: block;
+		margin-bottom: 5px;
+	}
+	input, textarea {
+		width: 100%;
+		padding: 8px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+	}
+	.error {
+		color: red;
+		font-size: 0.875em;
+	}
 }

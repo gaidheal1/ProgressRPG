@@ -14,13 +14,12 @@ function initialiseTimers() {
   
 function setupEventListeners() {
   document.getElementById("start-activity-btn").addEventListener("click", createActivityTimer);
-  document.getElementById('choose-quest-form').addEventListener('submit', chooseQuest);
-  document.getElementById('show-quests-btn').addEventListener('click', showQuests);
-  document.getElementById('show-quests-modal-btn').addEventListener('click', openModal);
+  document.getElementById('show-quests-btn').addEventListener('click', openModal);
   document.getElementById('close-modal-btn').addEventListener('click', closeModal);
   document.getElementById('quest-modal').addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
   });
+  document.getElementById('choose-quest-btn').addEventListener('click', chooseQuest);
   
   const stopButton = document.getElementById("stop-activity-btn");
   stopButton.addEventListener("click", submitActivity);
@@ -47,65 +46,42 @@ function updateUI() {
   fetchInfo();
 }
 
-
-const questsModal = [
-  { id: 1, title: "Save the Village", category: "Main", description: "Defeat the bandits!", rewards: ["Gold", "XP"] },
-  { id: 2, title: "Find the Lost Sword", category: "Side", description: "Explore the ancient ruins.", rewards: ["Relic", "XP"]  },
-  { id: 3, title: "Collect Herbs", category: "Daily", description: "Collect 10 herbs.", rewards: ["Potion", "XP"] },
-  { id: 4, title: "Messenger", category: "Side", description: "Deliver the letter.", rewards: ["Gold"] }
-  { id: 5, title: "Defeat the Bandits", category: "Main", description: "Deliver the letter (not really).", rewards: ["Gold"] },
-  { id: 6, title: "Deliver Supplies", category: "Side", description: "Deliver the letter (only joking).", rewards: ["Gold"] }
-];
 const modal = document.getElementById('quest-modal');
 
 function openModal() {
   modal.style.display = "block";
 }
 
+
 function closeModal() {
   modal.style.display = "none";
 }
 
-function loadQuests(category) {
-  const questList = document.getElementById('quest-list-modal');
-  questList.innerHTML = "";
-  questsModal[category].forEach((quest, index) => {
+function showQuestDetails(quest) {
+  console.log("quest.result:", quest.result);
+
+  document.getElementById('quest-title').textContent = quest.name;
+  document.getElementById('quest-description').textContent = quest.description;
+  document.getElementById('xp-reward-value').textContent = quest.result.xp_reward;
+  document.getElementById('coin-reward-value').textContent = quest.result.coin_reward;
+  const otherRewards = document.getElementById('other-rewards-list');
+  otherRewards.innerHTML = "";
+  Object.entries(quest.result.dynamic_rewards).forEach(([key, value]) => {
     const li = document.createElement("li");
-    li.textContent = quest.title;
-    li.dataset.index = index;
-    li.addEventListener("click", () => showQuestDetails(category, index));
-    questList.appendChild(li);
+    li.textContent = (`${key}: ${value}`);
+    otherRewards.appendChild(li);
   });
+  document.querySelectorAll(".quest-list-modal li").forEach(li => li.classList.remove("selected"));
+  document.querySelector(`li[data-index="${quest.id}"]`).classList.add("selected");
 }
-
-function showQuestDetails(category, index) {
-  const quest = questsModal[category][index];
-  const questList = document.getElementById('quest-list-modal');
-  document.getElementById('quest-title-modal').textContent = quest.title;
-  document.getElementById('quest-description-modal').textContent = quest.description;
-  document.getElementById('quest-rewards').innerHTML = quest.rewards.map(reward => `<li>${reward}</li>`).join("");
-  document.querySelectorAll(".quest-list li").forEach(li => li.classList.remove("selected"));
-  questList.children[index].classList.add("selected");
-}
-
-// Tab switching
-const tabs = document.querySelectorAll(".tab");
-
-tabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    tabs.forEach(t => t.classList.remove("selected"));
-    tab.classList.add("selected");
-    loadQuests(tab.dataset.category);
-  })
-})
-
-loadQuests("main");
 
 class Quest {
-  constructor(id, name, description, duration, stages, currentStageIndex = 0, elapsedTime = 0) {
+  constructor(id, name, description, intro, outro, duration, stages, currentStageIndex = 0, elapsedTime = 0) {
     this.id = id;
     this.name = name;
     this.description = description;
+    this.intro = intro;
+    this.outro = outro;
     this.duration = duration;
     this.stages = stages;
     this.currentStageIndex = currentStageIndex;
@@ -120,7 +96,7 @@ class Quest {
     if (this.currentStageIndex < this.stages.length -1) {
       this.renderPreviousStage();
       this.currentStageIndex++;
-      document.getElementById('quest-current-stage').textContent = this.stages[this.currentStageIndex].text;
+      document.getElementById('current-quest-active-stage').textContent = this.stages[this.currentStageIndex].text;
     } else {
       console.log("Quest complete!");
     }
@@ -145,9 +121,10 @@ class Quest {
   }
 
   initialDisplay() {
-    document.getElementById('quest-name').textContent = this.name;
-    document.getElementById('`quest-description`').textContent = this.description;
-    document.getElementById('quest-current-stage').textContent = this.stages[0].text;
+    document.getElementById('current-quest-title').textContent = this.name;
+    document.getElementById('current-quest-description').textContent = this.description;
+    document.getElementById('current-quest-intro').textContent = this.intro;
+    document.getElementById('current-quest-outro').textContent = this.outro;
   }
 
   resetDisplay() {
@@ -307,7 +284,6 @@ function formatDuration(seconds) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-
   let formattedDuration = "";
 
   if (hours > 0) {
@@ -315,18 +291,17 @@ function formatDuration(seconds) {
   } 
   if (seconds > 0) {
       //if (formattedDuration) formattedDuration += " ";
-      formattedDuration += `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      formattedDuration += `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   } else {
     formattedDuration = "00:00"
   }
-
   return formattedDuration;
 }
 
 
 // Start an activity timer
 async function createActivityTimer() {
-  event.preventDefault();
+  //event.preventDefault();
   try {
     const activityInput = document.getElementById('activity-input');
     const response = await fetch("/create_activity_timer/", {
@@ -344,7 +319,6 @@ async function createActivityTimer() {
       
       document.getElementById('start-activity-btn').setAttribute("disabled", true);
       document.getElementById('activity-input-div').style.display = "none";
-      
       document.getElementById('activity-name').innerText = activityInput.value;
 
     }
@@ -361,17 +335,22 @@ async function chooseQuest(event) {
     window.currentQuest.resetDisplay();
   }
   try {
-    // Server url for choosing quest 
-    const url = this.dataset.url;
+    // Determine if the quest is selected from the modal or the form
+    const selectedQuest = document.querySelector('#quest-list-modal .selected') || document.querySelector('input[name="quest"]:checked');
+    console.log('selectedQuest:', selectedQuest);
+    if (!selectedQuest) {
+      alert("Please select a quest first.");
+      return;
+    }
+    const questId = selectedQuest.dataset.index;
+    console.log('questId:', questId);
     
-    const selectedQuest = document.querySelector('input[name="quest"]:checked');
-    const response = await fetch(url, {
+    const response = await fetch("/choose_quest/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
         },
-        body: JSON.stringify({ "quest_id": selectedQuest.value })
+        body: JSON.stringify({ "quest_id": questId }) 
     })
     if (!response.ok) {
       throw new Error('Network response was not ok');
@@ -379,33 +358,39 @@ async function chooseQuest(event) {
 
     const data = await response.json();
     if (data.success) {
+      // Hide rewards section
       document.getElementById('quest-rewards').style.display = "none";
+      document.getElementById('current-quest-outro').style.display = "none";
+      // Load quest details
       const quest = data.quest;
-      window.currentQuest = new Quest(quest.id, quest.name, quest.description, quest.duration, quest.stages);
+      window.currentQuest = new Quest(quest.id, quest.name, quest.description, quest.intro_text, quest.outro_text, quest.duration, quest.stages);
       window.currentQuest.initialDisplay();
       window.questSelected = true;
       
       window.questTimer.reset(window.currentQuest.duration);
-      document.getElementById('choose-quest').style.display = "none";
-      startTimerIfReady();
-      quest.checked = false;
+      
+      if (selectedQuest.tagName === 'LI') {
+        closeModal();
+      } else {
+        selectedQuest.checked = false;
+      }
     } else { document.getElementById('feedback-message').textContent = "Quest selection failed, please try again.";
     }
+    startTimerIfReady();
   } catch(e) {
       console.error('Error:', e);
   }
-  
-};
-
+}
 
 // Start timers when both activity and quest are selected
 function startTimerIfReady() {
   if (window.activitySelected && window.questSelected) {
 
-    // Change activity buttons
+    // Change buttons
     document.getElementById('start-activity-btn').style.display = "none";
     document.getElementById('stop-activity-btn').style.display = "flex";
     document.getElementById('stop-activity-btn').removeAttribute("disabled");
+    document.getElementById('show-quests-btn-frame').style.display = "none";
     // Update statuses
     document.getElementById('activity-status-text').innerText = "running";
     document.getElementById('quest-status-text').innerText = "running";
@@ -543,7 +528,22 @@ function addActivityToList(activity) {
   document.getElementById('activities-total-data').innerText = window.activitiesNumber;
 };
 
-
+function submitQuestDisplayUpdate() {
+  // Change buttons
+  document.getElementById('quest-rewards').style.display = "flex";
+  document.getElementById('show-quests-btn-frame').style.display = "flex";
+  // Reset quest modal details pane
+  document.getElementById('quest-title').textContent = "No quest selected";
+  document.getElementById('quest-description').textContent = "";
+  document.getElementById('xp-reward-value').textContent = "";
+  document.getElementById('coin-reward-value').textContent = "";
+  document.getElementById('other-rewards').innerHTML = "";
+  // Update statuses
+  document.getElementById('activity-status-text').innerText = "waiting";
+  document.getElementById('quest-status-text').innerText = "finished";
+  // Display outro message
+  document.getElementById('current-quest-outro').style.display = "flex";
+}
 
 // Submit quest
 async function submitQuest() {
@@ -552,31 +552,18 @@ async function submitQuest() {
     const response = await fetch('/quest_completed/', {
       method: 'POST',
     });
-    console.log('response ok:', response.ok);
+    //console.log('response ok:', response.ok);
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
     const data = await response.json();
     if (data.success) {
-      console.log(data.message)
-      // Show rewards
-      const rewardsList = document.getElementById('quest-rewards-list');
-      console.log('quest xp reward:', data.xp_reward)
-      rewardsList.innerHTML = `<li>${data.xp_reward} xp</li>`
-      document.getElementById('quest-rewards').style.display = "flex";
-      document.getElementById('show-quests-btn-frame').style.display = "flex";
+      submitQuestDisplayUpdate();
       window.questSelected = false;
-      
-      // Update statuses
-      document.getElementById('activity-status-text').innerText = "waiting";
-      document.getElementById('quest-status-text').innerText = "finished";
-      
-      // Fetch updated list of eligible quests
       fetchQuests();
     } else {
       console.error(data.messsage)
     }
-
   } catch (e) {
     console.error('There was a problem:', e);
   }
@@ -640,26 +627,18 @@ async function fetchQuests() {
     const data = await response.json();
     if (data.success) {
       const quests = data.quests;
-      const questList = document.getElementById('quest-list');
-      questList.innerHTML = '';
-
-      if (quests.length == 0) {
-        questList.innerText = "No quests available, sorry!";
-      } else {
-        quests.forEach(quest => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-            <label>
-            <input type="radio", name="quest" value="${quest.id}" required>
-            ${quest.name}
-            </label><br>`;
-          questList.appendChild(li);
-        });
-      };
+      
 
       // Quest modal stuff
-
-
+      const questList = document.getElementById('quest-list-modal');
+      questList.innerHTML = "";
+      quests.forEach((quest, index) => {
+        const li = document.createElement("li");
+        li.textContent = quest.name;
+        li.dataset.index = quest.id;
+        li.addEventListener("click", () => showQuestDetails(quest));
+        questList.appendChild(li);
+      });
     } else {
       console.error(data.message)
     }
@@ -738,7 +717,7 @@ function hideInput() {
 
 function showQuests() {
   document.getElementById('show-quests-btn-frame').style.display = "none";
-  document.getElementById('choose-quest').style.display = "flex";
+  //document.getElementById('choose-quest').style.display = "flex";
 }
 
 // Check state

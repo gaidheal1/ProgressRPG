@@ -78,6 +78,24 @@ a:hover {
   flex: none;
 }
 
+.form-group {
+  margin-bottom: 15px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+.form-group input, .form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.form-group .error {
+  color: red;
+  font-size: 0.875em;
+}
+
 /* Timer frame */
 .timer-frame {
   box-sizing: border-box;
@@ -315,7 +333,6 @@ footer button > a {
   width: 100%;
   display: flex;
   align-items: center;
-  letter-spacing: 0.1px;
   color: #000000;
   /* Inside auto layout */
   flex: none;
@@ -331,6 +348,7 @@ footer button > a {
   align-items: flex-start;
   padding: 0px;
   gap: 4px;
+  list-style-type: none;
   width: 100%;
   /* Inside auto layout */
   flex: none;
@@ -338,13 +356,11 @@ footer button > a {
   align-self: stretch;
   flex-grow: 0;
 }
-
-/* List item */
 .list li {
   /* Auto layout */
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   padding: 0px;
   gap: 10px;
@@ -353,11 +369,8 @@ footer button > a {
   flex: none;
   order: 0;
   flex-grow: 0;
-  /* identical to box height, or 143% */
-  display: flex;
-  align-items: center;
-  letter-spacing: 0.25px;
   color: #000000;
+  background-color: #F2F2F2;
 }
 
 /* Modal Background */
@@ -772,7 +785,6 @@ header nav .right-links {
 
 #show-quests-btn-frame {
   order: 5;
-  display: none;
 }
 
 #choose-quest {

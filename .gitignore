@@ -7,3 +7,5 @@ __pycache__/
 env.env
 node_modules
 .dockerignore
+deploy_heroku.sh
+gunicorn_config.py

@@ -7,8 +7,22 @@
     <h2>Create profile</h2>
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}  <!-- Render the form fields -->
-        <button type="submit">Save and continue</button>
+        <div class="form-group">
+            <label for="{{ form.first_name.id_for_label }}">First Name</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+                <div class="error">{{ form.first_name.errors }}</div>
+            {% endif %}
+        </div>
+       
+        <div class="form-group">
+            <label for="{{ form.bio.id_for_label }}">Bio</label>
+            {{ form.bio }}
+            {% if form.bio.errors %}
+                <div class="error">{{ form.bio.errors }}</div>
+            {% endif %}
+        </div>
+        <button type="submit" class="button-filled">Save and continue</button>
     </form>
 
     <p>

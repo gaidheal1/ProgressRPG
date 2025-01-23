@@ -5,8 +5,10 @@ from datetime import datetime
 import json
 
 class Quest(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField(max_length=2000, blank = True)
+    name = models.CharField(max_length=255, default="Default quest name")
+    description = models.TextField(max_length=2000, blank = True, default = "Default description")
+    intro_text = models.TextField(max_length=2000, blank = True, default="Default intro text")
+    outro_text = models.TextField(max_length=2000, blank = True, default="Default outro text")
     duration = models.PositiveIntegerField(default=1)  # Duration in seconds
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     start_date = models.DateTimeField(blank=True, null=True)
@@ -41,7 +43,7 @@ class Quest(models.Model):
     )
 
     def __str__(self):
-        return f"Quest: {self.name}"
+        return f"Quest. id: {self.id}, name: {self.name}, minx/max lvl: {self.levelMin}/{self.levelMax}, premium: {self.is_premium}, repeatable: {self.canRepeat}, frequency: {self.frequency}, active: {self.is_active}"
     
     def apply_results(self, character):
         self.results.apply(character)

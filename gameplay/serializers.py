@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Quest, Activity, Character
+from .models import Quest, Activity, Character, QuestResults
 
 
 class CharacterSerializer(serializers.ModelSerializer):
@@ -7,11 +7,17 @@ class CharacterSerializer(serializers.ModelSerializer):
         model = Character
         fields = ['id', 'name', 'xp', 'xp_next_level', 'xp_modifier', 'level', 'total_quests']
 
+class QuestResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuestResults
+        fields = ['dynamic_rewards', 'xp_reward', 'coin_reward']
 
 class QuestSerializer(serializers.ModelSerializer):
+    result = QuestResultSerializer(source='results', read_only=True)
+
     class Meta:
         model = Quest
-        fields = ['id', 'name', 'description', 'duration', 'stages'] # Add 'stages' field. Will it be able to send it? Should do...
+        fields = ['id', 'name', 'description', 'intro_text', 'outro_text', 'duration', 'stages', 'result'] # Add 'stages' field. Will it be able to send it? Should do...
 
 class ActivitySerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")

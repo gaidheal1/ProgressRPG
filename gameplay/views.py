@@ -89,6 +89,7 @@ def fetch_quests(request):
             "quests": serializer.data,
             "message": "Eligible quests fetched"
         }
+        print(response)
         return JsonResponse(response)
     return JsonResponse({"error": "Invalid method"}, status=405)
 
@@ -132,6 +133,7 @@ def fetch_info(request):
 # Choose quest AJAX
 @transaction.atomic
 @login_required
+@csrf_exempt
 def choose_quest(request):
     if request.method == "POST" and request.headers.get('Content-Type') == 'application/json':
         data = json.loads(request.body)

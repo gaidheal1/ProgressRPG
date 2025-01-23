@@ -114,19 +114,24 @@
       </div>
 
       <div class="current-item" id="current-quest-section">
-        <span class="current-item-header">Current quest:</span> <span class="current-item-message" id="quest-name">None</span>
-        <button class="button-filled" id="show-quests-modal-btn">Show quests (modal)</button>
-      </div>
-
-      <div id="quest-description">None</div>
+        <div>
+          <span class="current-item-header">Current quest:</span> <span class="current-item-message" id="current-quest-title">None</span>
+          </div>
+          
+        </div>
+        
+      <div id="current-quest-description">None</div>
+      <div id="current-quest-intro" class="quest-text"></div>
       
       <div class="list-section" id="quest-stages">  
-        <span class="list-section-header">Current stage:</span> <span id="quest-current-stage"></span>
+        <span class="list-section-header">Current stage:</span> <span id="current-quest-active-stage"></span>
         <ul class="list" id="quest-stages-list" hidden="true">
+          <!-- Quest stages dynamically loaded here -->
         </ul>
-        
       </div>      
-
+      
+      <div id="current-quest-outro" class="quest-text" style="display: none;"></div>
+      
       <div class="list-section hidden" id="quest-rewards">
         <h2 class="list-section-header">Quest rewards</h2>
         <ul class="list" id="quest-rewards-list">
@@ -134,54 +139,51 @@
       </div>
 
       <div class="button-frame" id="show-quests-btn-frame">
-        <button class="button-filled" id="show-quests-btn">Show quests (list at bottom)</button>
-        
+        <button class="button-filled" id="show-quests-btn">Show quests</button>  
       </div>
 
+
+      <!-- Modal for quest selection -->
       <div class="modal" id="quest-modal">
         <div class="modal-content">
-          <button id="close-modal-btn" class=""close-btn>x</button>
+          <button id="close-modal-btn" class="close-btn">x</button>
 
           <!-- Quest Categories and list-->
            <div class="quest-pane">
             <h2 id="quest-list-title">Available quests</h2>
-            <div class="quest-tabs">
-              <button class="tab" data-category="main">Main quests</button>
-              <button class="tab" data-category="side">Side quests</button>
-              <button class="tab" data-category="daily">Daily quests</button>
-            </div>
-            <ul id="quest-list-modal" class="quest-list-modal">
+            <ul id="quest-list-modal" class="list">
               <!-- Quests dynamically loaded here -->
             </ul>
            </div>
 
            <!-- Quest details -->
             <div class="details-pane">
-              <h2 id="quest-title-modal">Quest title</h2>
-              <p id="quest-description-modal">Select a quest to view its details</p>
-              <ul id="quest-rewards">
-                <!-- quest rewards dynamically loaded here -->
-              </ul>
+              <h2 id="quest-title">No quest selected</h2>
+              <p id="quest-description"></p>
+              <div id="quest-rewards">
+                <h3>Rewards:</h3>
+                <div id="xp-reward" class="reward">
+                  <span class="reward-label">XP:</span>
+                  <span class="reward-value" id="xp-reward-value">0</span>
+                </div>
+                <div id="coin-reward" class="reward">
+                  <span class="reward-label">Coins:</span>
+                  <span class="reward-value" id="coin-reward-value">0</span>
+                </div>
+                <div id="other-rewards" class="reward">
+                  <ul class="list" id="other-rewards-list">
+                    <!-- Other rewards dynamically loaded here -->
+                  </ul>
+                </div>
+              </div>
+              <button class="button-filled" id="choose-quest-btn">Choose Quest</button>
             </div>
-
+            
+          </div>
         </div>
-      </div>
+        <!-- End of modal-->
 
-      <div class="list-section" id="choose-quest">
-        <h2 class="list-section-header">Available quests:</h2>
-        <form class="form" id="choose-quest-form" data-url="{% url 'choose_quest' %}">
-          {% csrf_token %}
-          <fieldset>
-            <legend>Select a quest</legend>
-            <ul class="list" id="quest-list"></ul>
-          </fieldset>
-          <button class="button-filled" type="submit" id="choose-quest-btn">Choose Quest</button>
-        </form>
 
-        <!-- placeholder for feedback after submitting -->
-        <p id="feedback-message"></p>
-        
-      </div>
     </div>
     <!-- End of section Quest Display -->
 
