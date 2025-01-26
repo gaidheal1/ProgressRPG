@@ -134,6 +134,8 @@ else:
         }
     }
 
+CSRF_TRUSTED_ORIGINS = ['https://progress-rpg-dev-6581f3bc144e.herokuapp.com/']
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
