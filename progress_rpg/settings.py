@@ -59,7 +59,8 @@ SECRET_KEY = 'django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$qj&(5ri-$
 
 
 ALLOWED_HOSTS = [
-    '*.herokuapp.com/',
+    '*.herokuapp.com',
+    'progress-rpg-dev-6581f3bc144e.herokuapp.com',
     'localhost',
     '127.0.0.1',
 ]
