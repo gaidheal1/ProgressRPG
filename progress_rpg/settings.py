@@ -18,7 +18,7 @@ import os
 ON_HEROKU = "DYNO" in os.environ
 
 if ON_HEROKU:
-    DEBUG = False
+    DEBUG = True
     DB_NAME = os.environ.get('DB_NAME')
     DB_USER = os.environ.get('DB_USERNAME')
     DB_PASSWORD = os.environ.get('DB_PASSWORD')
@@ -28,7 +28,6 @@ if ON_HEROKU:
     EMAIL_HOST = os.environ.get('EMAIL_HOST')
     EMAIL_PORT = os.environ.get('EMAIL_PORT')
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
-
 
 else:
     DOTENV_FILE = '.env'
