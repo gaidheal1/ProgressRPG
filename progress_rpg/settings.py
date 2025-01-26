@@ -11,13 +11,12 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+
 from decouple import Config, RepositoryEnv
-#import environ
 import os
 
 DOTENV_FILE = '.env'
 env_config = Config(RepositoryEnv(DOTENV_FILE))
-
 
 
 # Initialise environment variables
@@ -97,6 +96,7 @@ WSGI_APPLICATION = 'progress_rpg.wsgi.application'
 
 DATABASES = {
     'default': {
+
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': env_config.get('DB_NAME', default='progress_rpg'),
         'USER': env_config.get('DB_USERNAME', default='duncan'),
@@ -105,7 +105,6 @@ DATABASES = {
         'PORT': env_config.get('DB_PORT', cast=int, default=5432),
     }
 }
-
 
 
 # Password validation

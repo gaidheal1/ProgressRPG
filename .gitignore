@@ -5,6 +5,7 @@ venv-linux
 __pycache__/
 .env
 env.env
+env
 node_modules
 .dockerignore
 deploy_heroku.sh
