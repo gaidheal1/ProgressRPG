@@ -118,8 +118,12 @@ WSGI_APPLICATION = 'progress_rpg.wsgi.application'
 
 if ON_HEROKU:
     DATABASES = {
-        'default': {
+        'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+    }
 
+else:
+    DATABASES = {
+        'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': DB_NAME,
             'USER': DB_USER,
@@ -127,10 +131,6 @@ if ON_HEROKU:
             'HOST': DB_HOST,
             'PORT': DB_PORT,
         }
-    }
-else:
-    DATABASE = {
-        'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
     }
 
 # Password validation
