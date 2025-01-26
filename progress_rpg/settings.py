@@ -15,13 +15,27 @@ from pathlib import Path
 from decouple import Config, RepositoryEnv
 import os
 
-DOTENV_FILE = '.env'
-env_config = Config(RepositoryEnv(DOTENV_FILE))
+ON_HEROKU = "DYNO" in os.environ
+
+if ON_HEROKU:
+    DB_NAME = os.environ.get('DB_NAME')
+    DB_USER = os.environ.get('DB_USERNAME')
+    DB_PASSWORD = os.environ.get('DB_PASSWORD')
+    DB_HOST = os.environ.get('DB_HOST')
+    DB_PORT = os.environ.get('DB_PORT')
+    DEBUG = False
+
+else:
+    DOTENV_FILE = '.env'
+    env_config = Config(RepositoryEnv(DOTENV_FILE))
+    DEBUG = env_config.get('DEBUG', default=True, cast=bool)
+    DB_NAME = env_config.get('DB_NAME', default='progress_rpg')
+    DB_USER = env_config.get('DB_USERNAME', default='duncan')
+    DB_PASSWORD = env_config.get('DB_PASSWORD')
+    DB_HOST = env_config.get('DB_HOST', default='localhost')
+    DB_PORT = env_config.get('DB_PORT', cast=int, default=5432)
 
 
-# Initialise environment variables
-#env = environ.Env()
-#environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,8 +47,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$qj&(5ri-$'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env_config.get('DEBUG', default=True, cast=bool)
+
+
 
 ALLOWED_HOSTS = [
     '.localhost',
@@ -98,11 +112,11 @@ DATABASES = {
     'default': {
 
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env_config.get('DB_NAME', default='progress_rpg'),
-        'USER': env_config.get('DB_USERNAME', default='duncan'),
-        'PASSWORD': env_config.get('DB_PASSWORD'),
-        'HOST': env_config.get('DB_HOST', default='localhost'),
-        'PORT': env_config.get('DB_PORT', cast=int, default=5432),
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
     }
 }
 
