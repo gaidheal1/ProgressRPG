@@ -4,26 +4,26 @@
 
 {% block content %}
 <div id="gameplay-container">
-  
+
   <div id="info-bar">
 
     <!-- Player info -->
     <div id="player-info" class="info-box">
-            
+
       <div class="info-block left">
-        <div class="info-line" >
+        <div class="info-line">
           <span>Player:</span>
-          <span id="player-name" class="name-disp"></span> 
+          <span id="player-name" class="name-disp"></span>
         </div>
       </div>
 
       <div class="info-block right">
         <div class="info-line">
           <div class="level-info"><span>Level</span>
-            <span id="player-level" ></span>
+            <span id="player-level"></span>
           </div>
           <div class="xp-info"><span>XP:</span>
-            <span id="player-xp" ></span> / <span id="player-xp-next"></span>
+            <span id="player-xp"></span> / <span id="player-xp-next"></span>
           </div>
         </div>
       </div>
@@ -35,19 +35,19 @@
     <div id="character-info" class="info-box">
 
       <div class="info-block left">
-        <div class="info-line person" >
+        <div class="info-line person">
           <span>Character:</span>
-          <span id="character-name" class="name-disp"></span> 
+          <span id="character-name" class="name-disp"></span>
         </div>
       </div>
 
       <div class="info-block right">
         <div class="info-line">
           <div class="level-info"><span>Level</span>
-            <span id="character-level" ></span>
+            <span id="character-level"></span>
           </div>
           <div class="xp-info"><span>XP:</span>
-            <span id="character-xp" ></span> / <span id="character-xp-next"></span>
+            <span id="character-xp"></span> / <span id="character-xp-next"></span>
           </div>
         </div>
       </div>
@@ -63,10 +63,11 @@
 
     <!-- Activity -->
     <div id="activity-section" class="game-section">
-      
+
       <div id="activity-top-bar" class="section-top-bar">
         <div class="section-status">
-          <span class="section-status-header">Activity:</span><span class="section-status-message" id="activity-status-text">waiting</span>
+          <span class="section-status-header">Activity:</span><span class="section-status-message"
+            id="activity-status-text">waiting</span>
         </div>
         <div class="timer-frame">
           <span id="activity-timer" class="timer-text">00:00</span>
@@ -74,18 +75,20 @@
       </div>
 
       <div class="current-item" id="current-activity-section">
-        <span class="current-item-header">Current activity:</span> <span class="current-item-message" id="activity-name">None</span>
+        <span class="current-item-header">Current activity:</span> <span class="current-item-message"
+          id="activity-name">None</span>
       </div>
 
       <div class="input-div" id="activity-input-div">
         <input class="field-div" type="text" id="activity-input" placeholder="Enter activity" />
       </div>
       <div class="button-frame" id="activity-buttons">
-        <button class="button-filled" id="start-activity-btn" >Enter Activity</button>
-        <button class="button-filled" id="stop-activity-btn" disabled="true">Stop activity and submit</button>
+        <button class="button-filled" id="start-activity-btn">Enter Activity</button>
+        <button class="button-filled" id="stop-activity-btn" disabled="true" style="display: none;">Stop activity and
+          submit</button>
       </div>
-      
-      
+
+
       <div class="list-section" id="today-activities">
         <h3 class="list-section-header">Today's activities</h3>
         <div id="activity-totals">
@@ -105,9 +108,10 @@
     <div id="quest-section" class="game-section">
       <div class="section-top-bar">
         <div class="section-status">
-          <span class="section-status-header">Quest:</span><span class="section-status-message" id="quest-status-text">waiting</span>
+          <span class="section-status-header">Quest:</span><span class="section-status-message"
+            id="quest-status-text">waiting</span>
         </div>
-        
+
         <div class="timer-frame">
           <span id="quest-timer" class="timer-text">00:00</span>
         </div>
@@ -115,23 +119,24 @@
 
       <div class="current-item" id="current-quest-section">
         <div>
-          <span class="current-item-header">Current quest:</span> <span class="current-item-message" id="current-quest-title">None</span>
-          </div>
-          
+          <span class="current-item-header">Current quest:</span> <span class="current-item-message"
+            id="current-quest-title">None</span>
         </div>
-        
+
+      </div>
+
       <div id="current-quest-description">None</div>
       <div id="current-quest-intro" class="quest-text"></div>
-      
-      <div class="list-section" id="quest-stages">  
+
+      <div class="list-section" id="quest-stages">
         <span class="list-section-header">Current stage:</span> <span id="current-quest-active-stage"></span>
         <ul class="list" id="quest-stages-list" hidden="true">
           <!-- Quest stages dynamically loaded here -->
         </ul>
-      </div>      
-      
+      </div>
+
       <div id="current-quest-outro" class="quest-text" style="display: none;"></div>
-      
+
       <div class="list-section hidden" id="quest-rewards">
         <h2 class="list-section-header">Quest rewards</h2>
         <ul class="list" id="quest-rewards-list">
@@ -139,7 +144,7 @@
       </div>
 
       <div class="button-frame" id="show-quests-btn-frame">
-        <button class="button-filled" id="show-quests-btn">Show quests</button>  
+        <button class="button-filled" id="show-quests-btn">Show quests</button>
       </div>
 
 
@@ -149,39 +154,39 @@
           <button id="close-modal-btn" class="close-btn">x</button>
 
           <!-- Quest Categories and list-->
-           <div class="quest-pane">
+          <div class="quest-pane">
             <h2 id="quest-list-title">Available quests</h2>
             <ul id="quest-list-modal" class="list">
               <!-- Quests dynamically loaded here -->
             </ul>
-           </div>
-
-           <!-- Quest details -->
-            <div class="details-pane">
-              <h2 id="quest-title">No quest selected</h2>
-              <p id="quest-description"></p>
-              <div id="quest-rewards">
-                <h3>Rewards:</h3>
-                <div id="xp-reward" class="reward">
-                  <span class="reward-label">XP:</span>
-                  <span class="reward-value" id="xp-reward-value">0</span>
-                </div>
-                <div id="coin-reward" class="reward">
-                  <span class="reward-label">Coins:</span>
-                  <span class="reward-value" id="coin-reward-value">0</span>
-                </div>
-                <div id="other-rewards" class="reward">
-                  <ul class="list" id="other-rewards-list">
-                    <!-- Other rewards dynamically loaded here -->
-                  </ul>
-                </div>
-              </div>
-              <button class="button-filled" id="choose-quest-btn">Choose Quest</button>
-            </div>
-            
           </div>
+
+          <!-- Quest details -->
+          <div class="details-pane">
+            <h2 id="quest-title">No quest selected</h2>
+            <p id="quest-description"></p>
+            <div id="quest-rewards">
+              <h3>Rewards:</h3>
+              <div id="xp-reward" class="reward">
+                <span class="reward-label">XP:</span>
+                <span class="reward-value" id="xp-reward-value">0</span>
+              </div>
+              <div id="coin-reward" class="reward">
+                <span class="reward-label">Coins:</span>
+                <span class="reward-value" id="coin-reward-value">0</span>
+              </div>
+              <div id="other-rewards" class="reward">
+                <ul class="list" id="other-rewards-list">
+                  <!-- Other rewards dynamically loaded here -->
+                </ul>
+              </div>
+            </div>
+            <button class="button-filled" id="choose-quest-btn">Choose Quest</button>
+          </div>
+
         </div>
-        <!-- End of modal-->
+      </div>
+      <!-- End of modal-->
 
 
     </div>

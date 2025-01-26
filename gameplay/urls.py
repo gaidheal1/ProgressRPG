@@ -15,5 +15,6 @@ urlpatterns = [
     path('fetch_activities/', views.fetch_activities, name='fetch_activities'),
     path('fetch_info/', views.fetch_info, name='fetch_info'),
     path('get_game_statistics', views.get_game_statistics, name='get_game_statistics'),
+    path('heartbeat/', views.heartbeat, name='heartbeat'),
 ]
 

@@ -9,3 +9,5 @@ node_modules
 .dockerignore
 deploy_heroku.sh
 gunicorn_config.py
+backup_file.sql
+backup_file.dump

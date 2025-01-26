@@ -2,16 +2,16 @@ document.addEventListener('DOMContentLoaded', () => {
   initialiseTimers();
   setupEventListeners();
   updateUI();
+  startHeartbeat();
 });
-  
 
 function initialiseTimers() {
-  window.activityTimer = new Timer('activity-timer', mode="activity", duration=0);
-  window.questTimer = new Timer('quest-timer', mode="quest", duration=0);
+  window.activityTimer = new Timer('activity-timer', "activity", 0);
+  window.questTimer = new Timer('quest-timer', "quest", 0);
   window.activitySelected = false;
   window.questSelected = false;
 }
-  
+
 function setupEventListeners() {
   document.getElementById("start-activity-btn").addEventListener("click", createActivityTimer);
   document.getElementById('show-quests-btn').addEventListener('click', openModal);
@@ -20,16 +20,12 @@ function setupEventListeners() {
     if (e.target === modal) closeModal();
   });
   document.getElementById('choose-quest-btn').addEventListener('click', chooseQuest);
-  
-  const stopButton = document.getElementById("stop-activity-btn");
-  stopButton.addEventListener("click", submitActivity);
-  stopButton.style.display = "none";
+  document.getElementById("stop-activity-btn").addEventListener("click", submitActivity);
 
-  // Timer event listeners
-  //window.activityTimer.on('stopped', onActivityTimerStopped);
   window.activityTimer.on('completed', onActivitySubmitted);
-  //window.questTimer.on('stopped', onQuestTimerStopped);
-  window.questTimer.on('completed', onQuestCompleted); 
+  window.questTimer.on('completed', onQuestCompleted);
+
+  
 }
 
 function updateUI() {
@@ -40,10 +36,28 @@ function updateUI() {
   document.getElementById('quest-timer').textContent = window.questTimer.remainingTime;
   //document.getElementById(window.questTimer.displayElement).textContent = window.questTimer.remainingTime;
   window.questTimer.updateDisplay();
-  
   fetchActivities();
   fetchQuests();
   fetchInfo();
+}
+
+function startHeartbeat() {
+  setInterval(async () => {
+    try {
+      await fetch('/heartbeat/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          activity: window.activitySelected,
+          quest: window.questSelected,
+        }),
+      });
+    } catch (e) {
+      console.error('Heartbeat failed:', e);
+    }
+  }, 5000); // Send heartbeat every 5 seconds
 }
 
 const modal = document.getElementById('quest-modal');
@@ -52,14 +66,11 @@ function openModal() {
   modal.style.display = "block";
 }
 
-
 function closeModal() {
   modal.style.display = "none";
 }
 
 function showQuestDetails(quest) {
-  console.log("quest.result:", quest.result);
-
   document.getElementById('quest-title').textContent = quest.name;
   document.getElementById('quest-description').textContent = quest.description;
   document.getElementById('xp-reward-value').textContent = quest.result.xp_reward;
@@ -68,7 +79,7 @@ function showQuestDetails(quest) {
   otherRewards.innerHTML = "";
   Object.entries(quest.result.dynamic_rewards).forEach(([key, value]) => {
     const li = document.createElement("li");
-    li.textContent = (`${key}: ${value}`);
+    li.textContent = `${key}: ${value}`;
     otherRewards.appendChild(li);
   });
   document.querySelectorAll(".quest-list-modal li").forEach(li => li.classList.remove("selected"));
@@ -93,7 +104,7 @@ class Quest {
   }
 
   advanceStage() {
-    if (this.currentStageIndex < this.stages.length -1) {
+    if (this.currentStageIndex < this.stages.length - 1) {
       this.renderPreviousStage();
       this.currentStageIndex++;
       document.getElementById('current-quest-active-stage').textContent = this.stages[this.currentStageIndex].text;
@@ -104,10 +115,7 @@ class Quest {
 
   updateProgress(elapsedTime) {
     this.elapsedTime = elapsedTime;
-    while (
-      this.currentStageIndex < this.stages.length -1 &&
-      this.elapsedTime >= this.stages[this.currentStageIndex].endTime
-    ) {
+    while (this.currentStageIndex < this.stages.length - 1 && this.elapsedTime >= this.stages[this.currentStageIndex].endTime) {
       this.advanceStage();
     }
   }
@@ -115,7 +123,7 @@ class Quest {
   renderPreviousStage() {
     const stagesList = document.getElementById('quest-stages-list');
     if (stagesList.style.display == "none") {
-      stagesList.style.display == "flex";
+      stagesList.style.display = "flex";
     }
     stagesList.innerHTML += `<li>${this.stages[this.currentStageIndex].text}</li>`;
   }
@@ -129,7 +137,7 @@ class Quest {
 
   resetDisplay() {
     const stagesList = document.getElementById('quest-stages-list');
-    stagesList.style.display == "none";
+    stagesList.style.display = "none";
     stagesList.innerHTML = "";
   }
 }
@@ -148,7 +156,7 @@ class EventEmitter {
   }
 
   // Unsubscribe
-  off(event,  listener) {
+  off(event, listener) {
     if (!this.events[event]) return;
     this.events[event] = this.events[event].filter(l => l !== listener);
   }
@@ -163,10 +171,10 @@ class EventEmitter {
 class Timer extends EventEmitter {
   constructor(displayElementId, mode, duration = 0) {
     super();
-    this.displayElement = document.getElementById(displayElementId); // Where to display the timer
-    this.duration = duration; // Total time in seconds
-    this.intervalIdTime = null; // To track the interval
-    this.intervalIdSync = null; 
+    this.displayElement = document.getElementById(displayElementId);
+    this.duration = duration;
+    this.intervalIdTime = null;
+    this.intervalIdSync = null;
     this.startTime = new Date();
     this.elapsedTime = 0; // For countdown timers
     this.remainingTime = duration; // For countdown timers
@@ -176,20 +184,20 @@ class Timer extends EventEmitter {
 
   start() {
     if (this.isRunning) return;
-    
+
     this.isRunning = true;
     // Start timer
     this.intervalIdTime = setInterval(() => {
-      this.elapsedTime += 1;  
+      this.elapsedTime += 1;
       if (this.mode === "quest") {
         this.remainingTime -= 1;
-        window.currentQuest.updateProgress(this.elapsedTime)
+        window.currentQuest.updateProgress(this.elapsedTime);
 
         if (this.remainingTime <= 0) {
-            this.stop();
-            this.onComplete();
+          this.stop();
+          this.onComplete();
         }
-      };
+      }
       this.updateDisplay();
     }, 1000);
     // Start sync timer
@@ -199,14 +207,13 @@ class Timer extends EventEmitter {
       //console.log("diff", diff)
     }, 3000); // 300000 for 5 minutes, smaller for testing
   }
-  
+
   stop() {
     if (!this.isRunning) return;
-    console.log("timer stop function,", this.mode)
     this.isRunning = false;
     clearInterval(this.intervalIdTime);
-    this.emit('stopped', {timer: this});
-    clearInterval(this.intervalIdSync)
+    this.emit('stopped', { timer: this });
+    clearInterval(this.intervalIdSync);
   }
 
   reset(newDuration = this.duration, elapsedTime = 0) {
@@ -214,117 +221,93 @@ class Timer extends EventEmitter {
     this.elapsedTime = elapsedTime;
     this.remainingTime = this.mode === "quest" ? newDuration : 0;
     this.updateDisplay();
-    this.emit('reset', {timer: this});
+    this.emit('reset', { timer: this });
   }
 
   updateDisplay() {
-    let timeToDisplay = this.mode === "quest" ? this.remainingTime : this.elapsedTime;
+    const timeToDisplay = this.mode === "quest" ? this.remainingTime : this.elapsedTime;
     const minutes = Math.floor(timeToDisplay / 60);
     const seconds = timeToDisplay % 60;
-    const text = `${minutes}:${seconds.toString().padStart(2, "0")}`
-    this.displayElement.textContent = text;
+    this.displayElement.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
   }
 
   onComplete() {
     console.log("Timer complete!");
-    this.emit('completed', {timer: this});
+    this.emit('completed', { timer: this });
   }
 
   async syncWithServer(endpoint, csrfToken) {
     const data = this.mode === "quest" ? { remaining_time: this.remainingTime } : { elapsed_time: this.elapsedTime };
 
     const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
-        },
-        body: JSON.stringify(data),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,
+      },
+      body: JSON.stringify(data),
     });
 
     if (response.ok) {
-        console.log("Timer synced with server.");
+      console.log("Timer synced with server.");
     } else {
-        console.error("Failed to sync timer with server.");
+      console.error("Failed to sync timer with server.");
     }
   }
 }
 
 function onActivityTimerStopped(data) {
-  // Handle when the activity timer stops
-  console.log("function onActivityTimerStopped");
-  window.questTimer.stop();  // Stop the quest timer
+  window.questTimer.stop();
 }
 
 function onActivitySubmitted(data) {
-  // Handle when the quest timer completes
-  console.log("function onActivitySubmitted");
   window.activityTimer.reset();
   window.questTimer.stop();
-  //stopTimer('activity');
   submitActivity();
-};
+}
 
 function onQuestTimerStopped(data) {
-  // Handle when the activity timer stops
-  console.log("function onQuestTimerStopped!");
-  window.activityTimer.stop();  // Stop the activity timer
-
+  window.activityTimer.stop();
 }
 
 function onQuestCompleted(data) {
-  // Handle when the quest timer completes
-  console.log("function onQuestTimerCompleted");
   window.activityTimer.stop();
-  //stopTimer('activity');
   submitQuest();
-};
+}
 
 function formatDuration(seconds) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  let formattedDuration = "";
-
-  if (hours > 0) {
-      formattedDuration += `${hours}:`;
-  } 
-  if (seconds > 0) {
-      //if (formattedDuration) formattedDuration += " ";
-      formattedDuration += `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  } else {
-    formattedDuration = "00:00"
-  }
-  return formattedDuration;
+  return `${hours > 0 ? `${hours}:` : ""}${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-
-// Start an activity timer
 async function createActivityTimer() {
-  //event.preventDefault();
+  const activityInput = document.getElementById('activity-input');
+  if (!validateInput(activityInput.value)) {
+    alert("Invalid input. Please use only letters, numbers, and spaces.");
+    return;
+  }
   try {
-    const activityInput = document.getElementById('activity-input');
     const response = await fetch("/create_activity_timer/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ activityName: activityInput.value })
-    })
+    });
     const data = await response.json();
-    
+
     if (data.success) {
       window.activitySelected = true;
       startTimerIfReady();
-      
       document.getElementById('start-activity-btn').setAttribute("disabled", true);
       document.getElementById('activity-input-div').style.display = "none";
       document.getElementById('activity-name').innerText = activityInput.value;
-
     }
-  } catch(e) {
+  } catch (e) {
     console.error('Error:', e);
-  };
+  }
 }
 
 
@@ -335,26 +318,20 @@ async function chooseQuest(event) {
     window.currentQuest.resetDisplay();
   }
   try {
-    // Determine if the quest is selected from the modal or the form
-    const selectedQuest = document.querySelector('#quest-list-modal .selected') || document.querySelector('input[name="quest"]:checked');
-    console.log('selectedQuest:', selectedQuest);
+    const selectedQuest = document.querySelector('#quest-list-modal .selected');
     if (!selectedQuest) {
       alert("Please select a quest first.");
       return;
     }
     const questId = selectedQuest.dataset.index;
-    console.log('questId:', questId);
-    
     const response = await fetch("/choose_quest/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ "quest_id": questId }) 
-    })
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ "quest_id": questId })
+    });
+    await checkResponse(response);
 
     const data = await response.json();
     if (data.success) {
@@ -362,24 +339,27 @@ async function chooseQuest(event) {
       document.getElementById('quest-rewards').style.display = "none";
       document.getElementById('current-quest-outro').style.display = "none";
       // Load quest details
-      const quest = data.quest;
-      window.currentQuest = new Quest(quest.id, quest.name, quest.description, quest.intro_text, quest.outro_text, quest.duration, quest.stages);
-      window.currentQuest.initialDisplay();
-      window.questSelected = true;
-      
-      window.questTimer.reset(window.currentQuest.duration);
-      
+      loadQuest(data.quest);
+
       if (selectedQuest.tagName === 'LI') {
         closeModal();
       } else {
         selectedQuest.checked = false;
       }
-    } else { document.getElementById('feedback-message').textContent = "Quest selection failed, please try again.";
+    } else {
+      document.getElementById('feedback-message').textContent = "Quest selection failed, please try again.";
     }
     startTimerIfReady();
-  } catch(e) {
-      console.error('Error:', e);
+  } catch (e) {
+    console.error('Error:', e);
   }
+}
+
+function loadQuest(quest) {
+  window.currentQuest = new Quest(quest.id, quest.name, quest.description, quest.intro_text, quest.outro_text, quest.duration, quest.stages);
+  window.currentQuest.initialDisplay();
+  window.questSelected = true;
+  window.questTimer.reset(window.currentQuest.duration);
 }
 
 // Start timers when both activity and quest are selected
@@ -395,14 +375,10 @@ function startTimerIfReady() {
     document.getElementById('activity-status-text').innerText = "running";
     document.getElementById('quest-status-text').innerText = "running";
 
-    // Start client timers
-    window.activityTimer.start();  // Start the activity timer
-    window.questTimer.start();     // Start the quest timer
-    // Start server timers
+    window.activityTimer.start();
+    window.questTimer.start();
     startTimer("activity");
     startTimer("quest");
-
-    //console.log('Both timers started!');
   }
 }
 
@@ -412,55 +388,46 @@ function startTimerIfReady() {
 async function startTimer(mode) {
   try {
     const response = await fetch("/start_timer/", {
-        method: 'POST',
-        headers: {"Content-Type": "text/plain"},
-        body: mode,
-      });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    
+      method: 'POST',
+      headers: { "Content-Type": "text/plain" },
+      body: mode,
+    });
+    await checkResponse(response);
+
     const data = await response.json();
     if (data.success) {
-      console.log(data.message)
+      console.log(data.message);
     } else {
-      console.error(data.messsage)
+      console.error(data.message);
     }
   } catch (e) {
     console.error('There was a problem:', e);
-  };
-};
+  }
+}
 
-// Stop a timer
 async function stopTimer(mode) {
   try {
-    //activityTimer.stop()
     const response = await fetch("/stop_timer/", {
-        method: 'POST',
-        headers: {"Content-Type": "text/plain"},
-        body: mode,
-      });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+      method: 'POST',
+      headers: { "Content-Type": "text/plain" },
+      body: mode,
+    });
+    await checkResponse(response);
     const data = await response.json();
     if (data.success) {
-      console.log(data.message)
+      console.log(data.message);
     } else {
-      console.error(data.messsage)
+      console.error(data.message);
     }
   } catch (e) {
     console.error('There was a problem:', e);
-  };
+  }
 }
 
 
 // Submit an activity
 async function submitActivity(event) {
   event.preventDefault();
-  //if (window.questSelected === true) {
-  //  stopTimer('quest');
-  //}
   const activityInput = document.getElementById('activity-input');
   try {
     const response = await fetch("/submit_activity/", {
@@ -470,9 +437,7 @@ async function submitActivity(event) {
       },
       body: JSON.stringify({ activityName: activityInput.value }),
     });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    await checkResponse(response);
     const data = await response.json();
     if (data.success) {
       console.log(data.message)
@@ -480,6 +445,7 @@ async function submitActivity(event) {
       if (activityList.innerText == "") {
         console.log("No activities today.. so far");
       }
+      console.log(data.activities[0]);
       addActivityToList(data.activities[0]);
       // Adjust display
       const startActivityButton = document.getElementById('start-activity-btn')
@@ -490,18 +456,15 @@ async function submitActivity(event) {
       stopActivityButton.style.display = "none";
 
       document.getElementById('activity-input-div').style.display = "flex";
-
       window.activityTimer.reset();
       window.activitySelected = false;
       // Update statuses
       document.getElementById('activity-status-text').innerText = "finished";
       document.getElementById('quest-status-text').innerText = "waiting";
-
       activityInput.value = "";
     } else {
-      console.error(data.messsage)
+      console.error(data.message);
     }
-    
   } catch (e) {
     console.error('There was a problem:', e);
   }
@@ -510,11 +473,9 @@ async function submitActivity(event) {
 function addActivityToList(activity) {
   const activityList = document.getElementById('activity-list');
   const listItem = document.createElement('li');
-  const activitiesTimeMessage = document.getElementById('activities-time-message');
-  // Add activity as list item
   listItem.textContent = `${activity.name} - ${formatDuration(activity.duration)}`;
   activityList.prepend(listItem);
-  
+  const activitiesTimeMessage = document.getElementById('activities-time-message');
   // Insert text for totals messages
   if (activitiesTimeMessage.innerText == "") {
     activitiesTimeMessage.innerText = "Total time today: "
@@ -526,7 +487,7 @@ function addActivityToList(activity) {
   window.activitiesNumber += 1;
   document.getElementById('activities-time-data').innerText = formatDuration(window.activitiesTime);
   document.getElementById('activities-total-data').innerText = window.activitiesNumber;
-};
+}
 
 function submitQuestDisplayUpdate() {
   // Change buttons
@@ -537,7 +498,7 @@ function submitQuestDisplayUpdate() {
   document.getElementById('quest-description').textContent = "";
   document.getElementById('xp-reward-value').textContent = "";
   document.getElementById('coin-reward-value').textContent = "";
-  document.getElementById('other-rewards').innerHTML = "";
+  document.getElementById('other-rewards-list').innerHTML = "";
   // Update statuses
   document.getElementById('activity-status-text').innerText = "waiting";
   document.getElementById('quest-status-text').innerText = "finished";
@@ -548,27 +509,23 @@ function submitQuestDisplayUpdate() {
 // Submit quest
 async function submitQuest() {
   try {
-    //stopTimer('activity');
     const response = await fetch('/quest_completed/', {
       method: 'POST',
     });
     //console.log('response ok:', response.ok);
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    await checkResponse(response);
     const data = await response.json();
     if (data.success) {
       submitQuestDisplayUpdate();
       window.questSelected = false;
       fetchQuests();
     } else {
-      console.error(data.messsage)
+      console.error(data.message);
     }
   } catch (e) {
     console.error('There was a problem:', e);
   }
 }
-
 
 
 // Fetch activities
@@ -577,19 +534,16 @@ async function fetchActivities() {
     const response = await fetch('/fetch_activities/', {
       method: 'GET',
     });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    await checkResponse(response);
     const data = await response.json();
     if (data.success) {
-      console.log(data.message)
       const activities = data.activities;
       const activityList = document.getElementById('activity-list');
       activityList.innerHTML = '';
       window.activitiesNumber = 0;
       window.activitiesTime = 0;
       if (activities.length == 0) {
-        document.getElementById('activity-list').innerText = "No activities done today!"
+        activityList.innerText = "No activities done today!";
       } else {
         activities.forEach(activity => {
           window.activitiesNumber += 1;
@@ -600,16 +554,15 @@ async function fetchActivities() {
         });
         const activityTimeMessage = document.getElementById('activities-time-message');
         if (activityTimeMessage.innerText == "") {
-          activityTimeMessage.innerText = "Total time today: "
-          document.getElementById('activities-total-message').innerText = "; total activities today: "
-        };
+          activityTimeMessage.innerText = "Total time today: ";
+          document.getElementById('activities-total-message').innerText = "; total activities today: ";
+        }
         document.getElementById('activities-time-data').innerText = formatDuration(window.activitiesTime);
         document.getElementById('activities-total-data').innerText = window.activitiesNumber;
       }
     } else {
-      console.error(data.messsage)
+      console.error(data.message);
     }
-    
   } catch (e) {
     console.error('There was a problem:', e);
   }
@@ -621,18 +574,16 @@ async function fetchQuests() {
     const response = await fetch('/fetch_quests/', {
       method: 'GET',
     });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    await checkResponse(response);
     const data = await response.json();
     if (data.success) {
       const quests = data.quests;
-      
+
 
       // Quest modal stuff
       const questList = document.getElementById('quest-list-modal');
       questList.innerHTML = "";
-      quests.forEach((quest, index) => {
+      quests.forEach(quest => {
         const li = document.createElement("li");
         li.textContent = quest.name;
         li.dataset.index = quest.id;
@@ -640,7 +591,7 @@ async function fetchQuests() {
         questList.appendChild(li);
       });
     } else {
-      console.error(data.message)
+      console.error(data.message);
     }
   } catch (e) {
     console.error('There was a problem:', e);
@@ -654,38 +605,34 @@ async function fetchInfo() {
     const response = await fetch('/fetch_info/', {
       method: 'GET',
     });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    await checkResponse(response);
     const data = await response.json();
     if (data.success) {
       const character = data.character;
       const profile = data.profile;
-      document.getElementById('player-name').innerText = profile.name
-      document.getElementById('player-xp').innerText = profile.xp
-      document.getElementById('player-xp-next').innerText = profile.xp_next_level
-      document.getElementById('player-level').innerText = profile.level
+      document.getElementById('player-name').innerText = profile.name;
+      document.getElementById('player-xp').innerText = profile.xp;
+      document.getElementById('player-xp-next').innerText = profile.xp_next_level;
+      document.getElementById('player-level').innerText = profile.level;
 
-      document.getElementById('character-name').innerText = character.name
-      document.getElementById('character-xp').innerText = character.xp
-      document.getElementById('character-xp-next').innerText = character.xp_next_level
-      document.getElementById('character-level').innerText = character.level
+      document.getElementById('character-name').innerText = character.name;
+      document.getElementById('character-xp').innerText = character.xp;
+      document.getElementById('character-xp-next').innerText = character.xp_next_level;
+      document.getElementById('character-level').innerText = character.level;
 
       if (data.current_activity) {
-        console.log('current activity detected, name:', data.current_activity.name);
         document.getElementById('activity-name').innerText = data.current_activity.name;
         window.activityTimer.reset(elapsedTime = data.current_activity.duration);
         window.activitySelected = true;
         hideInput();
       }
       if (data.current_quest) {
-        console.log('current quest detected, name:', data.current_quest.name);
-        //document.getElementById('activity-name').innerText = data.current_activity.name;
-        window.questTimer.reset(newDuration = data.current_quest.duration);
-        //document.getElementById('activity-timer').innerText = data.current_activity.duration;
+        loadQuest(data.current_quest);
+        window.questTimer.reset(elapsedTime = data.current_quest.elapsed_time);
       }
+      startTimerIfReady();
     } else {
-      console.error(data.message)
+      console.error(data.message);
     }
   } catch (e) {
     console.error('There was a problem:', e);
@@ -693,10 +640,10 @@ async function fetchInfo() {
 }
 
 function showInput() {
-  const startActivityButton = document.getElementById('start-activity-btn')
+  const startActivityButton = document.getElementById('start-activity-btn');
   startActivityButton.removeAttribute("disabled");
   startActivityButton.style.display = "flex";
-  const stopActivityButton = document.getElementById('stop-activity-btn')
+  const stopActivityButton = document.getElementById('stop-activity-btn');
   stopActivityButton.setAttribute("disabled", true);
   stopActivityButton.style.display = "none";
 
@@ -704,43 +651,33 @@ function showInput() {
 }
 
 function hideInput() {
-  const startActivityButton = document.getElementById('start-activity-btn')
+  const startActivityButton = document.getElementById('start-activity-btn');
   startActivityButton.setAttribute("disabled", true);
   startActivityButton.style.display = "none";
-  const stopActivityButton = document.getElementById('stop-activity-btn')
+  const stopActivityButton = document.getElementById('stop-activity-btn');
   stopActivityButton.removeAttribute("disabled");
   stopActivityButton.style.display = "flex";
 
   document.getElementById('activity-input-div').style.display = "none";
-
 }
 
 function showQuests() {
   document.getElementById('show-quests-btn-frame').style.display = "none";
-  //document.getElementById('choose-quest').style.display = "flex";
 }
 
 // Check state
 async function syncTimer(mode) {
-    console.log("syncTimer func, timer mode:", mode)
-    try {
+  try {
     const response = await fetch("/get_timer_state/", {
       method: 'POST',
-      headers: {"Content-Type": "text/plain"},
+      headers: { "Content-Type": "text/plain" },
       body: mode,
     });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    await checkResponse(response);
     const data = await response.json();
     if (data.success) {
-      console.log("syncTimer data response:", data);
       if (mode == "activity") {
-        console.log('server activity duration:', data.timer.duration);
-
         const diff = Math.abs(data.timer.duration - window.activityTimer.elapsedTime);
-
-        console.log("diff", diff)
         if (diff > 10) {
           window.activityTimer.elapsedTime = Math.floor(data.timer.duration);
         }
@@ -751,10 +688,40 @@ async function syncTimer(mode) {
         //return data.timer.remaining_time;
       }
     } else {
-      console.error(data.message)
+      console.error(data.message);
     }
   } catch (e) {
     console.error('There was a problem:', e);
   }
+}
+
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Validate input
+function validateInput(input) {
+  const pattern = /^[a-zA-Z0-9\s]+$/; // Adjust pattern as needed
+  return pattern.test(input);
+}
+
+async function checkResponse(response) {
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  return response;
+}
+
+// Usage in an async function
+async function fetchData(url) {
+  const response = await fetch(url);
+  await checkResponse(response);
+  const data = await response.json();
+  return data;
 }
 
