@@ -18,12 +18,17 @@ import os
 ON_HEROKU = "DYNO" in os.environ
 
 if ON_HEROKU:
+    DEBUG = False
     DB_NAME = os.environ.get('DB_NAME')
     DB_USER = os.environ.get('DB_USERNAME')
     DB_PASSWORD = os.environ.get('DB_PASSWORD')
     DB_HOST = os.environ.get('DB_HOST')
     DB_PORT = os.environ.get('DB_PORT')
-    DEBUG = False
+
+    EMAIL_HOST = os.environ.get('EMAIL_HOST')
+    EMAIL_PORT = os.environ.get('EMAIL_PORT')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
+
 
 else:
     DOTENV_FILE = '.env'
@@ -34,6 +39,10 @@ else:
     DB_PASSWORD = env_config.get('DB_PASSWORD')
     DB_HOST = env_config.get('DB_HOST', default='localhost')
     DB_PORT = env_config.get('DB_PORT', cast=int, default=5432)
+
+    EMAIL_HOST = env_config.get('EMAIL_HOST')
+    EMAIL_PORT = env_config.get('EMAIL_PORT', cast=int)
+    EMAIL_HOST_PASSWORD = env_config.get('EMAIL_PASSWORD')
 
 
 
@@ -169,13 +178,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# Email settings
+# Email settings (host, port and password are at top)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = env_config.get('EMAIL_HOST')
-EMAIL_PORT = env_config.get('EMAIL_PORT', cast=int)
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'admin@progressrpg.com'
-EMAIL_HOST_PASSWORD = env_config.get('EMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = 'admin@progressrpg.com'
 
 # Optionally, configure for error emails
