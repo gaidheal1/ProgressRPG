@@ -15,6 +15,8 @@ import dj_database_url
 from decouple import Config, RepositoryEnv
 import os
 
+REGISTRATION_ENABLED = False
+
 ON_HEROKU = "DYNO" in os.environ
 
 if ON_HEROKU:

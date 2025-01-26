@@ -1,5 +1,5 @@
 from django.forms import BaseModelForm
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.urls import reverse_lazy
 from django.db import transaction
 from django.contrib import messages
@@ -7,6 +7,7 @@ from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.sessions.models import Session
+from django.conf import settings
 from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView
 import random, json, logging
@@ -21,7 +22,6 @@ logger = logging.getLogger(__name__)
 # Index view
 def index_view(request):
     return render(request, 'index.html')
-
 
 # Login view
 @transaction.atomic
