@@ -67,6 +67,11 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    "https://progress-rpg-dev-6581f3bc144e.herokuapp.com",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
 
 # Application definition
 
@@ -84,6 +89,7 @@ INSTALLED_APPS = [
     'payments',
 
     'decouple',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -93,8 +99,10 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    #'gameplay.mymiddleware.MyAuthMiddleware',
 ]
 
 ROOT_URLCONF = 'progress_rpg.urls'
@@ -115,7 +123,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'progress_rpg.wsgi.application'
+#WSGI_APPLICATION = 'progress_rpg.wsgi.application'
+ASGI_APPLICATION = 'progress_rpg.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -138,6 +147,15 @@ else:
     }
 
 CSRF_TRUSTED_ORIGINS = ['https://progress-rpg-dev-6581f3bc144e.herokuapp.com/']
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": 'channels_redis.core.RedisChannelLayer',
+        "CONFIG": {
+            "hosts": [('localhost', 6379)],
+        },
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -197,9 +215,17 @@ DEFAULT_FROM_EMAIL = 'admin@progressrpg.com'
 # Optionally, configure for error emails
 ADMINS = [('Admin', 'admin@progressrpg.com')]  # The emails to receive error notifications
 
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-
+# Session settings
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_NAME = 'sessionid'
+SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_DOMAIN = None
+SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SAMESITE = None
+SESSION_COOKIE_HTTPONLY = True
+# For local development
+CSRF_COOKIE_DOMAIN = None
 
 LOGIN_REDIRECT_URL = '/'  # Or wherever you want to go after login
 LOGIN_URL = '/login/'  # Customize the login URL

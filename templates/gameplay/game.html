@@ -197,5 +197,6 @@
 
 </div>
 <script src="{% static 'js/game.js' %}"></script>
+<script>window.profile_id = "{{ request.user.profile.id }}";</script>
 
 {% endblock %}
