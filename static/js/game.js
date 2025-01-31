@@ -29,8 +29,6 @@ async function openSocket() {
 function initialiseTimers() {
   window.activityTimer = new Timer('activity-timer', "activity");
   window.questTimer = new Timer('quest-timer', "quest");
-  //window.activitySelected = false;
-  //window.questSelected = false;
 }
 
 function setupEventListeners() {
@@ -47,7 +45,6 @@ function setupEventListeners() {
   document.getElementById('choose-quest-btn').addEventListener('click', chooseQuest);
   document.getElementById("stop-activity-btn").addEventListener("click", submitActivity);
 
-  window.activityTimer.on('completed', onActivitySubmitted);
   window.questTimer.on('completed', onQuestCompleted);
 }
 
@@ -219,6 +216,9 @@ class Timer extends EventEmitter {
 
   reset() {
     this.stop();
+    if (this.mode === "activity") {
+      this.elapsedTime = 0;
+    }
     this.updateDisplay();
     this.emit('reset', { timer: this });
   }
@@ -228,20 +228,12 @@ class Timer extends EventEmitter {
   }
 
   onComplete() {
-    console.log("Timer complete!");
     this.emit('completed', { timer: this });
   }
 }
 
 function onActivityTimerStopped(data) {
   window.questTimer.stop();
-}
-
-function onActivitySubmitted(data) {
-  window.activityTimer.reset();
-  window.questTimer.stop();
-  window.profileSocket.stopTimers();
-  submitActivity();
 }
 
 function onQuestTimerStopped(data) {
@@ -262,7 +254,6 @@ function formatDuration(seconds) {
 }
 
 async function createActivity() {
-  console.log("Enter activity button: function");
   const activityInput = document.getElementById('activity-input');
   const csrftoken = getCookie('csrftoken');
   if (!validateInput(activityInput.value)) {
@@ -270,7 +261,6 @@ async function createActivity() {
     return;
   }
   try {
-    console.log("Inside try, same function");
     window.profileSocket.socket.send(JSON.stringify({
       action: "create_activity",
       activity_name: activityInput.value,
@@ -336,6 +326,7 @@ function startTimerIfReady() {
 // Submit an activity
 async function submitActivity(event) {
   event.preventDefault();
+  window.questTimer.stop();
   const activityInput = document.getElementById('activity-input');
   try {
     window.profileSocket.socket.send(JSON.stringify({
@@ -348,7 +339,6 @@ async function submitActivity(event) {
 }
 
 function addActivityToList(activity) {
-  console.log("addactivity to list, activity:", activity);
   const activityList = document.getElementById('activity-list');
   if (document.getElementById(`activity-${activity.id}`)) {
     return;
@@ -402,7 +392,6 @@ async function submitQuest() {
 // Fetch activities
 async function fetchActivities() {
   try {
-    console.log("Fetching activities");
     window.profileSocket.socket.send(JSON.stringify({
       action: "fetch_activities"
     }));
@@ -444,14 +433,13 @@ class ProfileWebSocket {
     return new Promise((resolve, reject) => {
       const protocol = window.location.protocol === "https:" ? "wss" : "ws";
       const url = `${protocol}://${window.location.host}/ws/profile_${this.profile_id}/`
-      console.log("websocket url:", url)
       this.socket = new WebSocket(url);
 
       this.socket.onopen = () => {
         console.log("Connected to timer socket");
         resolve();
       }
-      //console.log("Before onmessage");
+
       this.socket.onmessage = (event) => {
         let data
         try {
@@ -519,7 +507,6 @@ class ProfileWebSocket {
 }
 
 function handleSocketMessage(data) {
-  //console.log("Handling socket message:", data);
   switch (data.type) {
     case "create_activity_response":
       console.log("Received create activity response");
@@ -603,11 +590,11 @@ function handleChooseQuestResponse(data) {
 
 function handleSubmitActivityResponse(data) {
   if (data.success) {
-    console.log("data.activities:", data.activities)
     addActivityToList(data.activities[0]);
     showInput();
     window.activityTimer.reset();
     window.activitySelected = false;
+    document.getElementById('activity-input').value = "";
     document.getElementById('activity-status-text').innerText = "finished";
     document.getElementById('quest-status-text').innerText = "waiting";
   } else {
@@ -628,7 +615,6 @@ function handleQuestCompletedResponse(data) {
 function handleFetchActivitiesResponse(data) {
   if (data.success) {
     const activities = data.activities;
-    //console.log("activities:", activities);
     const activityList = document.getElementById('activity-list');
     activityList.innerHTML = '';
     window.activitiesNumber = 0;
@@ -677,11 +663,9 @@ function handleFetchQuestsResponse(data) {
 
 function handleFetchInfoResponse(data) {
   if (data.success) {
-    console.log("We are here");
     const character = data.character;
     const profile = data.profile;
     window.profile_id = profile.id;
-    console.log("profile id:", window.profile_id);
     document.getElementById('player-name').innerText = profile.name;
     document.getElementById('player-xp').innerText = profile.xp;
     document.getElementById('player-xp-next').innerText = profile.xp_next_level;

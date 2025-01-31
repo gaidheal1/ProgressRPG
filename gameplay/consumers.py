@@ -125,6 +125,7 @@ class ProfileConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def fetch_quests_db(self):
+        print("Inside fetch_quests_db")
         eligible_quests = check_quest_eligibility(self.character, self.profile)
         serializer = QuestSerializer(eligible_quests, many=True)
         #print("quests:", serializer.data)
@@ -142,11 +143,10 @@ class ProfileConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def fetch_info_db(self):
         print("Server: Fetching profile and character info")
-        character = Character.objects.get(profile=self.profile)
         profile_serializer = ProfileSerializer(self.profile)
-        character_serializer = CharacterSerializer(character)
-        current_activity = {"duration": self.profile.current_activity.duration, "name": self.profile.current_activity.name} if self.profile.current_activity else False
-        current_quest = QuestSerializer(character.current_quest).data if character.current_quest else False
+        character_serializer = CharacterSerializer(self.character)
+        current_activity = ActivitySerializer(self.profile.current_activity) if self.profile.current_activity else False
+        current_quest = QuestSerializer(self.character.current_quest).data if self.character.current_quest else False
         data = {
             "profile": profile_serializer.data,
             "character": character_serializer.data,
@@ -240,6 +240,7 @@ class ProfileConsumer(AsyncWebsocketConsumer):
     def submit_activity_db(self):
         activity = self.profile.current_activity
         activity.add_time(self.activity_timer.elapsed_time)
+        self.profile.current_activity.add_time(self.activity_timer.elapsed_time)
         self.activity_timer.reset()
         profile_serializer = ProfileSerializer(self.profile)
         rewards = self.profile.submit_activity()
@@ -253,8 +254,10 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         return data
 
     async def submit_activity(self):
+        print("Profile current activity before:", self.profile.current_activity)
         await self.stop_timers()
         data = await self.submit_activity_db()
+        print("Profile current activity after:", self.profile.current_activity)
         await self.send(text_data=json.dumps({
             "type": "submit_activity_response",
             "success": True,
