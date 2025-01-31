@@ -5,6 +5,7 @@ def create_character_for_profile(profile):
     Character.objects.create(profile=profile)
 
 def check_quest_eligibility(character, profile):
+    print("Inside check_quest_eligibility")
     char_quests = QuestCompletion.objects.filter(character=character)
     quests_done = {}
     for completion in char_quests:
@@ -13,8 +14,9 @@ def check_quest_eligibility(character, profile):
     all_quests = Quest.objects.all()
 
     eligible_quests = []
+    print("Looping through quests now")
     for quest in all_quests:
-        #print('quest:', quest)
+        print('quest:', quest)
         # Test for eligibility
         if quest.checkEligible(character, profile) and \
             quest.not_repeating(character) and \
