@@ -3,6 +3,7 @@ from users.models import Person, Profile
 from django.utils.timezone import now, timedelta
 from datetime import datetime
 import json
+import math
 
 class Quest(models.Model):
     name = models.CharField(max_length=255, default="Default quest name")
@@ -43,7 +44,7 @@ class Quest(models.Model):
     )
 
     def __str__(self):
-        return f"Quest. id: {self.id}, name: {self.name}, minx/max lvl: {self.levelMin}/{self.levelMax}, premium: {self.is_premium}, repeatable: {self.canRepeat}, frequency: {self.frequency}, active: {self.is_active}"
+        return f"Quest. id: {self.id}, name: {self.name}, min/max lvl: {self.levelMin}/{self.levelMax}, premium: {self.is_premium}, repeatable: {self.canRepeat}, frequency: {self.frequency}, active: {self.is_active}"
     
     def apply_results(self, character):
         self.results.apply(character)
@@ -110,7 +111,7 @@ class Quest(models.Model):
         return True
     
     def checkEligible(self, character, profile):
-        #print("you have arrived in checkEligible")
+        print("you have arrived in checkEligible")
         #Simple comparison checks
         if not self.is_active:
             return False
@@ -274,25 +275,24 @@ class Timer(models.Model):
             self.start_time = now()
             self.is_running = True
             self.save()
-            #print(self)
-
+            
     def stop(self):
         if self.is_running:
             server_elapsed = (now() - self.start_time).total_seconds()
-            self.elapsed_time += int(server_elapsed)
+            self.elapsed_time += math.ceil(server_elapsed)
             self.is_running = False
             self.start_time = None
             self.save()
-            #print(self)
-
+            
     def get_elapsed_time(self):
-            return (now() - self.start_time).total_seconds()
-
+            return (now() - self.start_time).total_seconds() if self.start_time else 0
+    
     def reset(self):
         self.elapsed_time = 0
         self.is_running = False
         self.start_time = None
         self.save()
+
 
 class ActivityTimer(Timer):
     profile = models.ForeignKey('users.profile', on_delete=models.CASCADE, related_name='activity_timer')
@@ -300,6 +300,10 @@ class ActivityTimer(Timer):
 
     def __str__(self):
         return f"ActivityTimer for profile {self.profile.name}: started {self.start_time}, {self.elapsed_time} elapsed"
+    
+    def increment_time(self):
+        self.elapsed_time += 1
+        self.save(update_fields=['elapsed_time'])
 
 class QuestTimer(Timer):
     character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='quest_timer')
@@ -310,6 +314,11 @@ class QuestTimer(Timer):
             elapsed = self.get_elapsed_time()
             return max(self.duration - int(elapsed + self.elapsed_time), 0)
         return max(self.duration - self.elapsed_time, 0)
+    
+    def decrement_time(self):
+        if self.elapsed_time < self.duration:
+            self.elapsed_time += 1
+            self.save(update_fields=['elapsed_time'])
     
     def is_complete(self):
         return self.get_remaining_time() <= 0
