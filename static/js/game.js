@@ -1,27 +1,36 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  await openSocket();
-  initialiseTimers();
-  setupEventListeners();
-  await updateUI();
-
+  try {
+    await openSocket();
+    console.log("Current socket state:", window.profileSocket.readyState);
+    initialiseTimers();
+    setupEventListeners();
+    //await updateUI();
+  } catch (e) {
+    console.error('Failed to initialise application:', e);
+  }
 });
 
 async function openSocket() {
-  window.socket = new ProfileWebSocket(window.profile_id);
-  window.socket.connect();
-  await new Promise((resolve) => {
-    window.socket.onopen = () => {
-      console.log("Connected to timer socket");
-      resolve();
-    };
+  return new Promise((resolve, reject) => {
+    const profileSocket = new ProfileWebSocket(window.profile_id);
+    profileSocket.connect()
+      .then(() => {
+        console.log("Connected to timer socket");
+        window.profileSocket = profileSocket
+        resolve();
+      }
+      ).catch((e) => {
+        console.error('Error:', e);
+        reject();
+      });
   });
 }
 
 function initialiseTimers() {
-  window.activityTimer = new Timer('activity-timer', "activity", 0);
-  window.questTimer = new Timer('quest-timer', "quest", 0);
-  window.activitySelected = false;
-  window.questSelected = false;
+  window.activityTimer = new Timer('activity-timer', "activity");
+  window.questTimer = new Timer('quest-timer', "quest");
+  //window.activitySelected = false;
+  //window.questSelected = false;
 }
 
 function setupEventListeners() {
@@ -46,14 +55,6 @@ async function updateUI() {
   document.getElementById('quest-timer').textContent = window.questTimer.remainingTime;
   //document.getElementById(window.questTimer.displayElement).textContent = window.questTimer.remainingTime;
   window.questTimer.updateDisplay();
-  if (window.socket.readyState === WebSocket.OPEN) {
-    await fetchActivities();
-    await fetchQuests();
-    await fetchInfo();
-  } else {
-    console.error("Socket not open");
-  }
-  
 }
 
 
@@ -173,7 +174,6 @@ class Timer extends EventEmitter {
     this.elapsedTime = 0;
     this.remainingTime = 0;
     this.is_running = false;
-
   }
 
   start() {
@@ -236,7 +236,7 @@ function onActivityTimerStopped(data) {
 function onActivitySubmitted(data) {
   window.activityTimer.reset();
   window.questTimer.stop();
-  window.socket.stopTimers();
+  window.profileSocket.stopTimers();
   submitActivity();
 }
 
@@ -246,7 +246,7 @@ function onQuestTimerStopped(data) {
 
 function onQuestCompleted(data) {
   window.activityTimer.stop();
-  window.socket.stopTimers();
+  window.profileSocket.stopTimers();
   submitQuest();
 }
 
@@ -265,9 +265,9 @@ async function createActivityTimer() {
     return;
   }
   try {
-    window.socket.send(JSON.stringify({
-      type: "create_activity_timer",
-      activityName: activityInput.value,
+    window.profileSocket.socket.send(JSON.stringify({
+      action: "create_activity_timer",
+      activity_name: activityInput.value,
       csrftoken: csrftoken
     }));
   } catch (e) {
@@ -289,8 +289,8 @@ async function chooseQuest(event) {
       return;
     }
     const questId = selectedQuest.dataset.index;
-    window.socket.send(JSON.stringify({
-      type: "choose_quest",
+    window.profileSocket.socket.send(JSON.stringify({
+      action: "choose_quest",
       quest_id: questId
     }));
   } catch (e) {
@@ -322,7 +322,7 @@ function startTimerIfReady() {
 
     window.activityTimer.start();
     window.questTimer.start();
-    window.socket.startTimers();
+    window.profileSocket.startTimers();
   }
 }
 
@@ -331,8 +331,8 @@ async function submitActivity(event) {
   event.preventDefault();
   const activityInput = document.getElementById('activity-input');
   try {
-    window.socket.send(JSON.stringify({
-      type: "submit_activity",
+    window.profileSocket.socket.send(JSON.stringify({
+      action: "submit_activity",
       activityName: activityInput.value
     }));
   } catch (e) {
@@ -341,20 +341,25 @@ async function submitActivity(event) {
 }
 
 function addActivityToList(activity) {
+  console.log("addactivity to list, activity:", activity);
   const activityList = document.getElementById('activity-list');
+  if (document.getElementById(`activity-${activity.id}`)) {
+    return;
+  }
   const listItem = document.createElement('li');
+  listItem.id = `activity-${activity.id}`;
   listItem.textContent = `${activity.name} - ${formatDuration(activity.duration)}`;
   activityList.prepend(listItem);
   const activitiesTimeMessage = document.getElementById('activities-time-message');
   // Insert text for totals messages
-  if (activitiesTimeMessage.innerText == "") {
+  if (!activitiesTimeMessage.innerText.trim()) {
     activitiesTimeMessage.innerText = "Total time today: "
     document.getElementById('activities-total-message').innerText = "; total activities today: "
   };
 
   // Update and display totals  
-  window.activitiesTime += activity.duration;
-  window.activitiesNumber += 1;
+  window.activitiesTime = (window.activitiesTime || 0) + activity.duration;
+  window.activitiesNumber = (window.activitiesNumber || 0) + 1;
   document.getElementById('activities-time-data').innerText = formatDuration(window.activitiesTime);
   document.getElementById('activities-total-data').innerText = window.activitiesNumber;
 }
@@ -379,20 +384,20 @@ function submitQuestDisplayUpdate() {
 // Submit quest
 async function submitQuest() {
   try {
-    window.socket.send(JSON.stringify({
-      type: "quest_completed"
+    window.profileSocket.socket.send(JSON.stringify({
+      action: "quest_completed"
     }));
   } catch (e) {
     console.error('There was a problem:', e);
   }
 }
 
-
 // Fetch activities
 async function fetchActivities() {
   try {
-    window.socket.socket.send(JSON.stringify({
-      type: "fetch_activities"
+    console.log("Fetching activities");
+    window.profileSocket.socket.send(JSON.stringify({
+      action: "fetch_activities"
     }));
   } catch (e) {
     console.error('There was a problem:', e);
@@ -402,20 +407,19 @@ async function fetchActivities() {
 // Fetch eligible quests
 async function fetchQuests() {
   try {
-    window.socket.socket.send(JSON.stringify({
-      type: "fetch_quests"
+    window.profileSocket.socket.send(JSON.stringify({
+      action: "fetch_quests"
     }));
   } catch (e) {
     console.error('There was a problem:', e);
   }
 }
 
-
 // Fetch player & char info
 async function fetchInfo() {
   try {
-    window.socket.socket.send(JSON.stringify({
-      type: "fetch_info"
+    window.profileSocket.socket.send(JSON.stringify({
+      action: "fetch_info"
     }));
   } catch (e) {
     console.error('There was a problem:', e);
@@ -430,33 +434,73 @@ class ProfileWebSocket {
   }
 
   connect() {
-    this.socket = new WebSocket(`ws://${window.location.host}/ws/timers/profile_${this.profile_id}/`);
+    return new Promise((resolve, reject) => {
+      const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+      const url = `${protocol}://${window.location.host}/ws/profile_${this.profile_id}/`
+      console.log("websocket url:", url)
+      this.socket = new WebSocket(url);
 
-    this.socket.onopen = () => {
-      console.log("Connected to timer socket");
-    }
+      this.socket.onopen = () => {
+        console.log("Connected to timer socket");
+        resolve();
+      }
+      //console.log("Before onmessage");
+      this.socket.onmessage = (event) => {
+        let data
+        try {
+          data = JSON.parse(event.data);
+          console.log("Received message:", data);
+          handleSocketMessage(data);
+        } catch (e) {
+          console.error("Error parsing JSON:", e, event.data);
+        }
+      }
 
-    this.socket.onmessage = (event) => {
-      let data = JSON.parse(event.data);
-      console.log("Received message:", data);
-      handleSocketMessage(data);
-    }
+      const pingInterval = setInterval(() => {
+        if (this.socket.readyState === WebSocket.OPEN) {
+          console.log("Sending ping...");
+          this.socket.send(JSON.stringify({ action: "ping" }));
+        }
+      }, 10000)
 
-    this.socket.onerror = (error) => {
-      console.error("Error:", error);
-    }
+      this.socket.onerror = (error) => {
+        console.error("Error:", error);
+        reject(error);
+      }
 
-    this.socket.onclose = (event) => {
-      console.log("Socket closed:", event);
-    }
+      this.socket.onclose = (event) => {
+        console.log("Socket closed:", event);
+        clearInterval(pingInterval);
+      }
+    });
   }
 
   startTimers() {
-    this.socket.send(JSON.stringify({ type: "start_timers", action: "start_timers" }));
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify({ action: "start_timers" }));
+    } else {
+      console.error("Socket not open, cannot start timers");
+    }
   }
 
   stopTimers() {
-    this.socket.send(JSON.stringify({ type: "stop_timers", action: "stop_timers" }));
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify({ action: "stop_timers" }));
+    } else {
+      console.error("Socket not open, cannot stop timers");
+    }
+  }
+
+  get readyState() {
+    return this.socket.readyState;
+  }
+
+  send(data) {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(data);
+    } else {
+      console.error("Socket not open, cannot send message");
+    }
   }
 
   disconnect() {
@@ -468,31 +512,50 @@ class ProfileWebSocket {
 }
 
 function handleSocketMessage(data) {
+  //console.log("Handling socket message:", data);
   switch (data.type) {
     case "create_activity_timer_response":
+      console.log("Received create activity timer response")
       handleCreateActivityTimerResponse(data);
       break;
     case "choose_quest_response":
+      console.log("Received choose quest response")
       handleChooseQuestResponse(data);
       break;
     case "submit_activity_response":
+      console.log("Received submit activity response")
       handleSubmitActivityResponse(data);
       break;
     case "quest_completed_response":
+      console.log("Received quest completed response")
       handleQuestCompletedResponse(data);
       break;
     case "fetch_activities_response":
+      console.log("Received fetch activities response");
       handleFetchActivitiesResponse(data);
       break;
     case "fetch_quests_response":
+      console.log("Received fetch quests response")
       handleFetchQuestsResponse(data);
       break;
     case "fetch_info_response":
+      console.log("Received fetch info response");
       handleFetchInfoResponse(data);
+      break;
+    case "pong":
+      //console.log("Received pong");
+      handlePong(data);
+      break;
+    case "console.log":
+      console.log(data.message);
       break;
     default:
       console.error("Unknown message type:", data.type);
   }
+}
+
+function handlePong(data) {
+  console.log(data.type);
 }
 
 function handleCreateActivityTimerResponse(data) {
@@ -521,7 +584,8 @@ function handleChooseQuestResponse(data) {
 
 function handleSubmitActivityResponse(data) {
   if (data.success) {
-    addActivityToList(data.activity);
+    console.log("data.activities:", data.activities)
+    addActivityToList(data.activities[0]);
     showInput();
     window.activityTimer.reset();
     window.activitySelected = false;
@@ -545,6 +609,7 @@ function handleQuestCompletedResponse(data) {
 function handleFetchActivitiesResponse(data) {
   if (data.success) {
     const activities = data.activities;
+    //console.log("activities:", activities);
     const activityList = document.getElementById('activity-list');
     activityList.innerHTML = '';
     window.activitiesNumber = 0;
@@ -556,6 +621,7 @@ function handleFetchActivitiesResponse(data) {
         window.activitiesNumber += 1;
         window.activitiesTime += activity.duration;
         const li = document.createElement('li');
+        li.id = `activity-${activity.id}`;
         li.textContent = `${activity.name} - ${formatDuration(activity.duration)}`;
         activityList.appendChild(li);
       });
@@ -575,6 +641,7 @@ function handleFetchActivitiesResponse(data) {
 function handleFetchQuestsResponse(data) {
   if (data.success) {
     const quests = data.quests;
+    //console.log("quests:", quests);
     const questList = document.getElementById('quest-list-modal');
     questList.innerHTML = "";
     quests.forEach(quest => {
@@ -591,6 +658,7 @@ function handleFetchQuestsResponse(data) {
 
 function handleFetchInfoResponse(data) {
   if (data.success) {
+    console.log("We are here");
     const character = data.character;
     const profile = data.profile;
     window.profile_id = profile.id;
@@ -610,10 +678,15 @@ function handleFetchInfoResponse(data) {
       //window.activityTimer.reset(elapsedTime = data.current_activity.duration);
       window.activitySelected = true;
       hideInput();
+    } else {
+      window.activitySelected = false;
     }
     if (data.current_quest) {
       loadQuest(data.current_quest);
       //window.questTimer.reset(elapsedTime = data.current_quest.elapsed_time);
+      window.questSelected = true;
+    } else {
+      window.questSelected = false;
     }
 
     startTimerIfReady();

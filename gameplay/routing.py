@@ -6,5 +6,5 @@ from .consumers import ProfileConsumer
 
 
 websocket_urlpatterns = [
-    re_path(r'ws/timers/profile_(?P<profile_id>\d+)/$', ProfileConsumer.as_asgi()),  # WebSocket endpoint
+    re_path(r'ws/profile_(?P<profile_id>\d+)/$', ProfileConsumer.as_asgi()),  # WebSocket endpoint
 ]

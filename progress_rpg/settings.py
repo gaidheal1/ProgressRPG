@@ -153,6 +153,7 @@ CHANNEL_LAYERS = {
         "BACKEND": 'channels_redis.core.RedisChannelLayer',
         "CONFIG": {
             "hosts": [('localhost', 6379)],
+            
         },
     },
 }
@@ -218,7 +219,7 @@ ADMINS = [('Admin', 'admin@progressrpg.com')]  # The emails to receive error not
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_NAME = 'sessionid'
-SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
+SESSION_COOKIE_AGE = 36000  # 1 hour in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_DOMAIN = None
 SESSION_COOKIE_SECURE = False
