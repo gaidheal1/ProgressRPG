@@ -64,8 +64,10 @@ class ProfileConsumer(AsyncWebsocketConsumer):
                 await self.start_timers()
             elif action == "stop_timers":
                 await self.stop_timers()
-            elif action == "create_activity_timer":
-                await self.create_activity_timer(message["activity_name"])
+            elif action == "create_activity":
+                await self.create_activity(message["activity_name"])
+            elif action == "update_activity_name":
+                await self.update_activity_name(message["activity_name"])
             elif action == "submit_activity":
                 await self.submit_activity()
             elif action == "quest_completed":
@@ -104,8 +106,6 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         """Get the current quest time."""
         return self.quest_timer.get_elapsed_time() if self.quest_timer else None
     
-    
-
     @database_sync_to_async
     def fetch_activities_db(self):
         #print("Server: Fetching activities")
@@ -199,28 +199,48 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         self.activity_timer.stop()
         self.quest_timer.stop()
 
-    @sync_to_async
-    def create_activity_timer(self, activity_name):
+    @database_sync_to_async
+    def create_activity_db(self, activity_name):
+        print("Inside create_activity function")
         activity = self.profile.current_activity or Activity.objects.create(profile=self.profile, name=activity_name)
         self.profile.current_activity = activity
-        timer, created = ActivityTimer.objects.get_or_create(profile=self.profile)
+        
         activity.save()
-        timer.save()
         self.profile.save()
-        self.send(text_data=json.dumps({
-            "type": "create_activity_timer_response",
+        return activity
+
+    async def create_activity(self, activity_name):
+        activity = await self.create_activity_db(activity_name)
+        await self.send(text_data=json.dumps({
+            "type": "create_activity_response",
             "success": True,
-            "message": "Activity timer created and ready"
+            "message": "Activity ready",
+            "activity": {
+                "id": activity.id,
+                "name": activity.name,
+            },
+        }))
+
+    @database_sync_to_async
+    def update_activity_name_db(self, new_name):
+        if self.profile.current_activity:
+            self.profile.current_activity.name = new_name
+            self.profile.current_activity.save()
+
+    async def update_activity_name(self, new_name):
+        print(f"Updating activity name to: {new_name}")
+        await self.send(text_data=json.dumps({
+            "type": "update_activity_name_response",
+            "success": True,
+            "message": "Activity name updated",
+            "new_name": new_name
         }))
 
     @database_sync_to_async
     def submit_activity_db(self):
         activity = self.profile.current_activity
-        activity_timer = apps.get_model("gameplay", "ActivityTimer").objects.get(profile=self.profile)
-        activity_timer.stop()
-        activity.add_time(activity_timer.elapsed_time)
-        activity_timer.reset()
-        QuestTimer.objects.get(character=self.character).stop()
+        activity.add_time(self.activity_timer.elapsed_time)
+        self.activity_timer.reset()
         profile_serializer = ProfileSerializer(self.profile)
         rewards = self.profile.submit_activity()
         activities = Activity.objects.filter(profile=self.profile, created_at__date=now().date())
@@ -233,6 +253,7 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         return data
 
     async def submit_activity(self):
+        await self.stop_timers()
         data = await self.submit_activity_db()
         await self.send(text_data=json.dumps({
             "type": "submit_activity_response",
@@ -245,10 +266,7 @@ class ProfileConsumer(AsyncWebsocketConsumer):
 
     @sync_to_async
     def quest_completed_db(self):
-        quest_timer = QuestTimer.objects.get(character=self.character)
-        quest_timer.stop()
-        quest_timer.reset()
-        ActivityTimer.objects.get(profile=self.profile).stop()
+        self.quest_timer.reset()
         self.character.complete_quest()
         eligible_quests = check_quest_eligibility(self.character, self.profile)
         serializer = QuestSerializer(eligible_quests, many=True)
@@ -258,6 +276,7 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         return data
 
     async def quest_completed(self):
+        await self.stop_timers()
         data = await self.quest_completed_db()
         await self.send(text_data=json.dumps({
             "type": "quest_completed_response",

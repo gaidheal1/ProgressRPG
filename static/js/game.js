@@ -34,7 +34,11 @@ function initialiseTimers() {
 }
 
 function setupEventListeners() {
-  document.getElementById("start-activity-btn").addEventListener("click", createActivityTimer);
+  document.getElementById("start-activity-btn").addEventListener("click", createActivity);
+  document.getElementById("activity-input").addEventListener("input", (event) => {
+  const newName = event.target.value;
+  window.profileSocket.socket.send(JSON.stringify({ type: "update_activity_name", new_name: newName}));
+  });
   document.getElementById('show-quests-btn').addEventListener('click', openModal);
   document.getElementById('close-modal-btn').addEventListener('click', closeModal);
   document.getElementById('quest-modal').addEventListener('click', (e) => {
@@ -257,7 +261,8 @@ function formatDuration(seconds) {
   return `${hours > 0 ? `${hours}:` : ""}${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-async function createActivityTimer() {
+async function createActivity() {
+  console.log("Enter activity button: function");
   const activityInput = document.getElementById('activity-input');
   const csrftoken = getCookie('csrftoken');
   if (!validateInput(activityInput.value)) {
@@ -265,8 +270,9 @@ async function createActivityTimer() {
     return;
   }
   try {
+    console.log("Inside try, same function");
     window.profileSocket.socket.send(JSON.stringify({
-      action: "create_activity_timer",
+      action: "create_activity",
       activity_name: activityInput.value,
       csrftoken: csrftoken
     }));
@@ -309,6 +315,7 @@ function loadQuest(quest) {
 
 // Start timers when both activity and quest are selected
 function startTimerIfReady() {
+  console.log(`activity selected: ${window.activitySelected}, quest selected: ${window.questSelected}`)
   if (window.activitySelected && window.questSelected) {
 
     // Change buttons
@@ -514,20 +521,24 @@ class ProfileWebSocket {
 function handleSocketMessage(data) {
   //console.log("Handling socket message:", data);
   switch (data.type) {
-    case "create_activity_timer_response":
-      console.log("Received create activity timer response")
-      handleCreateActivityTimerResponse(data);
+    case "create_activity_response":
+      console.log("Received create activity response");
+      handleCreateActivityResponse(data);
+      break;
+    case "update_activity_name_response":
+      console.log("Received update activity name response");
+      handleUpdateActivityNameResponse(data);
       break;
     case "choose_quest_response":
-      console.log("Received choose quest response")
+      console.log("Received choose quest response");
       handleChooseQuestResponse(data);
       break;
     case "submit_activity_response":
-      console.log("Received submit activity response")
+      console.log("Received submit activity response");
       handleSubmitActivityResponse(data);
       break;
     case "quest_completed_response":
-      console.log("Received quest completed response")
+      console.log("Received quest completed response");
       handleQuestCompletedResponse(data);
       break;
     case "fetch_activities_response":
@@ -535,7 +546,7 @@ function handleSocketMessage(data) {
       handleFetchActivitiesResponse(data);
       break;
     case "fetch_quests_response":
-      console.log("Received fetch quests response")
+      console.log("Received fetch quests response");
       handleFetchQuestsResponse(data);
       break;
     case "fetch_info_response":
@@ -558,13 +569,21 @@ function handlePong(data) {
   console.log(data.type);
 }
 
-function handleCreateActivityTimerResponse(data) {
+function handleCreateActivityResponse(data) {
   if (data.success) {
     window.activitySelected = true;
     startTimerIfReady();
     document.getElementById('start-activity-btn').setAttribute("disabled", true);
-    document.getElementById('activity-input-div').style.display = "none";
-    document.getElementById('activity-name').innerText = data.activityName;
+    //document.getElementById('activity-input-div').style.display = "none";
+    //document.getElementById('activity-name').innerText = data.activityName;
+  } else {
+    console.error(data.message);
+  }
+}
+
+function handleUpdateActivityNameResponse(data) {
+  if (data.success) {
+    console.log("Activity name updated:", data.new_name)
   } else {
     console.error(data.message);
   }
@@ -674,7 +693,7 @@ function handleFetchInfoResponse(data) {
     document.getElementById('character-level').innerText = character.level;
 
     if (data.current_activity) {
-      document.getElementById('activity-name').innerText = data.current_activity.name;
+      document.getElementById('activity-input').value = data.current_activity.name;
       //window.activityTimer.reset(elapsedTime = data.current_activity.duration);
       window.activitySelected = true;
       hideInput();
@@ -704,7 +723,7 @@ function showInput() {
   stopActivityButton.setAttribute("disabled", true);
   stopActivityButton.style.display = "none";
 
-  document.getElementById('activity-input-div').style.display = "flex";
+  //document.getElementById('activity-input-div').style.display = "flex";
 }
 
 function hideInput() {
@@ -715,7 +734,7 @@ function hideInput() {
   stopActivityButton.removeAttribute("disabled");
   stopActivityButton.style.display = "flex";
 
-  document.getElementById('activity-input-div').style.display = "none";
+  //document.getElementById('activity-input-div').style.display = "none";
 }
 
 function showQuests() {
