@@ -86,6 +86,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'gameplay',
+    'gameworld',
+    'events',
     'payments',
 
     'decouple',

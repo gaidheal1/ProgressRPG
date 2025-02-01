@@ -12,9 +12,6 @@ from users.models import Profile
 from .utils import check_quest_eligibility
 import json
 from django.utils.html import escape
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-
 
 # Dashboard view
 @login_required
@@ -27,49 +24,6 @@ def dashboard_view(request):
 @login_required
 def game_view(request):
     return render(request, 'gameplay/game.html')
-
-# Save activity view
-@transaction.atomic
-@login_required
-def save_activity(request):
-    if request.method == 'POST':
-        activity_name = escape(request.POST['activity'])
-        duration = int(request.POST['duration'])
-        Activity.objects.create(profile=request.user.profile, name=activity_name, duration=duration)
-        return JsonResponse({"success": True, "message": "Activity saved"})
-    return JsonResponse({"error": "Invalid method"}, status=405)
-
-
-@login_required
-def start_timer_ws(request):
-    if request.method == "POST":
-        print("User:", request.user)
-        timer_type = escape(request.body.decode('utf-8'))
-        profile = request.user.profile
-        timer = (
-            ActivityTimer.objects.filter(profile=profile) 
-            if timer_type == 'activity' 
-            else QuestTimer.objects.filter(character=Character.objects.get(profile=profile))
-        )
-
-        if not timer:
-            return JsonResponse({"success": False, "message": "No timer found"})
-        
-        timer.start()
-        
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            f"timer_{profile.id}",
-            {
-                "type": "timer.start",
-                "timer_type": "send_timer_state",
-            }
-        )
-
-        return JsonResponse({"success": True, "message": f"{timer_type} timer started"})
-    
-    return JsonResponse({"error": "Invalid method"}, status=405)
-
 
 @login_required
 def get_game_statistics(request):

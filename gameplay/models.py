@@ -185,6 +185,8 @@ class Activity(models.Model):
     created_at = models.DateTimeField(auto_now_add=True) #auto_now_add=True
     last_updated = models.DateTimeField(auto_now=True)
     xp_rate = models.FloatField(default=0.2)
+    skill = models.ForeignKey('Skill', on_delete=models.SET_NULL, null=True, blank=True, related_name="activities")
+    project = models.ForeignKey('Project', on_delete=models.SET_NULL, null=True, blank=True, related_name="activities")
     
     class Meta:
         ordering = ['-created_at'] # Most recent activities first
@@ -206,7 +208,7 @@ class Activity(models.Model):
     
 
 class Skill(models.Model):
-    profile = models.ForeignKey('users.profile', on_delete=models.CASCADE)
+    profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name='skills')
     name = models.CharField(max_length=100)
     time = models.PositiveIntegerField(default=0)
     xp = models.IntegerField(default=0)
@@ -216,15 +218,29 @@ class Skill(models.Model):
 
     def __str__(self):
         return self.name
-    
+
+class Project(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name='projects')
+
+    def __str__(self):
+        return self.name
+
 class Character(Person):
-    profile = models.ForeignKey('users.profile', on_delete=models.CASCADE, related_name='character')
+    profile = models.ForeignKey('users.profile', on_delete=models.CASCADE, related_name='character', null=True, blank=True)
     quest_completions = models.ManyToManyField('gameplay.Quest', through='QuestCompletion', related_name='completed_by')
     total_quests = models.PositiveIntegerField(default=0)
     current_quest = models.ForeignKey(Quest, on_delete=models.SET_NULL, blank=True, null=True)
+
+    gender = models.CharField(max_length=50, default="None")
     coins = models.PositiveIntegerField(default=0)
     role = models.CharField(max_length=50, default="Ne'er-do-well")
     buffs = models.ManyToManyField('Buff', related_name='characters', blank=True)
+    location = models.ForeignKey('gameworld.Location', on_delete=models.SET_NULL, null=True, blank=True)
+    x_coordinate = models.IntegerField()  # X coordinate (horizontal position)
+    y_coordinate = models.IntegerField()  # Y coordinate (vertical position)
+    is_npc = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name if self.name else "Unnamed character"
@@ -232,6 +248,13 @@ class Character(Person):
     def start_quest(self, quest):
         self.current_quest = quest
         self.save()
+
+    def is_player_controlled(self):
+        return self.profile is not None
+
+    def auto_progress(self):
+        if self.is_npc:
+            pass
 
     @transaction.atomic
     def complete_quest(self):
