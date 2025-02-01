@@ -238,17 +238,27 @@ class Character(Person):
     total_quests = models.PositiveIntegerField(default=0)
     current_quest = models.ForeignKey(Quest, on_delete=models.SET_NULL, blank=True, null=True)
 
+    first_name = models.CharField(max_length=50, default="")
+    last_name = models.CharField(max_length=50, default="")
     gender = models.CharField(max_length=50, default="None")
+    age = models.PositiveIntegerField(default=20)
+    dob = models.DateField(default=now)
+    dod = models.DateField(default=now)
     coins = models.PositiveIntegerField(default=0)
-    role = models.CharField(max_length=50, default="Ne'er-do-well")
+    backstory = models.TextField(default=0)
+    reputation = models.IntegerField(default=0)
     buffs = models.ManyToManyField('Buff', related_name='characters', blank=True)
     location = models.ForeignKey('gameworld.Location', on_delete=models.SET_NULL, null=True, blank=True)
-    x_coordinate = models.IntegerField()  # X coordinate (horizontal position)
-    y_coordinate = models.IntegerField()  # Y coordinate (vertical position)
+    x_coordinate = models.IntegerField(default=0)  # X coordinate (horizontal position)
+    y_coordinate = models.IntegerField(default=0)  # Y coordinate (vertical position)
     is_npc = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name if self.name else "Unnamed character"
+    
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
     
     def start_quest(self, quest):
         self.current_quest = quest

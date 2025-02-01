@@ -59,7 +59,33 @@ class QuestRequirementAdmin(admin.ModelAdmin):
 
 @admin.register(Character)
 class CharacterAdmin(admin.ModelAdmin):
-    list_display = ['name', 'profile', 'current_quest', 'coins']
+    fields = [
+        'name', 
+        'backstory',
+        'profile', 
+        'current_quest', 
+        'total_quests', 
+        'gender', 
+        'age', 
+        ('dob',
+         'dod'),
+        'coins', 
+        'location', 
+        ('x_coordinate',
+        'y_coordinate'),
+        'is_npc',
+    ]
+    list_display = [
+        'name', 
+        'profile', 
+        'current_quest', 
+        'total_quests', 
+        'gender', 
+        'age', 
+        'coins', 
+        'location', 
+        'is_npc'
+        ]
 
 @admin.register(QuestCompletion)
 class QuestCompletionAdmin(admin.ModelAdmin):

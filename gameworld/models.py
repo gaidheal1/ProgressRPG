@@ -1,6 +1,7 @@
 # gameworld.models
 
 from django.db import models
+from django.utils import timezone
 
 class Location(models.Model):
     name = models.CharField(max_length=100)
@@ -67,3 +68,34 @@ class CharacterRelationship(models.Model):
     def __str__(self):
         bio = " (Biological)" if self.biological else " (Adopted)"
         return f"{self.character1.name} - {self.type} - {self.character2.name} ({self.strength}){bio}"
+
+class CharacterRole(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Char role: {self.name}"
+    
+    
+class CharacterProgression(models.Model):
+    character = models.OneToOneField('gameplay.Character', on_delete=models.CASCADE)
+    role = models.ForeignKey(CharacterRole, on_delete=models.CASCADE)
+    experience = models.IntegerField(default=0)
+
+    base_progression_rate = models.FloatField(default=0.1)
+    player_acceleration_factor = models.FloatField(default=1.0)
+    date_started = models.DateTimeField(default=timezone.now)
+    
+    def __str__(self):
+        return f"{self.character.name} - {self.role.name}"
+    
+    def update_progression(self):
+        time_elapsed = (timezone.now().date() - self.date_started).days
+        new_experience = time_elapsed * self.base_progression_rate
+        self.experience += new_experience
+        
+        if not self.character.is_npc:
+            self.experience *= self.player_acceleration_factor
+
+        self.save()
+    
