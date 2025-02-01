@@ -14,14 +14,14 @@ def check_quest_eligibility(character, profile):
     all_quests = Quest.objects.all()
 
     eligible_quests = []
-    print("Looping through quests now")
+    #print("Looping through quests now")
     for quest in all_quests:
-        print('quest:', quest)
+        #print('quest:', quest)
         # Test for eligibility
         if quest.checkEligible(character, profile) and \
             quest.not_repeating(character) and \
             quest.requirements_met(quests_done):
                 eligible_quests.append(quest)
-                print('success')
+                #print('success')
     
     return eligible_quests

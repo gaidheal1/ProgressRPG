@@ -22,25 +22,20 @@
 	order: 1;
 }
 
-#activity-input-div, #quest-description {
+#activity-input-div, #quest-stages {
 	order: 2;
 }
 
-#activity-buttons, #quest-stages {
+#activity-buttons, #quest-rewards{
 	order: 3;
 }
 
-#today-activities, #quest-rewards {
+#today-activities, #show-quests-btn-frame {
 	order: 4;
 }
 
-#show-quests-btn-frame {
-	order: 5;
-	
-}
-
 #choose-quest {
-	order: 6;
+	order: 5;	
 }
 
 

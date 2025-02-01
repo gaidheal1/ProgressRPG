@@ -111,7 +111,7 @@ class Quest(models.Model):
         return True
     
     def checkEligible(self, character, profile):
-        print("you have arrived in checkEligible")
+        #print("you have arrived in checkEligible")
         #Simple comparison checks
         if not self.is_active:
             return False
