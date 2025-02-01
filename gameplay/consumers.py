@@ -145,7 +145,7 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         print("Server: Fetching profile and character info")
         profile_serializer = ProfileSerializer(self.profile)
         character_serializer = CharacterSerializer(self.character)
-        current_activity = ActivitySerializer(self.profile.current_activity) if self.profile.current_activity else False
+        current_activity = ActivitySerializer(self.profile.current_activity).data if self.profile.current_activity else False
         current_quest = QuestSerializer(self.character.current_quest).data if self.character.current_quest else False
         data = {
             "profile": profile_serializer.data,
