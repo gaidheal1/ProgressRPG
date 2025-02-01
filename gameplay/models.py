@@ -235,6 +235,7 @@ class Character(Person):
 
     @transaction.atomic
     def complete_quest(self):
+        print("Inside complete_quest method of Character model")
         if not self.current_quest:
             raise ValueError("No active quest.")
         

@@ -594,6 +594,7 @@ function handleSubmitActivityResponse(data) {
     showInput();
     window.activityTimer.reset();
     window.activitySelected = false;
+    updatePlayerInfo(data.profile);
     document.getElementById('activity-input').value = "";
     document.getElementById('activity-status-text').innerText = "finished";
     document.getElementById('quest-status-text').innerText = "waiting";
@@ -606,7 +607,8 @@ function handleQuestCompletedResponse(data) {
   if (data.success) {
     submitQuestDisplayUpdate();
     window.questSelected = false;
-    fetchQuests();
+    updateCharacterInfo(data.character);
+    loadQuestList(data.quests);
   } else {
     console.error(data.message);
   }
@@ -643,39 +645,45 @@ function handleFetchActivitiesResponse(data) {
   }
 }
 
+function loadQuestList(quests) {
+  const questList = document.getElementById('quest-list-modal');
+  questList.innerHTML = "";
+  quests.forEach(quest => {
+    const li = document.createElement("li");
+    li.textContent = quest.name;
+    li.dataset.index = quest.id;
+    li.addEventListener("click", () => showQuestDetails(quest));
+    questList.appendChild(li);
+  });
+}
 function handleFetchQuestsResponse(data) {
   if (data.success) {
-    const quests = data.quests;
-    //console.log("quests:", quests);
-    const questList = document.getElementById('quest-list-modal');
-    questList.innerHTML = "";
-    quests.forEach(quest => {
-      const li = document.createElement("li");
-      li.textContent = quest.name;
-      li.dataset.index = quest.id;
-      li.addEventListener("click", () => showQuestDetails(quest));
-      questList.appendChild(li);
-    });
+    loadQuestList(data.quests);
   } else {
     console.error(data.message);
   }
 }
 
-function handleFetchInfoResponse(data) {
-  if (data.success) {
-    const character = data.character;
-    const profile = data.profile;
-    window.profile_id = profile.id;
+function updatePlayerInfo(profile) {
     document.getElementById('player-name').innerText = profile.name;
     document.getElementById('player-xp').innerText = profile.xp;
     document.getElementById('player-xp-next').innerText = profile.xp_next_level;
     document.getElementById('player-level').innerText = profile.level;
+}
 
+function updateCharacterInfo(character) {
     document.getElementById('character-name').innerText = character.name;
     document.getElementById('character-xp').innerText = character.xp;
     document.getElementById('character-xp-next').innerText = character.xp_next_level;
     document.getElementById('character-level').innerText = character.level;
+}
 
+function handleFetchInfoResponse(data) {
+  if (data.success) {
+    window.profile_id = data.profile.id;
+
+    updatePlayerInfo(data.profile);
+    updateCharacterInfo(data.character);
     if (data.current_activity) {
       document.getElementById('activity-input').value = data.current_activity.name;
       //window.activityTimer.reset(elapsedTime = data.current_activity.duration);

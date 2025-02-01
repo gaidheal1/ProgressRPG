@@ -272,20 +272,19 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         self.quest_timer.reset()
         self.character.complete_quest()
         eligible_quests = check_quest_eligibility(self.character, self.profile)
-        serializer = QuestSerializer(eligible_quests, many=True)
-        data = {
-            "quests": serializer.data,
-        }
-        return data
+        character = CharacterSerializer(self.character)
+        quests = QuestSerializer(eligible_quests, many=True)
+        return character.data, quests.data
 
     async def quest_completed(self):
         await self.stop_timers()
-        data = await self.quest_completed_db()
+        character, quests = await self.quest_completed_db()
         await self.send(text_data=json.dumps({
             "type": "quest_completed_response",
             "success": True,
             "message": "Quest completed",
             "xp_reward": 5,
-            "eligible_quests": data["quests"],
+            "character": character,
+            "quests": quests,
         }))
 
