@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.contrib import admin
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
-from .models import Quest, QuestRequirement, Character, QuestCompletion, Activity, ActivityTimer, QuestTimer, QuestResults
+from .models import Quest, QuestRequirement, Character, QuestCompletion, Activity, ActivityTimer, QuestTimer, QuestResults, PlayerCharacterLink
 
 # Register your models here.
     
@@ -52,21 +52,29 @@ class QuestResultsAdmin(admin.ModelAdmin):
     list_display = ['quest', 'xp_reward', 'coin_reward', 'dynamic_rewards', 'buffs']
 
 
-
 @admin.register(QuestRequirement)
 class QuestRequirementAdmin(admin.ModelAdmin):
     list_display = ['quest', 'prerequisite', 'times_required']
 
-@admin.register(Character)
+class LinkInline(admin.TabularInline):
+    model = PlayerCharacterLink
+
+#@admin.register(Character)
 class CharacterAdmin(admin.ModelAdmin):
+    def current_player(self, obj):
+        link = PlayerCharacterLink.objects.filter(character=obj, is_active=True).first()
+        return link.player.name if link else 'No player linked'
+    
+    current_player.short_description = 'Current Player'
+
     fields = [
-        'name', 
+        'first_name', 
+        'last_name',
+        'current_player',
         'backstory',
-        'profile', 
         'current_quest', 
         'total_quests', 
         'gender', 
-        'age', 
         ('dob',
          'dod'),
         'coins', 
@@ -76,16 +84,20 @@ class CharacterAdmin(admin.ModelAdmin):
         'is_npc',
     ]
     list_display = [
-        'name', 
-        'profile', 
-        'current_quest', 
-        'total_quests', 
-        'gender', 
-        'age', 
-        'coins', 
-        'location', 
+        'name',
+        'first_name', 
+        'last_name', 
+        'current_player',
         'is_npc'
         ]
+    inlines = [LinkInline]
+
+admin.site.register(Character, CharacterAdmin)
+
+@admin.register(PlayerCharacterLink)
+class PlayerCharacterLinkAdmin(admin.ModelAdmin):
+    list_display = ['profile', 'character', 'is_active']
+    fields = ['profile', 'character', 'is_active'] #('date_linked', 'date_unlinked'),
 
 @admin.register(QuestCompletion)
 class QuestCompletionAdmin(admin.ModelAdmin):

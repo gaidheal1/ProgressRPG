@@ -41,6 +41,7 @@ class CharacterRelationship(models.Model):
         ('enemy', 'Enemy'),
         ('ally', 'Ally'),
         ('romantic', 'Romantic'),
+        ('spouse', 'Spouse'),
         ('parent', 'Parent'),
         ('child', 'Child'),
         ('sibling', 'Sibling'),
@@ -68,6 +69,19 @@ class CharacterRelationship(models.Model):
     def __str__(self):
         bio = " (Biological)" if self.biological else " (Adopted)"
         return f"{self.character1.name} - {self.type} - {self.character2.name} ({self.strength}){bio}"
+
+class Partnership(models.Model):
+    partner1 = models.ForeignKey('gameplay.Character', related_name='partner1_relationships', on_delete=models.CASCADE)
+    partner2 = models.ForeignKey('gameplay.Character', related_name='partner2_relationships', on_delete=models.CASCADE)
+
+    last_birth_date = models.DateField(null=True, blank=True)
+    total_births = models.PositiveIntegerField(default=0)
+
+    partner_is_pregnant = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Partnership between {self.partner1} and {self.partner2}"
+    
 
 class CharacterRole(models.Model):
     name = models.CharField(max_length=100)

@@ -10,7 +10,7 @@ from channels.db import database_sync_to_async
 
 django.setup()
 
-from .models import ActivityTimer, QuestTimer, Activity, Quest, Character, QuestResults
+from .models import ActivityTimer, QuestTimer, Activity, Quest, PlayerCharacterLink, QuestResults
 from .serializers import QuestSerializer, ActivitySerializer, CharacterSerializer
 from users.models import Profile
 from users.serializers import ProfileSerializer
@@ -77,10 +77,13 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         
     @sync_to_async
     def set_profile_and_character(self, user):
+        print("user and profile:", user, user.profile)
+        character = PlayerCharacterLink().get_character(user.profile)
         data = {
             "profile" : user.profile,
-            "character" : Character.objects.get(profile=user.profile)
+            "character" : character if character else None
         }
+        print("Consumer, set_profile_etc, character:", data["character"])
         return data
     
     @sync_to_async
@@ -254,10 +257,8 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         return data
 
     async def submit_activity(self):
-        print("Profile current activity before:", self.profile.current_activity)
         await self.stop_timers()
         data = await self.submit_activity_db()
-        print("Profile current activity after:", self.profile.current_activity)
         await self.send(text_data=json.dumps({
             "type": "submit_activity_response",
             "success": True,

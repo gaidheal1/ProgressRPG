@@ -3,7 +3,7 @@ from django.dispatch import receiver
 from .models import Profile
 from gameplay.models import Character, DailyStats
 from django.contrib.auth import get_user_model
-from gameplay.utils import create_character_for_profile
+from gameplay.utils import assign_character_to_profile
 
 User=get_user_model()
 
@@ -21,14 +21,7 @@ def save_profile(sender, instance, **kwargs):
     instance.profile.save()
 
 @receiver(post_save, sender=Profile)
-def create_character(sender, instance, created, **kwargs):
+def assign_character(sender, instance, created, **kwargs):
     """Create character when profile saved if not already existing"""
     if created:
-        create_character_for_profile(instance)
-
-# @receiver(post_save, sender=Profile)
-# def save_character(sender, instance, **kwargs):
-#     #instance.character.save()
-#     characters = instance.character.all()
-#     for character in characters:
-#         character.save()
+        assign_character_to_profile(instance)

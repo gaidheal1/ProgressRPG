@@ -95,6 +95,12 @@ class Profile(Person):
     ]
     onboarding_step = models.PositiveIntegerField(choices=ONBOARDING_STEPS, default=0)
 
+    @property
+    def current_character(self):
+        """Returns the player's active character based on link records."""
+        active_link = PlayerCharacterLink.objects.filter(profile=self, is_active=True).first()
+        return active_link.character if active_link else None
+
     def __str__(self):
         return f'profile {self.name if self.name else "Unnamed profile"} of user {self.user.username}'
 
@@ -118,3 +124,12 @@ class Profile(Person):
         self.save()
         return rewards
 
+    def change_character(self, new_character):
+        """Handles switching player's character and updating"""
+        from gameplay.models import PlayerCharacterLink
+        old_link = PlayerCharacterLink.objects.filter(profile=self, is_active=True).first()
+        if old_link:
+            old_link.unlink()
+
+        new_link = PlayerCharacterLink.objects.create(profile=self, character=new_character)
+        self.save()
