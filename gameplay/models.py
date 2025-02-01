@@ -182,7 +182,7 @@ class Activity(models.Model):
     profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name="activities")
     name = models.CharField(max_length=255)
     duration = models.PositiveIntegerField(default=0)  # Time spent
-    created_at = models.DateTimeField(auto_now_add=True) #auto_now_add=True
+    created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     xp_rate = models.FloatField(default=0.2)
     skill = models.ForeignKey('Skill', on_delete=models.SET_NULL, null=True, blank=True, related_name="activities")
@@ -213,6 +213,7 @@ class Skill(models.Model):
     time = models.PositiveIntegerField(default=0)
     xp = models.IntegerField(default=0)
     level = models.IntegerField(default=0)
+    total_activities = models.PositiveIntegerField(default=0)
     last_updated = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -220,9 +221,13 @@ class Skill(models.Model):
         return self.name
 
 class Project(models.Model):
+    profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name='projects')
     name = models.CharField(max_length=100)
     description = models.TextField()
-    profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name='projects')
+    time = models.PositiveIntegerField(default=0)
+    total_activities = models.PositiveIntegerField(default=0)
+    last_updated = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -272,7 +277,7 @@ class Character(Person):
                 completion.times_completed += 1
             completion.save()
         if hasattr(self.current_quest, 'questreward'):
-            quest_reward = quest.questreward
+            quest_reward = self.current_quest.questreward
             print("quest reward:", quest_reward)
 
             quest_reward.apply(self)
