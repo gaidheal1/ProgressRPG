@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Quest, Activity, Character, QuestResults
+from .models import Quest, Activity, Character, QuestResults, Skill, Project
 
 
 class CharacterSerializer(serializers.ModelSerializer):
@@ -20,8 +20,19 @@ class QuestSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'intro_text', 'outro_text', 'duration', 'stages', 'result'] # Add 'stages' field. Will it be able to send it? Should do...
 
 class ActivitySerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
     class Meta:
         model = Activity
-        fields = ['id', 'name', 'duration', 'created_at', 'profile']
+        fields = ['id', 'name', 'duration', 'profile', 'created_at']
+        read_only_fields = ['created_at']
 
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = ['id', 'name', 'time', 'xp', 'level', 'total_activities', 'last_updated', 'created_at', 'profile']
+        read_only_fields = ['last_updated', 'created_at']
+
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'name', 'description', 'time', 'total_activities', 'last_updated', 'created_at', 'profile']
+        read_only_fields = ['last_updated', 'created_at']
