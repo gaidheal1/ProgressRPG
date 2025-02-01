@@ -22,13 +22,13 @@ def handle_new_activity(sender, instance, created, **kwargs):
         instance.profile.add_activity(instance.duration, 1)
 
         # Event Progress Updates
-        active_events = Event.objects.filter(is_active=True)
+        """ active_events = Event.objects.filter(is_active=True)
         for event in active_events:
             event_progress, _ = EventContribution.objects.get_or_create(
                 event=event, user=instance.user
             )
             event_progress.total_time += instance.duration_seconds
-            event_progress.save()
+            event_progress.save() """
 
 @receiver(user_logged_in)
 def update_login_streak(sender, request, user, **kwargs):
