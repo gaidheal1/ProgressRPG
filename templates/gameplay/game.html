@@ -114,6 +114,7 @@
         <div class="timer-frame">
           <span id="quest-timer" class="timer-text">00:00</span>
         </div>
+
       </div>
 
       <div class="current-item" id="current-quest-section">
@@ -127,11 +128,17 @@
       <div id="current-quest-description">None</div>
       <div id="current-quest-intro" class="quest-text"></div>
 
-      <div class="list-section" id="quest-stages">
-        <span class="list-section-header">Current stage:</span> <span id="current-quest-active-stage"></span>
-        <ul class="list" id="quest-stages-list" hidden="true">
-          <!-- Quest stages dynamically loaded here -->
-        </ul>
+      <div id="quest-stages">
+        <div id="current-stage-section">
+          <span>Current stage:</span> <span id="current-quest-active-stage"></span>
+        </div>
+        <div class="list-section" id="quest-previous-stages">
+          <span class="list-section-header">Previous stages</span>
+          <ul class="list" id="quest-stages-list" style="display:none">
+            <!-- Quest stages dynamically loaded here -->
+          </ul>
+        </div>
+
       </div>
 
       <div id="current-quest-outro" class="quest-text" style="display: none;"></div>

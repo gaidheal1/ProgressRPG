@@ -7,8 +7,8 @@ from .models import Quest, QuestRequirement, Character, QuestCompletion, Activit
 
 # Register your models here.
     
-class QuestCompletionsInline(admin.TabularInline):
-    model = QuestCompletion
+class QuestResultsInline(admin.TabularInline):
+    model = QuestResults
 
 
 @admin.register(Quest)
@@ -23,6 +23,8 @@ class QuestAdmin(admin.ModelAdmin):
         'duration',
         'created_at',
         'frequency',
+        ('intro_text',
+        'outro_text'),
         'stages',
     ]
     list_display = [
@@ -43,7 +45,7 @@ class QuestAdmin(admin.ModelAdmin):
     readonly_fields = [
         'created_at',
     ]
-    inlines = [QuestCompletionsInline]
+    inlines = [QuestResultsInline]
     
 @admin.register(QuestResults)
 class QuestResultsAdmin(admin.ModelAdmin):

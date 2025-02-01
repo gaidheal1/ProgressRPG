@@ -94,6 +94,7 @@ class Quest {
     this.outro = outro;
     this.duration = duration;
     this.stages = stages;
+    console.log("Quest stages:", this.stages);
     this.currentStageIndex = currentStageIndex;
     this.elapsedTime = elapsedTime;
   }
@@ -113,8 +114,7 @@ class Quest {
   }
 
   updateProgress(elapsedTime) {
-    this.elapsedTime = elapsedTime;
-    while (this.currentStageIndex < this.stages.length - 1 && this.elapsedTime >= this.stages[this.currentStageIndex].endTime) {
+    while (this.currentStageIndex < this.stages.length - 1 && elapsedTime >= this.stages[this.currentStageIndex].endTime) {
       this.advanceStage();
     }
   }
@@ -131,6 +131,8 @@ class Quest {
     document.getElementById('current-quest-title').textContent = this.name;
     document.getElementById('current-quest-description').textContent = this.description;
     document.getElementById('current-quest-intro').textContent = this.intro;
+    console.log("intro text:", this.intro);
+    document.getElementById('current-quest-active-stage').textContent = this.getCurrentStage().text;
     document.getElementById('current-quest-outro').textContent = this.outro;
   }
 
@@ -138,6 +140,7 @@ class Quest {
     const stagesList = document.getElementById('quest-stages-list');
     stagesList.style.display = "none";
     stagesList.innerHTML = "";
+    document.getElementById('current-stage-section').style.display = "flex";
   }
 }
 
@@ -195,6 +198,7 @@ class Timer extends EventEmitter {
         }
       }
       this.elapsedTime += 1;
+      window.currentQuest.updateProgress(this.elapsedTime);
       this.updateDisplay();
     }, 1000);
   }
@@ -607,6 +611,8 @@ function handleQuestCompletedResponse(data) {
   if (data.success) {
     submitQuestDisplayUpdate();
     window.questSelected = false;
+    window.currentQuest.renderPreviousStage();
+    document.getElementById('current-stage-section').style.display = "none";
     updateCharacterInfo(data.character);
     loadQuestList(data.quests);
   } else {
