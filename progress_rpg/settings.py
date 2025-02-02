@@ -143,7 +143,7 @@ else:
     }
 
 if ON_HEROKU:
-    REDIS_HOST = (os.environ.get('REDIS_URL')
+    REDIS_HOST = (os.environ.get('REDIS_URL'))
 else:
     REDIS_HOST = ('localhost', 6379)
 
