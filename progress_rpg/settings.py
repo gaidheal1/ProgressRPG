@@ -62,7 +62,11 @@ SECRET_KEY = 'django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$qj&(5ri-$
 if ON_HEROKU:
     ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1').split(',')
     CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '127.0.0.1:8000').split(',')
+else:
+    ALLOWED_HOSTS = env_config.get('ALLOWED_HOSTS', '127.0.0.1').split(',')
+    CORS_ALLOWED_ORIGINS = env_config.get('CORS_ALLOWED_ORIGINS', '127.0.0.1:8000').split(',')
 
+CSRF_TRUSTED_ORIGINS = ['https://progress-rpg-dev-6581f3bc144e.herokuapp.com/']
 # Application definition
 
 INSTALLED_APPS = [
@@ -138,13 +142,16 @@ else:
         }
     }
 
-CSRF_TRUSTED_ORIGINS = ['https://progress-rpg-dev-6581f3bc144e.herokuapp.com/']
+if ON_HEROKU:
+    REDIS_HOST = (os.environ.get('REDIS_URL')
+else:
+    REDIS_HOST = ('localhost', 6379)
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": 'channels_redis.core.RedisChannelLayer',
         "CONFIG": {
-            "hosts": [('localhost', 6379)],
+            "hosts": [REDIS_HOST],
             
         },
     },
@@ -235,7 +242,11 @@ STRIPE_SECRET_KEY = "nope"
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+if ON_HEROKU:
+    CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL')
+    CELERY_BROKER_URL = os.environ.get('REDIS_URL')
+else:
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+    CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
