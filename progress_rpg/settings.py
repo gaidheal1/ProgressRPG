@@ -20,7 +20,7 @@ REGISTRATION_ENABLED = False
 ON_HEROKU = "DYNO" in os.environ
 
 if ON_HEROKU:
-    DEBUG = True
+    DEBUG = os.environ.get('DEBUG')
     DB_NAME = os.environ.get('DB_NAME')
     DB_USER = os.environ.get('DB_USERNAME')
     DB_PASSWORD = os.environ.get('DB_PASSWORD')
@@ -59,19 +59,9 @@ SECRET_KEY = 'django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$qj&(5ri-$
 
 
 
-
-ALLOWED_HOSTS = [
-    '*.herokuapp.com',
-    'progress-rpg-dev-6581f3bc144e.herokuapp.com',
-    'localhost',
-    '127.0.0.1',
-]
-
-CORS_ALLOWED_ORIGINS = [
-    "https://progress-rpg-dev-6581f3bc144e.herokuapp.com",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-]
+if ON_HEROKU:
+    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1').split(',')
+    CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '127.0.0.1:8000').split(',')
 
 # Application definition
 
@@ -221,14 +211,20 @@ ADMINS = [('Admin', 'admin@progressrpg.com')]  # The emails to receive error not
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_NAME = 'sessionid'
-SESSION_COOKIE_AGE = 36000  # 1 hour in seconds
+SESSION_COOKIE_AGE = 3600  # 10 hour in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_DOMAIN = None
-SESSION_COOKIE_SECURE = False
-SESSION_COOKIE_SAMESITE = None
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_HTTPONLY = True
 # For local development
 CSRF_COOKIE_DOMAIN = None
+CSRF_COOKIE_SECURE = True
+
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOD = True
 
 LOGIN_REDIRECT_URL = '/'  # Or wherever you want to go after login
 LOGIN_URL = '/login/'  # Customize the login URL
