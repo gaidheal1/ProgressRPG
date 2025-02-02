@@ -8,7 +8,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'progress_rpg.settings')
 app = Celery('progress_rpg')
 
 app.config_from_object('django.conf:settings', namespace='CELERY')
-
 app.autodiscover_tasks()
 
 @app.task(bind=True)
@@ -17,7 +16,19 @@ def debug_task(self):
 
 app.conf.beat_schedule = {
     'update-quests-every-hour': {
-        'task': 'progress_rpg.tasks.update_quest_availability',
-        'schedule': crontab(minute=0, hour='*'), # Run every hour
+        'task': 'gameplay.tasks.update_quest_availability',
+        'schedule': crontab(hour=0, minute=0), # Run every day
     },
+    'daily-characater-death-check': {
+        'task': 'gameworld.tasks.check_character_deaths',
+        'schedule': crontab(hour=0, minute=0),
+    },
+    'weekly-pregnancy-start': {
+        'task': 'gameworld.tasks.start_character_pregnancies',
+        'schedule': crontab(day_of_week=0, hour=0, minute=0),
+    },
+    'weekly-pregnancy-check': {
+        'task': 'gameworld.tasks.check_character_pregnancies',
+        'schedule': crontab(day_of_week=0, hour=0, minute=0),
+    }
 }

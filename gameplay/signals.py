@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from django.utils.timezone import now
 from .models import Character, Activity
 from users.models import Profile
+from events.models import Event, EventContribution
 from datetime import datetime, timedelta
 #from django.contrib.auth import get_user_model
 
@@ -15,10 +16,19 @@ from datetime import datetime, timedelta
 #         Character.objects.create(profile=instance)
 
 @receiver(post_save, sender=Activity)
-def add_activity_to_profile(sender, instance, created, **kwargs):
-    """Add activity details to the profile when it's created"""
+def handle_new_activity(sender, instance, created, **kwargs):
+    """Handles all activity submission jobs"""
     if created:
         instance.profile.add_activity(instance.duration, 1)
+
+        # Event Progress Updates
+        """ active_events = Event.objects.filter(is_active=True)
+        for event in active_events:
+            event_progress, _ = EventContribution.objects.get_or_create(
+                event=event, user=instance.user
+            )
+            event_progress.total_time += instance.duration_seconds
+            event_progress.save() """
 
 @receiver(user_logged_in)
 def update_login_streak(sender, request, user, **kwargs):

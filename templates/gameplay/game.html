@@ -75,15 +75,14 @@
       </div>
 
       <div class="current-item" id="current-activity-section">
-        <span class="current-item-header">Current activity:</span> <span class="current-item-message"
-          id="activity-name">None</span>
+        <div class="input-div" id="activity-input-div">
+          <input class="field-div" type="text" id="activity-input" placeholder="Start activity" />
+        </div>
       </div>
 
-      <div class="input-div" id="activity-input-div">
-        <input class="field-div" type="text" id="activity-input" placeholder="Enter activity" />
-      </div>
+
       <div class="button-frame" id="activity-buttons">
-        <button class="button-filled" id="start-activity-btn">Enter Activity</button>
+        <button class="button-filled" id="start-activity-btn">Start Activity</button>
         <button class="button-filled" id="stop-activity-btn" disabled="true" style="display: none;">Stop activity and
           submit</button>
       </div>
@@ -115,24 +114,30 @@
         <div class="timer-frame">
           <span id="quest-timer" class="timer-text">00:00</span>
         </div>
+
       </div>
 
       <div class="current-item" id="current-quest-section">
-        <div>
+        <div class="quest-text">
           <span class="current-item-header">Current quest:</span> <span class="current-item-message"
             id="current-quest-title">None</span>
         </div>
-
+        <div id="current-quest-intro" class="quest-text"></div>
       </div>
 
-      <div id="current-quest-description">None</div>
-      <div id="current-quest-intro" class="quest-text"></div>
+      
 
-      <div class="list-section" id="quest-stages">
-        <span class="list-section-header">Current stage:</span> <span id="current-quest-active-stage"></span>
-        <ul class="list" id="quest-stages-list" hidden="true">
-          <!-- Quest stages dynamically loaded here -->
-        </ul>
+      <div id="quest-stages">
+        <div id="current-stage-section">
+          <span>Current stage:</span> <span id="current-quest-active-stage"></span>
+        </div>
+        <div class="list-section" id="quest-previous-stages">
+          <span class="list-section-header">Previous stages</span>
+          <ul class="list" id="quest-stages-list" style="display:none">
+            <!-- Quest stages dynamically loaded here -->
+          </ul>
+        </div>
+
       </div>
 
       <div id="current-quest-outro" class="quest-text" style="display: none;"></div>
@@ -181,7 +186,15 @@
                 </ul>
               </div>
             </div>
-            <button class="button-filled" id="choose-quest-btn">Choose Quest</button>
+            <div id="choose-quest">
+              <div>
+                <label for="quest-duration">Select quest duration:/label>
+                <select id="quest-duration">
+                <!-- options loaded dynamically here -->
+                </select>
+              </div>
+              <button class="button-filled" id="choose-quest-btn">Choose Quest</button>
+            </div>
           </div>
 
         </div>
@@ -197,5 +210,6 @@
 
 </div>
 <script src="{% static 'js/game.js' %}"></script>
+<script>window.profile_id = "{{ request.user.profile.id }}";</script>
 
 {% endblock %}

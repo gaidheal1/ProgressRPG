@@ -3,12 +3,12 @@ from django.shortcuts import render
 from django.contrib import admin
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
-from .models import Quest, QuestRequirement, Character, QuestCompletion, Activity, ActivityTimer, QuestTimer, QuestResults
+from .models import Quest, QuestRequirement, Character, QuestCompletion, Activity, ActivityTimer, QuestTimer, QuestResults, PlayerCharacterLink
 
 # Register your models here.
     
-class QuestCompletionsInline(admin.TabularInline):
-    model = QuestCompletion
+class QuestResultsInline(admin.TabularInline):
+    model = QuestResults
 
 
 @admin.register(Quest)
@@ -20,14 +20,15 @@ class QuestAdmin(admin.ModelAdmin):
         'is_premium'),
         ('levelMin',
         'levelMax'),
-        'duration',
+        ('duration_choices', 'default_duration'),
         'created_at',
         'frequency',
+        ('intro_text',
+        'outro_text'),
         'stages',
     ]
     list_display = [
         'name',
-        'description',
         'is_premium',
         'duration',
         'created_at',
@@ -43,21 +44,65 @@ class QuestAdmin(admin.ModelAdmin):
     readonly_fields = [
         'created_at',
     ]
-    inlines = [QuestCompletionsInline]
+    inlines = [QuestResultsInline]
     
 @admin.register(QuestResults)
 class QuestResultsAdmin(admin.ModelAdmin):
     list_display = ['quest', 'xp_reward', 'coin_reward', 'dynamic_rewards', 'buffs']
 
 
-
 @admin.register(QuestRequirement)
 class QuestRequirementAdmin(admin.ModelAdmin):
     list_display = ['quest', 'prerequisite', 'times_required']
 
-@admin.register(Character)
+class LinkInline(admin.TabularInline):
+    model = PlayerCharacterLink
+
+#@admin.register(Character)
 class CharacterAdmin(admin.ModelAdmin):
-    list_display = ['name', 'profile', 'current_quest', 'coins']
+    # def current_player(self, obj):
+    #     link = PlayerCharacterLink.objects.filter(character=obj, is_active=True).first()
+    #     return link.profile.name if link else 'No player linked'
+    
+    # current_player.short_description = 'Current Player'
+
+    fields = [
+        'first_name', 
+        'last_name',
+        'name',
+        #'current_player',
+        'backstory',
+        'parents',
+        'gender', 
+        ('is_pregnant',
+        'pregnancy_start_date',
+        'pregnancy_due_date'),
+        ('dob',
+        'dod'),
+        'cause_of_death',
+        'coins',
+        'reputation',
+        ('location', 
+        'x_coordinate',
+        'y_coordinate'),
+        'is_npc',
+        'total_quests',
+    ]
+    list_display = [
+        'name',
+        #'current_player',
+        'is_npc',
+        'dob',
+
+        ]
+    inlines = [LinkInline]
+
+admin.site.register(Character, CharacterAdmin)
+
+@admin.register(PlayerCharacterLink)
+class PlayerCharacterLinkAdmin(admin.ModelAdmin):
+    list_display = ['profile', 'character', 'is_active']
+    fields = ['profile', 'character', 'is_active'] #('date_linked', 'date_unlinked'),
 
 @admin.register(QuestCompletion)
 class QuestCompletionAdmin(admin.ModelAdmin):
@@ -69,11 +114,12 @@ class ActivityAdmin(admin.ModelAdmin):
     
 @admin.register(ActivityTimer)
 class ActivityTimerAdmin(admin.ModelAdmin):
-    list_display = ['profile', 'start_time', 'elapsed_time', 'is_running']
+    list_display = ['profile', 'activity', 'start_time', 'elapsed_time', 'status']
     actions = ['stop_timers', 'delete_timers']
 
     def stop_timers(self, request, queryset):
-        queryset.update(is_running=False)
+        for timer in queryset:
+            timer.pause()
         self.message_user(request, "Selected timers have been stopped.")
     stop_timers.short_description = "Stop selected timers"
 
@@ -84,17 +130,20 @@ class ActivityTimerAdmin(admin.ModelAdmin):
 
 @admin.register(QuestTimer)
 class QuestTimerAdmin(admin.ModelAdmin):
-    list_display = ['character', 'start_time', 'elapsed_time', 'is_running']
+    list_display = ['character', 'start_time', 'elapsed_time', 'status']
+    fields = ['character', 'quest', 'start_time', 'elapsed_time', 'status']
 
-    def stop_timers(self, request, queryset):
-        queryset.update(is_running=False)
-        self.message_user(request, "Selected timers have been stopped.")
-    stop_timers.short_description = "Stop selected timers"
+    def pause_timers(self, request, queryset):
+        for timer in queryset:
+            timer.pause()
+        self.message_user(request, "Selected timers have been paused.")
+    pause_timers.short_description = "Pause selected timers"
 
-    def delete_timers(self, request, queryset):
-        queryset.delete()
-        self.message_user(request, "Selected timers have been deleted.")
-    delete_timers.short_description = "Delete selected timers"
+    def reset_timers(self, request, queryset):
+        for timer in queryset:
+            timer.reset()
+        self.message_user(request, "Selected timers have been reset.")
+    reset_timers.short_description = "Reset selected timers"
 
 # class CustomAdminSite(admin.AdminSite):
 #     #change_list_template = "admin/combined_timers.html"
