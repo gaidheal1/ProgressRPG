@@ -420,7 +420,7 @@ class PlayerCharacterLink(models.Model):
         self.save()
 
 class QuestCompletion(models.Model):
-    character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='quest_completions')
+    character = models.ForeignKey(Character, on_delete=models.CASCADE) # don't add related_name, use character.quest_completions!
     quest = models.ForeignKey('gameplay.Quest', on_delete=models.CASCADE, related_name='quest_completions')
     times_completed = models.PositiveIntegerField(default=0)
     last_completed = models.DateTimeField(auto_now=True)
