@@ -118,15 +118,14 @@
       </div>
 
       <div class="current-item" id="current-quest-section">
-        <div>
+        <div class="quest-text">
           <span class="current-item-header">Current quest:</span> <span class="current-item-message"
             id="current-quest-title">None</span>
         </div>
-
+        <div id="current-quest-intro" class="quest-text"></div>
       </div>
 
-      <div id="current-quest-description">None</div>
-      <div id="current-quest-intro" class="quest-text"></div>
+      
 
       <div id="quest-stages">
         <div id="current-stage-section">
@@ -187,7 +186,15 @@
                 </ul>
               </div>
             </div>
-            <button class="button-filled" id="choose-quest-btn">Choose Quest</button>
+            <div id="choose-quest">
+              <div>
+                <label for="quest-duration">Select quest duration:/label>
+                <select id="quest-duration">
+                <!-- options loaded dynamically here -->
+                </select>
+              </div>
+              <button class="button-filled" id="choose-quest-btn">Choose Quest</button>
+            </div>
           </div>
 
         </div>

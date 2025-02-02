@@ -7,16 +7,20 @@ import math
 from random import random
 
 class Quest(models.Model):
-    name = models.CharField(max_length=255, default="Default quest name")
-    description = models.TextField(max_length=2000, blank = True, default = "Default description")
-    intro_text = models.TextField(max_length=2000, blank = True, default="Default intro text")
-    outro_text = models.TextField(max_length=2000, blank = True, default="Default outro text")
+    name = models.CharField(max_length=255)
+    description = models.TextField(max_length=2000, blank = True)
+    intro_text = models.TextField(max_length=2000, blank = True)
+    outro_text = models.TextField(max_length=2000, blank = True)
     duration = models.PositiveIntegerField(default=1)  # Duration in seconds
+    DURATION_CHOICES = [(300 * i, f"{5 * i} minutes") for i in range(1, 7)]
+    duration_choices = models.JSONField(default=list)
+    default_duration = models.IntegerField(choices=DURATION_CHOICES, default=5)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     stages = models.JSONField(default=list)
+    xp_rate = models.FloatField(default=0.2)
 
     class Category(models.TextChoices):
         NONE = 'NONE', 'No category'
@@ -43,6 +47,11 @@ class Quest(models.Model):
         choices=Frequency.choices,
         default=Frequency.NONE
     )
+
+    def save(self, *args, **kwargs):
+        """Ensure duration_choices always contains valid values"""
+        self.duration_choices = [choice[0] for choice in self.DURATION_CHOICES]
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Quest. id: {self.id}, name: {self.name}, min/max lvl: {self.levelMin}/{self.levelMax}, premium: {self.is_premium}, repeatable: {self.canRepeat}, frequency: {self.frequency}, active: {self.is_active}"
@@ -128,8 +137,8 @@ class Quest(models.Model):
     
 class QuestResults(models.Model):
     quest = models.OneToOneField(Quest, on_delete=models.CASCADE, related_name='results')
-    dynamic_rewards = models.JSONField(default=dict)
-    xp_reward = models.PositiveIntegerField(default=0)
+    dynamic_rewards = models.JSONField(default=dict, null=True, blank=True)
+    xp_reward = models.PositiveIntegerField(null=True, blank=True)
     coin_reward = models.IntegerField(default=0)
     buffs = models.JSONField(default=list, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
@@ -137,22 +146,31 @@ class QuestResults(models.Model):
     def __str__(self):
         return f"Quest results for Quest '{self.quest.id}': {json.dumps(self.dynamic_rewards, indent=2)}"
 
-    @transaction.atomic
-    def apply(self, person):
-        """Apply rewards/results to a given character"""
-        if self.xp_reward > 0:
-            person.add_xp(self.xp_reward)
+    def calculate_xp_reward(self, character, duration):
+        """Calculates XP reward based on quest duration and other factors"""
+        character_level = character.level
+        quest_completions = character.get_quest_completions(self.quest).first()
+        base_xp = self.quest.xp_rate
+        time_xp = base_xp * (duration)
 
-        if self.coin_reward != 0:
-            #person.add_coins(self.coin_reward)
-            person.coins += self.coin_reward
+        level_scaling = 1 + (character_level * 0.05)
+        repeat_penalty = 0.9 ** quest_completions.times_completed
+
+        final_xp = time_xp * level_scaling * repeat_penalty
+        return max(1, round(final_xp))
+
+    @transaction.atomic
+    def apply(self, character):
+        """Apply rewards/results to a given character"""
+        #character.add_coins(self.coin_reward)
+        character.coins += self.coin_reward
 
         for key, value in self.dynamic_rewards.items():
-            if hasattr(person, f"apply_{key}"):
-                method = getattr(person, f"apply_{key}")
+            if hasattr(character, f"apply_{key}"):
+                method = getattr(character, f"apply_{key}")
                 method(value)
-            elif hasattr(person, key):
-                setattr(person, key, getattr(person, key) + value if isinstance(value, (int, float)) else value)
+            elif hasattr(character, key):
+                setattr(character, key, getattr(character, key) + value if isinstance(value, (int, float)) else value)
 
         #print("self.buffs:", self.buffs)
         for buff_name in self.buffs:
@@ -166,8 +184,8 @@ class QuestResults(models.Model):
                 buff_type=buff.buff_type,
                 attribute=buff.attribute,
             )
-            person.buffs.add(applied_buff)
-        person.save()
+            character.buffs.add(applied_buff)
+        character.save()
 
 class QuestRequirement(models.Model):
     quest = models.ForeignKey(Quest, on_delete=models.CASCADE, related_name="quest_requirements")
@@ -192,16 +210,20 @@ class Activity(models.Model):
     class Meta:
         ordering = ['-created_at'] # Most recent activities first
 
+    def update_name(self, new_name):
+        self.name = new_name
+        self.save()
+
     def add_time(self, num):
         self.duration += num
         self.save()
 
-    def calculate_xp_reward(self, person):
+    def calculate_xp_reward(self):
         """
         Calculate XP reward for this activity, considering buffs.
         """
         base_xp = self.duration * self.xp_rate
-        final_xp = person.apply_buffs(base_xp, 'xp')
+        final_xp = self.profile.apply_buffs(base_xp, 'xp')
         return final_xp
 
     def __str__(self):
@@ -235,7 +257,6 @@ class Project(models.Model):
 
 class Character(Person):
     quest_completions = models.ManyToManyField('gameplay.Quest', through='QuestCompletion', related_name='completed_by')
-    current_quest = models.ForeignKey(Quest, on_delete=models.SET_NULL, blank=True, null=True)
     total_quests = models.PositiveIntegerField(default=0)
 
     first_name = models.CharField(max_length=50, default="")
@@ -276,35 +297,29 @@ class Character(Person):
         return self.dod is None
     
     def start_quest(self, quest):
-        self.current_quest = quest
-        self.save()
+        self.quest_timer.change_quest(quest)
 
     def is_player_controlled(self):
         return self.profile is not None
 
+    def get_quest_completions(self, quest):
+        return QuestCompletion.objects.filter(character=self, quest=quest)
+
     @transaction.atomic
-    def complete_quest(self):
-        print("Inside complete_quest method of Character model")
-        if not self.current_quest:
-            raise ValueError("No active quest.")
-        
+    def complete_quest(self, quest):
         with transaction.atomic():
             completion, created = QuestCompletion.objects.get_or_create(
                 character=self,
-                quest=self.current_quest,
-                last_completed=now()
+                quest=quest,
             )
             if not created:
                 completion.times_completed += 1
             completion.save()
-        if hasattr(self.current_quest, 'questreward'):
-            quest_reward = self.current_quest.questreward
+        if hasattr(quest, 'questreward'):
+            quest_reward = quest.questreward
             print("quest reward:", quest_reward)
-
             quest_reward.apply(self)
 
-        self.add_xp(5)
-        self.current_quest = None
         self.total_quests += 1
         self.save()
 
@@ -362,7 +377,6 @@ class Character(Person):
             chance += 0.10
         return chance
 
-
     def get_partner(self):
         """Get the character's active partner if one exists"""
         from gameworld.models import Partnership
@@ -406,10 +420,10 @@ class PlayerCharacterLink(models.Model):
         self.save()
 
 class QuestCompletion(models.Model):
-    character = models.ForeignKey(Character, on_delete=models.CASCADE)
+    character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='quest_completions')
     quest = models.ForeignKey('gameplay.Quest', on_delete=models.CASCADE, related_name='quest_completions')
-    times_completed = models.PositiveIntegerField(default=1)
-    last_completed = models.DateTimeField()
+    times_completed = models.PositiveIntegerField(default=0)
+    last_completed = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return f"character {self.character.name} has done quest {self.quest.name} {self.times_completed} times"
@@ -417,69 +431,115 @@ class QuestCompletion(models.Model):
 class Timer(models.Model):
     start_time = models.DateTimeField(null=True, blank=True)
     elapsed_time = models.IntegerField(default=0)  # Time in seconds
-    is_running = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('paused', 'Paused'),
+        ('completed', 'Completed'),
+        ('empty', 'Empty'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='empty')
+
     class Meta:
         abstract = True
-
-    def start(self):
-        if not self.is_running:
-            self.start_time = now()
-            self.is_running = True
-            self.save()
-            
-    def stop(self):
-        if self.is_running:
-            server_elapsed = (now() - self.start_time).total_seconds()
-            self.elapsed_time += math.ceil(server_elapsed)
-            self.is_running = False
-            self.start_time = None
-            self.save()
             
     def get_elapsed_time(self):
             return (now() - self.start_time).total_seconds() if self.start_time else 0
-    
+
+    def start(self):
+        if self.status != 'active':
+            self.status = 'active'
+            self.start_time = now()
+            self.save()
+            
+    def pause(self):
+        if self.status != 'paused':
+            self.status = 'paused'
+            server_elapsed = (now() - self.start_time).total_seconds()
+            self.elapsed_time += math.ceil(server_elapsed)
+            self.start_time = None
+            self.save()
+
+    def complete(self):
+        if self.status != 'completed':
+            self.pause()
+            self.status = 'completed'
+            
     def reset(self):
-        self.elapsed_time = 0
-        self.is_running = False
-        self.start_time = None
-        self.save()
+        if self.status != 'empty':
+            self.status = 'empty'
+            self.elapsed_time = 0
+            self.start_time = None
 
 
 class ActivityTimer(Timer):
-    profile = models.ForeignKey('users.profile', on_delete=models.CASCADE, related_name='activity_timer')
-    activity = models.OneToOneField(Activity, on_delete=models.CASCADE, related_name='activity_timer', null=True, blank=True)
+    profile = models.OneToOneField('users.profile', on_delete=models.CASCADE, related_name='activity_timer')
+    activity = models.ForeignKey('Activity', on_delete=models.SET_NULL, related_name='activity_timer', null=True, blank=True)
 
     def __str__(self):
         return f"ActivityTimer for profile {self.profile.name}: started {self.start_time}, {self.elapsed_time} elapsed"
-    
-    def increment_time(self):
-        self.elapsed_time += 1
-        self.save(update_fields=['elapsed_time'])
+
+    def new_activity(self, activity):
+        self.reset()
+        self.activity = activity
+        self.save()
+
+    def complete(self):
+        super().complete()
+        self.activity.add_time(self.elapsed_time)
+        xp = self.calculate_xp()
+        self.reset()
+        return xp
+
+    def reset(self):
+        super().reset()
+        self.activity = None
+        self.save()
+
+    def calculate_xp(self):
+        return self.activity.calculate_xp_reward()
+
 
 class QuestTimer(Timer):
-    character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='quest_timer')
+    character = models.OneToOneField('Character', on_delete=models.CASCADE, related_name='quest_timer')
+    quest = models.ForeignKey('Quest', on_delete=models.SET_NULL, related_name='quest_timer', null=True, blank=True)
     duration = models.IntegerField(default=0)
+
+    def change_quest(self, quest, duration=5):
+        self.reset()
+        self.quest = quest
+        self.duration = duration
+        self.save()
+
+    def complete(self):
+        super().complete()
+        xp = self.calculate_xp()
+        self.reset()
+        return xp
+
+    def reset(self):
+        super().reset()
+        self.quest = None
+        self.save()
+
+    def calculate_xp(self):
+        return self.quest.results.calculate_xp_reward(self.character, self.duration)
 
     def get_remaining_time(self):
         if self.is_running:
             elapsed = self.get_elapsed_time()
             return max(self.duration - int(elapsed + self.elapsed_time), 0)
         return max(self.duration - self.elapsed_time, 0)
-    
-    def decrement_time(self):
-        if self.elapsed_time < self.duration:
-            self.elapsed_time += 1
-            self.save(update_fields=['elapsed_time'])
-    
+
     def is_complete(self):
         return self.get_remaining_time() <= 0
 
     def __str__(self):
-        return f"QuestTimer for profile {self.character.name}: duration {self.duration}, started {self.start_time}, {self.elapsed_time} elapsed"
+        return f"QuestTimer for {self.character.name}: quest {self.quest}, duration {self.duration}, started {self.start_time}, {self.elapsed_time} elapsed"
     
+
 
 class Buff(models.Model):
     BUFF_TYPE_CHOICES = [

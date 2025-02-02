@@ -96,8 +96,8 @@ class CharacterProgression(models.Model):
     role = models.ForeignKey(CharacterRole, on_delete=models.CASCADE)
     experience = models.IntegerField(default=0)
 
-    base_progression_rate = models.FloatField(default=0.1)
-    player_acceleration_factor = models.FloatField(default=1.0)
+    base_progression_rate = models.PositiveIntegerField(default=1)
+    player_acceleration_factor = models.PositiveIntegerField(default=2)
     date_started = models.DateField(default=timezone.now)
     
     def __str__(self):

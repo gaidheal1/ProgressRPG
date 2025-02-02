@@ -79,7 +79,6 @@ class Profile(Person):
     bio = models.TextField(max_length=1000, blank=True)
     total_time = models.IntegerField(default=0)
     total_activities = models.IntegerField(default=0)
-    current_activity = models.ForeignKey('gameplay.Activity', blank=True, null=True, on_delete=models.CASCADE, related_name='profile_current_activity')
     is_premium = models.BooleanField(default=False)
     last_login = models.DateTimeField(auto_now=True)
     login_streak = models.PositiveIntegerField(default=1)
@@ -105,25 +104,10 @@ class Profile(Person):
     def __str__(self):
         return f'profile {self.name if self.name else "Unnamed profile"} of user {self.user.username}'
 
-    def add_activity(self, time, num):
+    def add_activity(self, time, num = 1):
         self.total_time += time
         self.total_activities += num
         self.save()
-
-    def submit_activity(self):
-        xp_reward = self.current_activity.calculate_xp_reward(self)
-        self.add_xp(xp_reward)
-        self.clear_expired_buffs()
-
-        self.total_time += self.current_activity.duration
-        self.total_activities += 1
-
-        self.current_activity = None
-        rewards = {
-            "xp": xp_reward,
-        }
-        self.save()
-        return rewards
 
     def change_character(self, new_character):
         """Handles switching player's character and updating"""

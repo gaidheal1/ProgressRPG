@@ -20,7 +20,7 @@ class QuestAdmin(admin.ModelAdmin):
         'is_premium'),
         ('levelMin',
         'levelMax'),
-        'duration',
+        ('duration_choices', 'default_duration'),
         'created_at',
         'frequency',
         ('intro_text',
@@ -29,7 +29,6 @@ class QuestAdmin(admin.ModelAdmin):
     ]
     list_display = [
         'name',
-        'description',
         'is_premium',
         'duration',
         'created_at',
@@ -87,8 +86,7 @@ class CharacterAdmin(admin.ModelAdmin):
         'x_coordinate',
         'y_coordinate'),
         'is_npc',
-        ('current_quest',
-        'total_quests'),
+        'total_quests',
     ]
     list_display = [
         'name',
@@ -116,11 +114,12 @@ class ActivityAdmin(admin.ModelAdmin):
     
 @admin.register(ActivityTimer)
 class ActivityTimerAdmin(admin.ModelAdmin):
-    list_display = ['profile', 'start_time', 'elapsed_time', 'is_running']
+    list_display = ['profile', 'activity', 'start_time', 'elapsed_time', 'status']
     actions = ['stop_timers', 'delete_timers']
 
     def stop_timers(self, request, queryset):
-        queryset.update(is_running=False)
+        for timer in queryset:
+            timer.pause()
         self.message_user(request, "Selected timers have been stopped.")
     stop_timers.short_description = "Stop selected timers"
 
@@ -131,17 +130,20 @@ class ActivityTimerAdmin(admin.ModelAdmin):
 
 @admin.register(QuestTimer)
 class QuestTimerAdmin(admin.ModelAdmin):
-    list_display = ['character', 'start_time', 'elapsed_time', 'is_running']
+    list_display = ['character', 'start_time', 'elapsed_time', 'status']
+    fields = ['character', 'quest', 'start_time', 'elapsed_time', 'status']
 
-    def stop_timers(self, request, queryset):
-        queryset.update(is_running=False)
-        self.message_user(request, "Selected timers have been stopped.")
-    stop_timers.short_description = "Stop selected timers"
+    def pause_timers(self, request, queryset):
+        for timer in queryset:
+            timer.pause()
+        self.message_user(request, "Selected timers have been paused.")
+    pause_timers.short_description = "Pause selected timers"
 
-    def delete_timers(self, request, queryset):
-        queryset.delete()
-        self.message_user(request, "Selected timers have been deleted.")
-    delete_timers.short_description = "Delete selected timers"
+    def reset_timers(self, request, queryset):
+        for timer in queryset:
+            timer.reset()
+        self.message_user(request, "Selected timers have been reset.")
+    reset_timers.short_description = "Reset selected timers"
 
 # class CustomAdminSite(admin.AdminSite):
 #     #change_list_template = "admin/combined_timers.html"

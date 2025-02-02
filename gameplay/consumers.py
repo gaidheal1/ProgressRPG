@@ -7,6 +7,7 @@ from django.utils.timezone import now
 from django.contrib.auth.models import AnonymousUser
 from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
+from django.db import transaction
 
 django.setup()
 
@@ -75,22 +76,21 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         except json.JSONDecodeError as e:
                 print("Error decoding JSON:", e)
         
-    @sync_to_async
+    @database_sync_to_async
     def set_profile_and_character(self, user):
-        print("user and profile:", user, user.profile)
-        character = PlayerCharacterLink().get_character(user.profile)
-        data = {
-            "profile" : user.profile,
-            "character" : character if character else None
-        }
-        print("Consumer, set_profile_etc, character:", data["character"])
-        return data
+        with transaction.atomic():
+            character = PlayerCharacterLink().get_character(user.profile)
+            data = {
+                "profile" : user.profile,
+                "character" : character if character else None
+            }
+            return data
     
-    @sync_to_async
+    @database_sync_to_async
     def get_activity_timer(self):
         return ActivityTimer.objects.filter(profile=self.profile).first()
     
-    @sync_to_async
+    @database_sync_to_async
     def get_quest_timer(self):
         return QuestTimer.objects.filter(character=self.character).first()
     
@@ -130,6 +130,9 @@ class ProfileConsumer(AsyncWebsocketConsumer):
     def fetch_quests_db(self):
         print("Inside fetch_quests_db")
         eligible_quests = check_quest_eligibility(self.character, self.profile)
+        for quest in eligible_quests:
+            quest.save()
+        print(eligible_quests[0])
         serializer = QuestSerializer(eligible_quests, many=True)
         #print("quests:", serializer.data)
         return serializer.data
@@ -148,8 +151,8 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         print("Server: Fetching profile and character info")
         profile_serializer = ProfileSerializer(self.profile)
         character_serializer = CharacterSerializer(self.character)
-        current_activity = ActivitySerializer(self.profile.current_activity).data if self.profile.current_activity else False
-        current_quest = QuestSerializer(self.character.current_quest).data if self.character.current_quest else False
+        current_activity = ActivitySerializer(self.activity_timer.activity).data if self.activity_timer.status != 'empty' else False
+        current_quest = QuestSerializer(self.quest_timer.quest).data if self.quest_timer.status != 'empty' else False
         data = {
             "profile": profile_serializer.data,
             "character": character_serializer.data,
@@ -171,18 +174,15 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         }))
 
     @database_sync_to_async
-    def choose_quest_db(self, quest_id):
-        quest = Quest.objects.get(id=quest_id)
-        self.character.current_quest = quest
-        self.character.save()
-        quest_timer, created = QuestTimer.objects.get_or_create(character=self.character)
-        if created:
-            quest_timer.duration = quest.duration
-        quest_serializer = QuestSerializer(quest)
-        return quest_serializer.data
+    def _choose_quest_db(self, quest_id):
+        with transaction.atomic():
+            quest = Quest.objects.get(id=quest_id)
+            self.quest_timer.change_quest(quest) # add duration as second argument later
+            quest_serializer = QuestSerializer(quest)
+            return quest_serializer.data
         
     async def choose_quest(self, quest_id):
-        data = await self.choose_quest_db(quest_id)
+        data = await self._choose_quest_db(quest_id)
         await self.send(text_data=json.dumps({
             "type": "choose_quest_response",
             "success": True,
@@ -199,21 +199,19 @@ class ProfileConsumer(AsyncWebsocketConsumer):
     @sync_to_async
     def stop_timers(self):
         """Stop the timer."""
-        self.activity_timer.stop()
-        self.quest_timer.stop()
+        self.activity_timer.pause()
+        self.quest_timer.pause()
 
     @database_sync_to_async
-    def create_activity_db(self, activity_name):
-        print("Inside create_activity function")
-        activity = self.profile.current_activity or Activity.objects.create(profile=self.profile, name=activity_name)
-        self.profile.current_activity = activity
-        
-        activity.save()
-        self.profile.save()
-        return activity
+    def _create_activity_db(self, activity_name):
+        with transaction.atomic():
+            print("Inside create_activity function")
+            activity = Activity.objects.create(profile=self.profile, name=activity_name)
+            self.activity_timer.new_activity(activity)
+            return activity
 
     async def create_activity(self, activity_name):
-        activity = await self.create_activity_db(activity_name)
+        activity = await self._create_activity_db(activity_name)
         await self.send(text_data=json.dumps({
             "type": "create_activity_response",
             "success": True,
@@ -226,12 +224,12 @@ class ProfileConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def update_activity_name_db(self, new_name):
-        if self.profile.current_activity:
-            self.profile.current_activity.name = new_name
-            self.profile.current_activity.save()
+        if self.activity_timer.status != 'empty':
+            self.activity_timer.update_name(new_name)
 
     async def update_activity_name(self, new_name):
         print(f"Updating activity name to: {new_name}")
+        await self._update_activity_name(new_name)
         await self.send(text_data=json.dumps({
             "type": "update_activity_name_response",
             "success": True,
@@ -240,46 +238,45 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         }))
 
     @database_sync_to_async
-    def submit_activity_db(self):
-        activity = self.profile.current_activity
-        activity.add_time(self.activity_timer.elapsed_time)
-        self.profile.current_activity.add_time(self.activity_timer.elapsed_time)
-        self.activity_timer.reset()
-        profile_serializer = ProfileSerializer(self.profile)
-        rewards = self.profile.submit_activity()
-        activities = Activity.objects.filter(profile=self.profile, created_at__date=now().date())
-        activities_list = ActivitySerializer(activities, many=True)
-        data = {
-            "profile": profile_serializer.data,
-            "rewards": rewards,
-            "activities": activities_list.data,
-        }
-        return data
+    def _submit_activity_db(self):
+        with transaction.atomic():
+            self.profile.add_activity(self.activity_timer.elapsed_time)
+            xp_reward = self.activity_timer.complete()
+            self.profile.add_xp(xp_reward)
+            profile_serializer = ProfileSerializer(self.profile)
+            activities = Activity.objects.filter(profile=self.profile, created_at__date=now().date())
+            activities_list = ActivitySerializer(activities, many=True)
+            data = {
+                "profile": profile_serializer.data,
+                "activities": activities_list.data,
+            }
+            return data
 
     async def submit_activity(self):
         await self.stop_timers()
-        data = await self.submit_activity_db()
+        data = await self._submit_activity_db()
         await self.send(text_data=json.dumps({
             "type": "submit_activity_response",
             "success": True,
             "message": "Activity submitted",
             "profile": data["profile"],
             "activities": data["activities"],
-            "activity_rewards": data["rewards"],
         }))
 
-    @sync_to_async
-    def quest_completed_db(self):
-        self.quest_timer.reset()
-        self.character.complete_quest()
-        eligible_quests = check_quest_eligibility(self.character, self.profile)
-        character = CharacterSerializer(self.character)
-        quests = QuestSerializer(eligible_quests, many=True)
-        return character.data, quests.data
+    @database_sync_to_async
+    def _quest_completed_db(self):
+        with transaction.atomic():
+            self.character.complete_quest(self.quest_timer.quest)
+            xp_reward = self.quest_timer.complete()
+            self.character.add_xp(xp_reward)
+            eligible_quests = check_quest_eligibility(self.character, self.profile)
+            character = CharacterSerializer(self.character)
+            quests = QuestSerializer(eligible_quests, many=True)
+            return character.data, quests.data
 
     async def quest_completed(self):
         await self.stop_timers()
-        character, quests = await self.quest_completed_db()
+        character, quests = await self._quest_completed_db()
         await self.send(text_data=json.dumps({
             "type": "quest_completed_response",
             "success": True,

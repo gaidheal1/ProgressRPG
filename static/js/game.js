@@ -70,17 +70,19 @@ function closeModal() {
 }
 
 function showQuestDetails(quest) {
+  const durationList = document.getElementById('quest-duration');
+  console.log("quest durations:", quest.duration_choices); // currently undefined
   document.getElementById('quest-title').textContent = quest.name;
   document.getElementById('quest-description').textContent = quest.description;
-  document.getElementById('xp-reward-value').textContent = quest.result.xp_reward;
-  document.getElementById('coin-reward-value').textContent = quest.result.coin_reward;
+  //document.getElementById('xp-reward-value').textContent = quest.result.xp_reward;
+  //document.getElementById('coin-reward-value').textContent = quest.result.coin_reward;
   const otherRewards = document.getElementById('other-rewards-list');
   otherRewards.innerHTML = "";
-  Object.entries(quest.result.dynamic_rewards).forEach(([key, value]) => {
-    const li = document.createElement("li");
-    li.textContent = `${key}: ${value}`;
-    otherRewards.appendChild(li);
-  });
+  //Object.entries(quest.result.dynamic_rewards).forEach(([key, value]) => {
+  //  const li = document.createElement("li");
+  //  li.textContent = `${key}: ${value}`;
+  //  otherRewards.appendChild(li);
+  //});
   document.querySelectorAll(".quest-list-modal li").forEach(li => li.classList.remove("selected"));
   document.querySelector(`li[data-index="${quest.id}"]`).classList.add("selected");
 }
@@ -94,7 +96,6 @@ class Quest {
     this.outro = outro;
     this.duration = duration;
     this.stages = stages;
-    console.log("Quest stages:", this.stages);
     this.currentStageIndex = currentStageIndex;
     this.elapsedTime = elapsedTime;
   }
@@ -129,7 +130,7 @@ class Quest {
 
   initialDisplay() {
     document.getElementById('current-quest-title').textContent = this.name;
-    document.getElementById('current-quest-description').textContent = this.description;
+    //document.getElementById('current-quest-description').textContent = this.description;
     document.getElementById('current-quest-intro').textContent = this.intro;
     console.log("intro text:", this.intro);
     document.getElementById('current-quest-active-stage').textContent = this.getCurrentStage().text;
