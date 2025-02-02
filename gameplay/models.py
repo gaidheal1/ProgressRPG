@@ -235,13 +235,14 @@ class Project(models.Model):
 
 class Character(Person):
     quest_completions = models.ManyToManyField('gameplay.Quest', through='QuestCompletion', related_name='completed_by')
-    total_quests = models.PositiveIntegerField(default=0)
     current_quest = models.ForeignKey(Quest, on_delete=models.SET_NULL, blank=True, null=True)
+    total_quests = models.PositiveIntegerField(default=0)
 
     first_name = models.CharField(max_length=50, default="")
     last_name = models.CharField(max_length=50, default="", null=True, blank=True)
-    gender = models.CharField(max_length=50, default="None")
+    backstory = models.TextField(default="")
     parents = models.ManyToManyField('self', related_name='children', symmetrical=False)
+    gender = models.CharField(max_length=50, default="None")
     is_pregnant = models.BooleanField(default=False)
     pregnancy_start_date = models.DateField(null=True, blank=True)
     pregnancy_due_date = models.DateTimeField(null=True, blank=True)
@@ -249,13 +250,12 @@ class Character(Person):
     dod = models.DateField(null=True, blank=True)
     cause_of_death = models.CharField(max_length=255, null=True, blank=True)
     coins = models.PositiveIntegerField(default=0)
-    backstory = models.TextField(default="")
     reputation = models.IntegerField(default=0)
     buffs = models.ManyToManyField('Buff', related_name='characters', blank=True)
     location = models.ForeignKey('gameworld.Location', on_delete=models.SET_NULL, null=True, blank=True)
     x_coordinate = models.IntegerField(default=0)  # X coordinate (horizontal position)
     y_coordinate = models.IntegerField(default=0)  # Y coordinate (vertical position)
-    is_npc = models.BooleanField(default=False)
+    is_npc = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name if self.name else "Unnamed character"

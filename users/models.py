@@ -98,6 +98,7 @@ class Profile(Person):
     @property
     def current_character(self):
         """Returns the player's active character based on link records."""
+        from gameplay.models import PlayerCharacterLink
         active_link = PlayerCharacterLink.objects.filter(profile=self, is_active=True).first()
         return active_link.character if active_link else None
 

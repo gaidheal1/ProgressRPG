@@ -98,7 +98,7 @@ class CharacterProgression(models.Model):
 
     base_progression_rate = models.FloatField(default=0.1)
     player_acceleration_factor = models.FloatField(default=1.0)
-    date_started = models.DateTimeField(default=timezone.now)
+    date_started = models.DateField(default=timezone.now)
     
     def __str__(self):
         return f"{self.character.name} - {self.role.name}"

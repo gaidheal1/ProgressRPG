@@ -61,34 +61,41 @@ class LinkInline(admin.TabularInline):
 
 #@admin.register(Character)
 class CharacterAdmin(admin.ModelAdmin):
-    def current_player(self, obj):
-        link = PlayerCharacterLink.objects.filter(character=obj, is_active=True).first()
-        return link.player.name if link else 'No player linked'
+    # def current_player(self, obj):
+    #     link = PlayerCharacterLink.objects.filter(character=obj, is_active=True).first()
+    #     return link.profile.name if link else 'No player linked'
     
-    current_player.short_description = 'Current Player'
+    # current_player.short_description = 'Current Player'
 
     fields = [
         'first_name', 
         'last_name',
-        'current_player',
+        'name',
+        #'current_player',
         'backstory',
-        'current_quest', 
-        'total_quests', 
+        'parents',
         'gender', 
+        ('is_pregnant',
+        'pregnancy_start_date',
+        'pregnancy_due_date'),
         ('dob',
-         'dod'),
-        'coins', 
-        'location', 
-        ('x_coordinate',
+        'dod'),
+        'cause_of_death',
+        'coins',
+        'reputation',
+        ('location', 
+        'x_coordinate',
         'y_coordinate'),
         'is_npc',
+        ('current_quest',
+        'total_quests'),
     ]
     list_display = [
         'name',
-        'first_name', 
-        'last_name', 
-        'current_player',
-        'is_npc'
+        #'current_player',
+        'is_npc',
+        'dob',
+
         ]
     inlines = [LinkInline]
 
