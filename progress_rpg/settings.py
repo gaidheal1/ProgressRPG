@@ -55,7 +55,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$qj&(5ri-$'
+if ON_HEROKU:
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+else:
+    SECRET_KEY = env_config.get('SECRET_KEY')
 
 
 
@@ -147,6 +150,8 @@ if ON_HEROKU:
 else:
     REDIS_HOST = ('localhost', 6379)
 
+print("Redis url:", REDIS_HOST)
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": 'channels_redis.core.RedisChannelLayer',
@@ -231,7 +236,7 @@ CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOD = True
+SECURE_HSTS_PRELOAD = True
 
 LOGIN_REDIRECT_URL = '/'  # Or wherever you want to go after login
 LOGIN_URL = '/login/'  # Customize the login URL
