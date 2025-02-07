@@ -12,7 +12,6 @@ class Quest(models.Model):
     description = models.TextField(max_length=2000, blank = True)
     intro_text = models.TextField(max_length=2000, blank = True)
     outro_text = models.TextField(max_length=2000, blank = True)
-    duration = models.PositiveIntegerField(default=1)  # Duration in seconds
     DURATION_CHOICES = [(300 * i, f"{5 * i} minutes") for i in range(1, 7)]
     duration_choices = models.JSONField(default=list)
     default_duration = models.IntegerField(choices=DURATION_CHOICES, default=5)
@@ -458,9 +457,10 @@ class Timer(models.Model):
     def pause(self):
         if self.status != 'paused':
             self.status = 'paused'
-            server_elapsed = (now() - self.start_time).total_seconds()
-            self.elapsed_time += math.ceil(server_elapsed)
-            self.start_time = None
+            if self.start_time != None:
+                server_elapsed = (now() - self.start_time).total_seconds()
+                self.elapsed_time += math.ceil(server_elapsed)
+                self.start_time = None
             self.save()
 
     def complete(self):

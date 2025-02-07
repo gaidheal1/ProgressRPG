@@ -9,14 +9,22 @@ function closeModal() {
 }
 
 function showQuestDetails(quest) {
-  const durationList = document.getElementById('quest-duration');
-  console.log("quest durations:", quest.duration_choices); // currently undefined
+  const dropdown = document.getElementById('quest-durations');
+  console.log("quest durations:", quest.duration_choices);
+  dropdown.innerHTML = "";
+  quest.duration_choices.forEach(choice => {
+    const minutes = Math.round(choice / 60);
+    const option = document.createElement('option');
+    option.value = choice;
+    option.textContent = `${minutes} minutes`;
+    dropdown.appendChild(option);
+  });
   document.getElementById('quest-title').textContent = quest.name;
   document.getElementById('quest-description').textContent = quest.description;
   //document.getElementById('xp-reward-value').textContent = quest.result.xp_reward;
   //document.getElementById('coin-reward-value').textContent = quest.result.coin_reward;
-  const otherRewards = document.getElementById('other-rewards-list');
-  otherRewards.innerHTML = "";
+  //const otherRewards = document.getElementById('other-rewards-list');
+  //otherRewards.innerHTML = "";
   //Object.entries(quest.result.dynamic_rewards).forEach(([key, value]) => {
   //  const li = document.createElement("li");
   //  li.textContent = `${key}: ${value}`;
@@ -142,12 +150,6 @@ class Timer extends EventEmitter {
       }
       this.updateDisplay();
     }, 1000);
-    // Start sync timer
-    this.intervalIdSync = setInterval(() => {
-      syncTimer(this.mode);
-      //const diff = serverTime - this.elapsedTime;
-      //console.log("diff", diff)
-    }, 3000); // 300000 for 5 minutes, smaller for testing
   }
 
   stop() {
@@ -206,6 +208,7 @@ function onActivitySubmitted(data) {
   window.activityTimer.reset();
   window.questTimer.stop();
   submitActivity();
+  clearInterval(syncInterval);
 }
 
 function onQuestTimerStopped(data) {
@@ -215,6 +218,7 @@ function onQuestTimerStopped(data) {
 function onQuestCompleted(data) {
   window.activityTimer.stop();
   submitQuest();
+  clearInterval(syncInterval);
 }
 
 function formatDuration(seconds) {
@@ -224,11 +228,23 @@ function formatDuration(seconds) {
   return `${hours > 0 ? `${hours}:` : ""}${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-function loadQuest(quest) {
-  window.currentQuest = new Quest(quest.id, quest.name, quest.description, quest.intro_text, quest.outro_text, quest.duration, quest.stages);
+function loadQuest(data) {
+  const quest = data.quest;
+  const duration = data.duration;
+  window.currentQuest = new Quest(quest.id, quest.name, quest.description, quest.intro_text, quest.outro_text, duration, quest.stages);
   window.currentQuest.initialDisplay();
   window.questSelected = true;
   window.questTimer.reset(window.currentQuest.duration);
+}
+
+
+// Start sync timer
+function startTimerSync() {
+  syncInterval = setInterval(() => {
+    syncTimers();
+    //const diff = serverTime - this.elapsedTime;
+    //console.log("diff", diff)
+  }, 3000); // 300000 for 5 minutes, smaller for testing
 }
 
 // Start timers when both activity and quest are selected
@@ -246,8 +262,8 @@ function startTimerIfReady() {
 
     window.activityTimer.start();
     window.questTimer.start();
-    startTimer("activity");
-    startTimer("quest");
+    startTimers();
+    startTimerSync();
   }
 }
 
@@ -355,9 +371,9 @@ function validateInput(input) {
 }
 
 
-//
+///////////////////////////
 // AJAX REQUEST FUNCTIONS
-//
+///////////////////////////
 
 
 async function createActivityTimer() {
@@ -367,7 +383,7 @@ async function createActivityTimer() {
     return;
   }
   try {
-    const response = await fetch("/create_activity_timer/", {
+    const response = await fetch("/create_activity/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -413,12 +429,18 @@ async function chooseQuest(event) {
       return;
     }
     const questId = selectedQuest.dataset.index;
+
+    const selectedDuration = document.getElementById('quest-durations');
+    if (!selectedDuration) {
+      alert("Please select a duration for your quest.");
+      return;
+    }
     const response = await fetch("/choose_quest/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ "quest_id": questId })
+      body: JSON.stringify({ "quest_id": questId , "duration": selectedDuration.value})
     });
     await checkResponse(response);
 
@@ -445,12 +467,10 @@ async function submitQuest() {
   }
 }
 
-async function startTimer(mode) {
+async function startTimers() {
   try {
-    const response = await fetch("/start_timer/", {
+    const response = await fetch("/start_timers/", {
       method: 'POST',
-      headers: { "Content-Type": "text/plain" },
-      body: mode,
     });
     await checkResponse(response);
 
@@ -466,35 +486,38 @@ async function startTimer(mode) {
 }
 
 // Check state
-async function syncTimer(mode) {
+async function syncTimers() {
   try {
     const response = await fetch("/get_timer_state/", {
       method: 'POST',
-      headers: { "Content-Type": "text/plain" },
-      body: mode,
     });
     await checkResponse(response);
     const data = await response.json();
-    if (data.success) {
-      if (mode == "activity") {
-        const diff = Math.abs(data.timer.duration - window.activityTimer.elapsedTime);
-        if (diff > 10) {
-          window.activityTimer.elapsedTime = Math.floor(data.timer.duration);
-        }
-        //return data.timer.duration
-      } else if (mode == "quest") {
-        console.log('quest duration:', data.timer.duration);
-
-        //return data.timer.remaining_time;
-      }
-    } else {
-      console.error(data.message);
-    }
+    handleSyncTimersResponse(data);
   } catch (e) {
     console.error('There was a problem:', e);
   }
 }
 
+function handleSyncTimersResponse(data) {
+  if (data.success) {
+    let diff = Math.abs(data.activity_time - window.activityTimer.elapsedTime);
+    if (diff > 10) {
+      window.activityTimer.elapsedTime = Math.floor(data.activity_time);
+    }
+    diff = Math.abs(data.quest_time - window.questTimer.elapsedTime);
+    if (diff > 10) {
+      window.questTimer.elapsedTime = Math.floor(data.quest_time);
+    }
+  } else {
+    console.error(data.message);
+  }
+}
+
+
+////////////////////////////////
+///////////////////////////////
+// Don't think I need this any more
 async function stopTimer(mode) {
   try {
     const response = await fetch("/stop_timer/", {
@@ -582,6 +605,7 @@ function handleUpdateActivityNameResponse(data) {
 
 function handleSubmitActivityResponse(data) {
   if (data.success) {
+    console.log("Activities response:", data.activities[0]);
     addActivityToList(data.activities[0]);
     showInput();
     window.activityTimer.reset();
@@ -599,10 +623,9 @@ function handleChooseQuestResponse(data) {
   if (data.success) {
     document.getElementById('quest-rewards').style.display = "none";
     document.getElementById('current-quest-outro').style.display = "none";
-    loadQuest(data.quest);
+    loadQuest(data);
     closeModal();
     startTimerIfReady();
-      }
   } else {
     document.getElementById('feedback-message').textContent = "Quest selection failed, please try again.";
   }
@@ -675,7 +698,7 @@ function handleFetchInfoResponse(data) {
       window.activitySelected = false;
     }
     if (data.current_quest) {
-      loadQuest(data.current_quest);
+      loadQuest(data);
       //window.questTimer.reset(elapsedTime = data.current_quest.elapsed_time);
       window.questSelected = true;
     } else {
@@ -743,8 +766,9 @@ function updateUI() {
   fetchInfo();
 }
 
-function startHeartbeat() {
-  setInterval(async () => {
+function startHeartbeat(maxFailures = 3) {
+  let failureCount = 0;
+  const heartbeatInterval = setInterval(async () => {
     try {
       await fetch('/heartbeat/', {
         method: 'POST',
@@ -756,8 +780,14 @@ function startHeartbeat() {
           quest: window.questSelected,
         }),
       });
+    failureCount = 0;
     } catch (e) {
       console.error('Heartbeat failed:', e);
+      failureCount++;
+      if (failureCount >= maxFailures) {
+        console.error('Max heartbeat failures reached. Stopping heartbeat.');
+        clearInterval(heartbeatInterval);
+      }
     }
   }, 5000); // Send heartbeat every 5 seconds
 }
