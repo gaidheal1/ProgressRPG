@@ -54,7 +54,7 @@ class Quest(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Quest. id: {self.id}, name: {self.name}, minx/max lvl: {self.levelMin}/{self.levelMax}, premium: {self.is_premium}, repeatable: {self.canRepeat}, frequency: {self.frequency}, active: {self.is_active}"
+        return f"Quest. id: {self.id}, name: {self.name}, min/max lvl: {self.levelMin}/{self.levelMax}, premium: {self.is_premium}, repeatable: {self.canRepeat}, frequency: {self.frequency}, active: {self.is_active}"
     
     def apply_results(self, character):
         self.results.apply(character)
