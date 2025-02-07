@@ -87,6 +87,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:8000',
 ]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -105,7 +106,6 @@ INSTALLED_APPS = [
     'payments',
 
     'decouple',
-    'channels',
 ]
 
 MIDDLEWARE = [
@@ -115,10 +115,8 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    #'gameplay.mymiddleware.MyAuthMiddleware',
 ]
 
 ROOT_URLCONF = 'progress_rpg.urls'
@@ -139,8 +137,7 @@ TEMPLATES = [
     },
 ]
 
-#WSGI_APPLICATION = 'progress_rpg.wsgi.application'
-ASGI_APPLICATION = 'progress_rpg.asgi.application'
+WSGI_APPLICATION = 'progress_rpg.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -166,6 +163,7 @@ if ON_HEROKU:
     REDIS_HOST = (os.environ.get('REDIS_URL'))
 else:
     REDIS_HOST = ('localhost', 6379)
+
 
 CHANNEL_LAYERS = {
     "default": {
@@ -264,6 +262,7 @@ else:
     SECURE_HSTS_SECONDS = 0
     SECURE_HSTS_INCLUDE_SUBDOMAINS = False
     SECURE_HSTS_PRELOAD = False
+
 
 LOGIN_REDIRECT_URL = '/'  # Or wherever you want to go after login
 LOGIN_URL = '/login/'  # Customize the login URL
