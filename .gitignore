@@ -14,3 +14,4 @@ backup_file.sql
 backup_file.dump
 staticfiles/
 local_backup.dump
+debug.log
