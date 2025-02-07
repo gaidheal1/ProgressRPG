@@ -409,7 +409,6 @@ class PlayerCharacterLink(models.Model):
     is_active = models.BooleanField(default=True)
 
     def get_character(self, profile):
-        print("inside PlayerCharacterLink, get_character func")
         link = PlayerCharacterLink.objects.filter(profile=profile, is_active=True).first()
         return link.character if link else None
     
