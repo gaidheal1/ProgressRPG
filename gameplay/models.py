@@ -273,9 +273,6 @@ class Character(Person):
     coins = models.PositiveIntegerField(default=0)
     reputation = models.IntegerField(default=0)
     buffs = models.ManyToManyField('Buff', related_name='characters', blank=True)
-    location = models.ForeignKey('gameworld.Location', on_delete=models.SET_NULL, null=True, blank=True)
-    x_coordinate = models.IntegerField(default=0)  # X coordinate (horizontal position)
-    y_coordinate = models.IntegerField(default=0)  # Y coordinate (vertical position)
     is_npc = models.BooleanField(default=True)
 
     def __str__(self):

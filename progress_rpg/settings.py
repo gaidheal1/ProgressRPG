@@ -48,14 +48,14 @@ else:
     DB_PASSWORD = os.getenv('DB_PASSWORD')
 
     DB_HOST = os.getenv('DB_HOST', default='localhost')
-    print("db host:", DB_HOST)
+    #print("db host:", DB_HOST)
     DB_PORT = os.getenv('DB_PORT', default=5432)
 
     EMAIL_HOST = os.getenv('EMAIL_HOST')
     EMAIL_PORT = os.getenv('EMAIL_PORT')
     EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
-print("Debug:", DEBUG)
+#print("Debug:", DEBUG)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -79,8 +79,8 @@ else:
     ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').replace('\r', '').split(',')
     CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://127.0.0.1,http://localhost:8000').split(',')
 
-print("ALLOWED HOSTS:", ALLOWED_HOSTS)
-print("CORS:", CORS_ALLOWED_ORIGINS)
+#print("ALLOWED HOSTS:", ALLOWED_HOSTS)
+#print("CORS:", CORS_ALLOWED_ORIGINS)
 
 CSRF_TRUSTED_ORIGINS = [
     'https://progress-rpg-dev-6581f3bc144e.herokuapp.com/',
@@ -103,6 +103,7 @@ INSTALLED_APPS = [
     'gameplay',
     'gameworld',
     'events',
+    'locations',
     'payments',
 
     'decouple',

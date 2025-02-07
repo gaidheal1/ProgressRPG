@@ -3,28 +3,6 @@
 from django.db import models
 from django.utils import timezone
 
-class Location(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    owner = models.ForeignKey("gameplay.Character", on_delete=models.SET_NULL, null=True, blank=True, related_name='owner')
-    public = models.BooleanField(default=True)
-    upkeep = models.PositiveIntegerField(default=0)
-    ROLE_CHOICES = [
-        ("domestic", "Domestic"),
-        ("commercial", "Commercial"),
-        ("guild", "Guild"),
-        ("religious", "Religious"),
-        ("military", "Military"),
-        ("none", "None"),
-    ]
-    role = models.CharField(max_length=50, default="none")
-    x_coordinate = models.IntegerField()  # X coordinate (horizontal position)
-    y_coordinate = models.IntegerField()  # Y coordinate (vertical position)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
 
 class CharacterRelationship(models.Model):
     character1 = models.ForeignKey(
