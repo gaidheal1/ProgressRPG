@@ -179,25 +179,6 @@ class Timer extends EventEmitter {
     console.log("Timer complete!");
     this.emit('completed', { timer: this });
   }
-
-  async syncWithServer(endpoint, csrfToken) {
-    const data = this.mode === "quest" ? { remaining_time: this.remainingTime } : { elapsed_time: this.elapsedTime };
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (response.ok) {
-      console.log("Timer synced with server.");
-    } else {
-      console.error("Failed to sync timer with server.");
-    }
-  }
 }
 
 function onActivityTimerStopped(data) {
@@ -205,10 +186,11 @@ function onActivityTimerStopped(data) {
 }
 
 function onActivitySubmitted(data) {
+  clearInterval(window.syncInterval);
   window.activityTimer.reset();
   window.questTimer.stop();
   submitActivity();
-  clearInterval(syncInterval);
+  console.log("Clearing sync interval:", window.syncInterval);
 }
 
 function onQuestTimerStopped(data) {
@@ -218,7 +200,7 @@ function onQuestTimerStopped(data) {
 function onQuestCompleted(data) {
   window.activityTimer.stop();
   submitQuest();
-  clearInterval(syncInterval);
+  clearInterval(window.syncInterval);
 }
 
 function formatDuration(seconds) {
@@ -238,13 +220,15 @@ function loadQuest(data) {
 }
 
 
-// Start sync timer
+// Start syncing timers
 function startTimerSync() {
-  syncInterval = setInterval(() => {
+  if (window.syncInterval) {
+    clearInterval(window.syncInterval);
+  }
+  window.syncInterval = setInterval(() => {
+    console.log("Checking sync interval:", window.syncInterval);
     syncTimers();
-    //const diff = serverTime - this.elapsedTime;
-    //console.log("diff", diff)
-  }, 3000); // 300000 for 5 minutes, smaller for testing
+  }, 10000); // 300000 for 5 minutes, smaller for testing
 }
 
 // Start timers when both activity and quest are selected
@@ -263,7 +247,6 @@ function startTimerIfReady() {
     window.activityTimer.start();
     window.questTimer.start();
     startTimers();
-    startTimerSync();
   }
 }
 
@@ -399,7 +382,6 @@ async function createActivityTimer() {
 }
 
 async function submitActivity(event) {
-  event.preventDefault();
   const activityInput = document.getElementById('activity-input');
   try {
     const response = await fetch("/submit_activity/", {
@@ -473,17 +455,23 @@ async function startTimers() {
       method: 'POST',
     });
     await checkResponse(response);
-
     const data = await response.json();
-    if (data.success) {
-      console.log(data.message);
-    } else {
-      console.error(data.message);
-    }
+    handleStartTimersResponse(data);
   } catch (e) {
     console.error('There was a problem:', e);
   }
 }
+
+function handleStartTimersResponse(data) {
+    if (data.success) {
+      console.log("Timers started successfully");
+      startTimerSync();    
+    } else {
+      console.error(data.message);
+
+    }
+}
+
 
 // Check state
 async function syncTimers() {
@@ -745,9 +733,7 @@ function setupEventListeners() {
     if (e.target === modal) closeModal();
   });
   document.getElementById('choose-quest-btn').addEventListener('click', chooseQuest);
-  document.getElementById("stop-activity-btn").addEventListener("click", submitActivity);
-
-  window.activityTimer.on('completed', onActivitySubmitted);
+  document.getElementById("stop-activity-btn").addEventListener("click", onActivitySubmitted);
   window.questTimer.on('completed', onQuestCompleted);
 
   
