@@ -1,65 +1,3 @@
-document.addEventListener('DOMContentLoaded', () => {
-  initialiseTimers();
-  setupEventListeners();
-  updateUI();
-  startHeartbeat();
-});
-
-function initialiseTimers() {
-  window.activityTimer = new Timer('activity-timer', "activity", 0);
-  window.questTimer = new Timer('quest-timer', "quest", 0);
-  window.activitySelected = false;
-  window.questSelected = false;
-}
-
-function setupEventListeners() {
-  document.getElementById("start-activity-btn").addEventListener("click", createActivityTimer);
-  document.getElementById('show-quests-btn').addEventListener('click', openModal);
-  document.getElementById('close-modal-btn').addEventListener('click', closeModal);
-  document.getElementById('quest-modal').addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-  document.getElementById('choose-quest-btn').addEventListener('click', chooseQuest);
-  document.getElementById("stop-activity-btn").addEventListener("click", submitActivity);
-
-  window.activityTimer.on('completed', onActivitySubmitted);
-  window.questTimer.on('completed', onQuestCompleted);
-
-  
-}
-
-function updateUI() {
-  // Update the UI with current timer status, or any other necessary state
-  document.getElementById('activity-timer').textContent = window.activityTimer.elapsedTime;
-  //document.getElementById(window.activityTimer.displayElement).textContent = window.activityTimer.elapsedTime;
-  window.activityTimer.updateDisplay();
-  document.getElementById('quest-timer').textContent = window.questTimer.remainingTime;
-  //document.getElementById(window.questTimer.displayElement).textContent = window.questTimer.remainingTime;
-  window.questTimer.updateDisplay();
-  fetchActivities();
-  fetchQuests();
-  fetchInfo();
-}
-
-function startHeartbeat() {
-  setInterval(async () => {
-    try {
-      await fetch('/heartbeat/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          activity: window.activitySelected,
-          quest: window.questSelected,
-        }),
-      });
-    } catch (e) {
-      console.error('Heartbeat failed:', e);
-    }
-  }, 5000); // Send heartbeat every 5 seconds
-}
-
 const modal = document.getElementById('quest-modal');
 
 function openModal() {
@@ -286,79 +224,6 @@ function formatDuration(seconds) {
   return `${hours > 0 ? `${hours}:` : ""}${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-async function createActivityTimer() {
-  const activityInput = document.getElementById('activity-input');
-  if (!validateInput(activityInput.value)) {
-    alert("Invalid input. Please use only letters, numbers, and spaces.");
-    return;
-  }
-  try {
-    const response = await fetch("/create_activity_timer/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ activityName: activityInput.value })
-    });
-    const data = await response.json();
-
-    if (data.success) {
-      window.activitySelected = true;
-      startTimerIfReady();
-      document.getElementById('start-activity-btn').setAttribute("disabled", true);
-      document.getElementById('activity-input-div').style.display = "none";
-      document.getElementById('activity-name').innerText = activityInput.value;
-    }
-  } catch (e) {
-    console.error('Error:', e);
-  }
-}
-
-
-// Select quest
-async function chooseQuest(event) {
-  event.preventDefault();
-  if (window.currentQuest) {
-    window.currentQuest.resetDisplay();
-  }
-  try {
-    const selectedQuest = document.querySelector('#quest-list-modal .selected');
-    if (!selectedQuest) {
-      alert("Please select a quest first.");
-      return;
-    }
-    const questId = selectedQuest.dataset.index;
-    const response = await fetch("/choose_quest/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ "quest_id": questId })
-    });
-    await checkResponse(response);
-
-    const data = await response.json();
-    if (data.success) {
-      // Hide rewards section
-      document.getElementById('quest-rewards').style.display = "none";
-      document.getElementById('current-quest-outro').style.display = "none";
-      // Load quest details
-      loadQuest(data.quest);
-
-      if (selectedQuest.tagName === 'LI') {
-        closeModal();
-      } else {
-        selectedQuest.checked = false;
-      }
-    } else {
-      document.getElementById('feedback-message').textContent = "Quest selection failed, please try again.";
-    }
-    startTimerIfReady();
-  } catch (e) {
-    console.error('Error:', e);
-  }
-}
-
 function loadQuest(quest) {
   window.currentQuest = new Quest(quest.id, quest.name, quest.description, quest.intro_text, quest.outro_text, quest.duration, quest.stages);
   window.currentQuest.initialDisplay();
@@ -383,94 +248,6 @@ function startTimerIfReady() {
     window.questTimer.start();
     startTimer("activity");
     startTimer("quest");
-  }
-}
-
-
-
-// Start a timer
-async function startTimer(mode) {
-  try {
-    const response = await fetch("/start_timer/", {
-      method: 'POST',
-      headers: { "Content-Type": "text/plain" },
-      body: mode,
-    });
-    await checkResponse(response);
-
-    const data = await response.json();
-    if (data.success) {
-      console.log(data.message);
-    } else {
-      console.error(data.message);
-    }
-  } catch (e) {
-    console.error('There was a problem:', e);
-  }
-}
-
-async function stopTimer(mode) {
-  try {
-    const response = await fetch("/stop_timer/", {
-      method: 'POST',
-      headers: { "Content-Type": "text/plain" },
-      body: mode,
-    });
-    await checkResponse(response);
-    const data = await response.json();
-    if (data.success) {
-      console.log(data.message);
-    } else {
-      console.error(data.message);
-    }
-  } catch (e) {
-    console.error('There was a problem:', e);
-  }
-}
-
-
-// Submit an activity
-async function submitActivity(event) {
-  event.preventDefault();
-  const activityInput = document.getElementById('activity-input');
-  try {
-    const response = await fetch("/submit_activity/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ activityName: activityInput.value }),
-    });
-    await checkResponse(response);
-    const data = await response.json();
-    if (data.success) {
-      console.log(data.message)
-      const activityList = document.getElementById('activity-list');
-      if (activityList.innerText == "") {
-        console.log("No activities today.. so far");
-      }
-      console.log(data.activities[0]);
-      addActivityToList(data.activities[0]);
-      // Adjust display
-      const startActivityButton = document.getElementById('start-activity-btn')
-      startActivityButton.removeAttribute("disabled");
-      startActivityButton.style.display = "flex";
-      const stopActivityButton = document.getElementById('stop-activity-btn')
-      stopActivityButton.setAttribute("disabled", true);
-      stopActivityButton.style.display = "none";
-
-      document.getElementById('activity-input-div').style.display = "flex";
-      window.activityTimer.reset();
-      window.activitySelected = false;
-      // Update statuses
-      document.getElementById('activity-status-text').innerText = "finished";
-      document.getElementById('quest-status-text').innerText = "waiting";
-      activityInput.value = "";
-    } else {
-      console.error(data.message);
-    }
-  } catch (e) {
-    console.error('There was a problem:', e);
   }
 }
 
@@ -510,6 +287,149 @@ function submitQuestDisplayUpdate() {
   document.getElementById('current-quest-outro').style.display = "flex";
 }
 
+function loadQuestList(quests) {
+  const questList = document.getElementById('quest-list-modal');
+  questList.innerHTML = "";
+  quests.forEach(quest => {
+    const li = document.createElement("li");
+    li.textContent = quest.name;
+    li.dataset.index = quest.id;
+    li.addEventListener("click", () => showQuestDetails(quest));
+    questList.appendChild(li);
+  });
+}
+
+function updatePlayerInfo(profile) {
+    document.getElementById('player-name').innerText = profile.name;
+    document.getElementById('player-xp').innerText = profile.xp;
+    document.getElementById('player-xp-next').innerText = profile.xp_next_level;
+    document.getElementById('player-level').innerText = profile.level;
+}
+
+function updateCharacterInfo(character) {
+    document.getElementById('character-name').innerText = character.name;
+    document.getElementById('character-xp').innerText = character.xp;
+    document.getElementById('character-xp-next').innerText = character.xp_next_level;
+    document.getElementById('character-level').innerText = character.level;
+}
+
+function showInput() {
+  const startActivityButton = document.getElementById('start-activity-btn');
+  startActivityButton.removeAttribute("disabled");
+  startActivityButton.style.display = "flex";
+  const stopActivityButton = document.getElementById('stop-activity-btn');
+  stopActivityButton.setAttribute("disabled", true);
+  stopActivityButton.style.display = "none";
+
+  document.getElementById('activity-input-div').style.display = "flex";
+}
+
+function hideInput() {
+  const startActivityButton = document.getElementById('start-activity-btn');
+  startActivityButton.setAttribute("disabled", true);
+  startActivityButton.style.display = "none";
+  const stopActivityButton = document.getElementById('stop-activity-btn');
+  stopActivityButton.removeAttribute("disabled");
+  stopActivityButton.style.display = "flex";
+
+  document.getElementById('activity-input-div').style.display = "none";
+}
+
+function showQuests() {
+  document.getElementById('show-quests-btn-frame').style.display = "none";
+}
+
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Validate input
+function validateInput(input) {
+  const pattern = /^[a-zA-Z0-9\s]+$/; // Adjust pattern as needed
+  return pattern.test(input);
+}
+
+
+//
+// AJAX REQUEST FUNCTIONS
+//
+
+
+async function createActivityTimer() {
+  const activityInput = document.getElementById('activity-input');
+  if (!validateInput(activityInput.value)) {
+    alert("Invalid input. Please use only letters, numbers, and spaces.");
+    return;
+  }
+  try {
+    const response = await fetch("/create_activity_timer/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ activityName: activityInput.value })
+    });
+    const data = await response.json();
+    handleCreateActivityResponse(data);
+
+  } catch (e) {
+    console.error('Error:', e);
+  }
+}
+
+async function submitActivity(event) {
+  event.preventDefault();
+  const activityInput = document.getElementById('activity-input');
+  try {
+    const response = await fetch("/submit_activity/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ activityName: activityInput.value }),
+    });
+    await checkResponse(response);
+    const data = await response.json();
+    handleSubmitActivityResponse(data);
+  } catch (e) {
+    console.error('There was a problem:', e);
+  }
+}
+
+async function chooseQuest(event) {
+  event.preventDefault();
+  if (window.currentQuest) {
+    window.currentQuest.resetDisplay();
+  }
+  try {
+    const selectedQuest = document.querySelector('#quest-list-modal .selected');
+    if (!selectedQuest) {
+      alert("Please select a quest first.");
+      return;
+    }
+    const questId = selectedQuest.dataset.index;
+    const response = await fetch("/choose_quest/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ "quest_id": questId })
+    });
+    await checkResponse(response);
+
+    const data = await response.json();
+    handleChooseQuestResponse(data);
+    startTimerIfReady();
+  } catch (e) {
+    console.error('Error:', e);
+  }
+}
+
 // Submit quest
 async function submitQuest() {
   try {
@@ -519,10 +439,24 @@ async function submitQuest() {
     //console.log('response ok:', response.ok);
     await checkResponse(response);
     const data = await response.json();
+    handleQuestCompletedResponse(data);
+  } catch (e) {
+    console.error('There was a problem:', e);
+  }
+}
+
+async function startTimer(mode) {
+  try {
+    const response = await fetch("/start_timer/", {
+      method: 'POST',
+      headers: { "Content-Type": "text/plain" },
+      body: mode,
+    });
+    await checkResponse(response);
+
+    const data = await response.json();
     if (data.success) {
-      submitQuestDisplayUpdate();
-      window.questSelected = false;
-      fetchQuests();
+      console.log(data.message);
     } else {
       console.error(data.message);
     }
@@ -531,6 +465,54 @@ async function submitQuest() {
   }
 }
 
+// Check state
+async function syncTimer(mode) {
+  try {
+    const response = await fetch("/get_timer_state/", {
+      method: 'POST',
+      headers: { "Content-Type": "text/plain" },
+      body: mode,
+    });
+    await checkResponse(response);
+    const data = await response.json();
+    if (data.success) {
+      if (mode == "activity") {
+        const diff = Math.abs(data.timer.duration - window.activityTimer.elapsedTime);
+        if (diff > 10) {
+          window.activityTimer.elapsedTime = Math.floor(data.timer.duration);
+        }
+        //return data.timer.duration
+      } else if (mode == "quest") {
+        console.log('quest duration:', data.timer.duration);
+
+        //return data.timer.remaining_time;
+      }
+    } else {
+      console.error(data.message);
+    }
+  } catch (e) {
+    console.error('There was a problem:', e);
+  }
+}
+
+async function stopTimer(mode) {
+  try {
+    const response = await fetch("/stop_timer/", {
+      method: 'POST',
+      headers: { "Content-Type": "text/plain" },
+      body: mode,
+    });
+    await checkResponse(response);
+    const data = await response.json();
+    if (data.success) {
+      console.log(data.message);
+    } else {
+      console.error(data.message);
+    }
+  } catch (e) {
+    console.error('There was a problem:', e);
+  }
+}
 
 // Fetch activities
 async function fetchActivities() {
@@ -540,33 +522,7 @@ async function fetchActivities() {
     });
     await checkResponse(response);
     const data = await response.json();
-    if (data.success) {
-      const activities = data.activities;
-      const activityList = document.getElementById('activity-list');
-      activityList.innerHTML = '';
-      window.activitiesNumber = 0;
-      window.activitiesTime = 0;
-      if (activities.length == 0) {
-        activityList.innerText = "No activities done today!";
-      } else {
-        activities.forEach(activity => {
-          window.activitiesNumber += 1;
-          window.activitiesTime += activity.duration;
-          const li = document.createElement('li');
-          li.textContent = `${activity.name} - ${formatDuration(activity.duration)}`;
-          activityList.appendChild(li);
-        });
-        const activityTimeMessage = document.getElementById('activities-time-message');
-        if (activityTimeMessage.innerText == "") {
-          activityTimeMessage.innerText = "Total time today: ";
-          document.getElementById('activities-total-message').innerText = "; total activities today: ";
-        }
-        document.getElementById('activities-time-data').innerText = formatDuration(window.activitiesTime);
-        document.getElementById('activities-total-data').innerText = window.activitiesNumber;
-      }
-    } else {
-      console.error(data.message);
-    }
+    handleFetchActivitiesResponse(data);
   } catch (e) {
     console.error('There was a problem:', e);
   }
@@ -580,28 +536,11 @@ async function fetchQuests() {
     });
     await checkResponse(response);
     const data = await response.json();
-    if (data.success) {
-      const quests = data.quests;
-
-
-      // Quest modal stuff
-      const questList = document.getElementById('quest-list-modal');
-      questList.innerHTML = "";
-      quests.forEach(quest => {
-        const li = document.createElement("li");
-        li.textContent = quest.name;
-        li.dataset.index = quest.id;
-        li.addEventListener("click", () => showQuestDetails(quest));
-        questList.appendChild(li);
-      });
-    } else {
-      console.error(data.message);
-    }
+    handleFetchQuestsResponse(data);
   } catch (e) {
     console.error('There was a problem:', e);
   }
 }
-
 
 // Fetch player & char info
 async function fetchInfo() {
@@ -611,39 +550,16 @@ async function fetchInfo() {
     });
     await checkResponse(response);
     const data = await response.json();
-    if (data.success) {
-      const character = data.character;
-      const profile = data.profile;
-      document.getElementById('player-name').innerText = profile.name;
-      document.getElementById('player-xp').innerText = profile.xp;
-      document.getElementById('player-xp-next').innerText = profile.xp_next_level;
-      document.getElementById('player-level').innerText = profile.level;
-
-      document.getElementById('character-name').innerText = character.name;
-      document.getElementById('character-xp').innerText = character.xp;
-      document.getElementById('character-xp-next').innerText = character.xp_next_level;
-      document.getElementById('character-level').innerText = character.level;
-
-      if (data.current_activity) {
-        document.getElementById('activity-name').innerText = data.current_activity.name;
-        window.activityTimer.reset(elapsedTime = data.current_activity.duration);
-        window.activitySelected = true;
-        hideInput();
-      }
-      if (data.current_quest) {
-        loadQuest(data.current_quest);
-        window.questTimer.reset(elapsedTime = data.current_quest.elapsed_time);
-      }
-      startTimerIfReady();
-    } else {
-      console.error(data.message);
-    }
+    handleFetchInfoResponse(data);
   } catch (e) {
     console.error('There was a problem:', e);
   }
 }
 
-<<<<<<< HEAD
+
+//////////////////////////////////////////////
+// RESPONSE HANDLER FUNCTIONS ////////////////
+//////////////////////////////////////////////
 
 
 function handleCreateActivityResponse(data) {
@@ -651,8 +567,6 @@ function handleCreateActivityResponse(data) {
     window.activitySelected = true;
     startTimerIfReady();
     document.getElementById('start-activity-btn').setAttribute("disabled", true);
-    //document.getElementById('activity-input-div').style.display = "none";
-    //document.getElementById('activity-name').innerText = data.activityName;
   } else {
     console.error(data.message);
   }
@@ -663,18 +577,6 @@ function handleUpdateActivityNameResponse(data) {
     console.log("Activity name updated:", data.new_name)
   } else {
     console.error(data.message);
-  }
-}
-
-function handleChooseQuestResponse(data) {
-  if (data.success) {
-    document.getElementById('quest-rewards').style.display = "none";
-    document.getElementById('current-quest-outro').style.display = "none";
-    loadQuest(data.quest);
-    closeModal();
-    startTimerIfReady();
-  } else {
-    document.getElementById('feedback-message').textContent = "Quest selection failed, please try again.";
   }
 }
 
@@ -690,6 +592,19 @@ function handleSubmitActivityResponse(data) {
     document.getElementById('quest-status-text').innerText = "waiting";
   } else {
     console.error(data.message);
+  }
+}
+
+function handleChooseQuestResponse(data) {
+  if (data.success) {
+    document.getElementById('quest-rewards').style.display = "none";
+    document.getElementById('current-quest-outro').style.display = "none";
+    loadQuest(data.quest);
+    closeModal();
+    startTimerIfReady();
+      }
+  } else {
+    document.getElementById('feedback-message').textContent = "Quest selection failed, please try again.";
   }
 }
 
@@ -737,37 +652,12 @@ function handleFetchActivitiesResponse(data) {
   }
 }
 
-function loadQuestList(quests) {
-  const questList = document.getElementById('quest-list-modal');
-  questList.innerHTML = "";
-  quests.forEach(quest => {
-    const li = document.createElement("li");
-    li.textContent = quest.name;
-    li.dataset.index = quest.id;
-    li.addEventListener("click", () => showQuestDetails(quest));
-    questList.appendChild(li);
-  });
-}
 function handleFetchQuestsResponse(data) {
   if (data.success) {
     loadQuestList(data.quests);
   } else {
     console.error(data.message);
   }
-}
-
-function updatePlayerInfo(profile) {
-    document.getElementById('player-name').innerText = profile.name;
-    document.getElementById('player-xp').innerText = profile.xp;
-    document.getElementById('player-xp-next').innerText = profile.xp_next_level;
-    document.getElementById('player-level').innerText = profile.level;
-}
-
-function updateCharacterInfo(character) {
-    document.getElementById('character-name').innerText = character.name;
-    document.getElementById('character-xp').innerText = character.xp;
-    document.getElementById('character-xp-next').innerText = character.xp_next_level;
-    document.getElementById('character-level').innerText = character.level;
 }
 
 function handleFetchInfoResponse(data) {
@@ -798,76 +688,6 @@ function handleFetchInfoResponse(data) {
   }
 }
 
-function showInput() {
-  const startActivityButton = document.getElementById('start-activity-btn');
-  startActivityButton.removeAttribute("disabled");
-  startActivityButton.style.display = "flex";
-  const stopActivityButton = document.getElementById('stop-activity-btn');
-  stopActivityButton.setAttribute("disabled", true);
-  stopActivityButton.style.display = "none";
-
-  document.getElementById('activity-input-div').style.display = "flex";
-}
-
-function hideInput() {
-  const startActivityButton = document.getElementById('start-activity-btn');
-  startActivityButton.setAttribute("disabled", true);
-  startActivityButton.style.display = "none";
-  const stopActivityButton = document.getElementById('stop-activity-btn');
-  stopActivityButton.removeAttribute("disabled");
-  stopActivityButton.style.display = "flex";
-
-  document.getElementById('activity-input-div').style.display = "none";
-}
-
-function showQuests() {
-  document.getElementById('show-quests-btn-frame').style.display = "none";
-}
-
-// Check state
-async function syncTimer(mode) {
-  try {
-    const response = await fetch("/get_timer_state/", {
-      method: 'POST',
-      headers: { "Content-Type": "text/plain" },
-      body: mode,
-    });
-    await checkResponse(response);
-    const data = await response.json();
-    if (data.success) {
-      if (mode == "activity") {
-        const diff = Math.abs(data.timer.duration - window.activityTimer.elapsedTime);
-        if (diff > 10) {
-          window.activityTimer.elapsedTime = Math.floor(data.timer.duration);
-        }
-        //return data.timer.duration
-      } else if (mode == "quest") {
-        console.log('quest duration:', data.timer.duration);
-
-        //return data.timer.remaining_time;
-      }
-    } else {
-      console.error(data.message);
-    }
-  } catch (e) {
-    console.error('There was a problem:', e);
-  }
-}
-
-function escapeHtml(unsafe) {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-// Validate input
-function validateInput(input) {
-  const pattern = /^[a-zA-Z0-9\s]+$/; // Adjust pattern as needed
-  return pattern.test(input);
-}
 
 async function checkResponse(response) {
   if (!response.ok) {
@@ -876,11 +696,68 @@ async function checkResponse(response) {
   return response;
 }
 
-// Usage in an async function
-async function fetchData(url) {
-  const response = await fetch(url);
-  await checkResponse(response);
-  const data = await response.json();
-  return data;
+////////////////////////////////
+/////// EVENT LISTENERES //////
+//////////////////////////////
+
+document.addEventListener('DOMContentLoaded', () => {
+  initialiseTimers();
+  setupEventListeners();
+  updateUI();
+  startHeartbeat();
+});
+
+function initialiseTimers() {
+  window.activityTimer = new Timer('activity-timer', "activity", 0);
+  window.questTimer = new Timer('quest-timer', "quest", 0);
+  window.activitySelected = false;
+  window.questSelected = false;
 }
 
+function setupEventListeners() {
+  document.getElementById("start-activity-btn").addEventListener("click", createActivityTimer);
+  document.getElementById('show-quests-btn').addEventListener('click', openModal);
+  document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+  document.getElementById('quest-modal').addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  document.getElementById('choose-quest-btn').addEventListener('click', chooseQuest);
+  document.getElementById("stop-activity-btn").addEventListener("click", submitActivity);
+
+  window.activityTimer.on('completed', onActivitySubmitted);
+  window.questTimer.on('completed', onQuestCompleted);
+
+  
+}
+
+function updateUI() {
+  // Update the UI with current timer status, or any other necessary state
+  document.getElementById('activity-timer').textContent = window.activityTimer.elapsedTime;
+  //document.getElementById(window.activityTimer.displayElement).textContent = window.activityTimer.elapsedTime;
+  window.activityTimer.updateDisplay();
+  document.getElementById('quest-timer').textContent = window.questTimer.remainingTime;
+  //document.getElementById(window.questTimer.displayElement).textContent = window.questTimer.remainingTime;
+  window.questTimer.updateDisplay();
+  fetchActivities();
+  fetchQuests();
+  fetchInfo();
+}
+
+function startHeartbeat() {
+  setInterval(async () => {
+    try {
+      await fetch('/heartbeat/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          activity: window.activitySelected,
+          quest: window.questSelected,
+        }),
+      });
+    } catch (e) {
+      console.error('Heartbeat failed:', e);
+    }
+  }, 5000); // Send heartbeat every 5 seconds
+}
