@@ -12,10 +12,20 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import dj_database_url
-from decouple import Config, RepositoryEnv
+from decouple import Config, RepositoryEnv, config
 import os
+from dotenv import load_dotenv
+import logging
+
+
+dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+load_dotenv(dotenv_path)
+for key, value in os.environ.items():
+    pass
+    #print(f"{key}: {value}")
 
 REGISTRATION_ENABLED = False
+SECRET_KEY_FALLBACKS=['django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$qj&(5ri-$']
 
 ON_HEROKU = "DYNO" in os.environ
 
@@ -32,20 +42,20 @@ if ON_HEROKU:
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
 else:
-    DOTENV_FILE = '.env'
-    env_config = Config(RepositoryEnv(DOTENV_FILE))
-    DEBUG = env_config.get('DEBUG', default=True, cast=bool)
-    DB_NAME = env_config.get('DB_NAME', default='progress_rpg')
-    DB_USER = env_config.get('DB_USERNAME', default='duncan')
-    DB_PASSWORD = env_config.get('DB_PASSWORD')
-    DB_HOST = env_config.get('DB_HOST', default='localhost')
-    DB_PORT = env_config.get('DB_PORT', cast=int, default=5432)
+    DEBUG = os.getenv('DEBUG', 'True') == 'True'
+    DB_NAME = os.getenv('DB_NAME', default='progress_rpg')
+    DB_USER = os.getenv('DB_USERNAME', default='duncan')
+    DB_PASSWORD = os.getenv('DB_PASSWORD')
 
-    EMAIL_HOST = env_config.get('EMAIL_HOST')
-    EMAIL_PORT = env_config.get('EMAIL_PORT', cast=int)
-    EMAIL_HOST_PASSWORD = env_config.get('EMAIL_PASSWORD')
+    DB_HOST = os.getenv('DB_HOST', default='localhost')
+    print("db host:", DB_HOST)
+    DB_PORT = os.getenv('DB_PORT', default=5432)
 
+    EMAIL_HOST = os.getenv('EMAIL_HOST')
+    EMAIL_PORT = os.getenv('EMAIL_PORT')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
+print("Debug:", DEBUG)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -58,7 +68,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 if ON_HEROKU:
     SECRET_KEY = os.environ.get('SECRET_KEY')
 else:
-    SECRET_KEY = env_config.get('SECRET_KEY')
+    SECRET_KEY = os.getenv('SECRET_KEY')
 
 
 
@@ -66,10 +76,17 @@ if ON_HEROKU:
     ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1').split(',')
     CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '127.0.0.1:8000').split(',')
 else:
-    ALLOWED_HOSTS = env_config.get('ALLOWED_HOSTS', '127.0.0.1').split(',')
-    CORS_ALLOWED_ORIGINS = env_config.get('CORS_ALLOWED_ORIGINS', '127.0.0.1:8000').split(',')
+    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').replace('\r', '').split(',')
+    CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://127.0.0.1,http://localhost:8000').split(',')
 
-CSRF_TRUSTED_ORIGINS = ['https://progress-rpg-dev-6581f3bc144e.herokuapp.com/']
+print("ALLOWED HOSTS:", ALLOWED_HOSTS)
+print("CORS:", CORS_ALLOWED_ORIGINS)
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://progress-rpg-dev-6581f3bc144e.herokuapp.com/',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -150,8 +167,6 @@ if ON_HEROKU:
 else:
     REDIS_HOST = ('localhost', 6379)
 
-print("Redis url:", REDIS_HOST)
-
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": 'channels_redis.core.RedisChannelLayer',
@@ -223,20 +238,32 @@ ADMINS = [('Admin', 'admin@progressrpg.com')]  # The emails to receive error not
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_NAME = 'sessionid'
-SESSION_COOKIE_AGE = 3600  # 10 hour in seconds
+SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_DOMAIN = None
-SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_HTTPONLY = True
-# For local development
-CSRF_COOKIE_DOMAIN = None
-CSRF_COOKIE_SECURE = True
 
-SECURE_SSL_REDIRECT = True
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+if ON_HEROKU:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# For local development only
+else:
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_DOMAIN = None
+    CSRF_COOKIE_SECURE = False
+    SECURE_PROXY_SSL_HEADER = None
+    SECURE_SSL_REDIRECT = False
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
 
 LOGIN_REDIRECT_URL = '/'  # Or wherever you want to go after login
 LOGIN_URL = '/login/'  # Customize the login URL
@@ -256,5 +283,3 @@ else:
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True
