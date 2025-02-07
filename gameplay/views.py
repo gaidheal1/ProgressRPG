@@ -31,7 +31,7 @@ def heartbeat(request):
         client_id = profile.id  # Use profile ID as an identifier
         if client_id in timers:
             timers[client_id].cancel()
-        timers[client_id] = Timer(10, stop_timers, [profile])  # Stop timers if no heartbeat within 10 seconds
+        timers[client_id] = Timer(20, stop_timers, [profile])  # Stop timers if no heartbeat within 10 seconds
         timers[client_id].start()
         return JsonResponse({'success': True})
     return JsonResponse({"error": "Invalid method"}, status=405)
