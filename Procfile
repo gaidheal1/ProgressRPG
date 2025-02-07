@@ -1,2 +1,2 @@
-web: gunicorn progress_rpg.wsgi:application --bind 0.0.0.0:8000
+web: gunicorn progress_rpg.wsgi:application --bind 0.0.0.0:$PORT
 worker: celery -A progress_rpg worker --loglevel=info
