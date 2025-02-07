@@ -4,14 +4,38 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db import transaction
 from django.utils import timezone
-from django.utils.html import escape
-from .models import Quest, Activity, Character, QuestCompletion, ActivityTimer, QuestTimer
+from .models import Quest, Activity, Character, QuestCompletion, ActivityTimer, QuestTimer, PlayerCharacterLink
 from .serializers import ActivitySerializer, QuestSerializer, CharacterSerializer
 from users.serializers import ProfileSerializer
 from users.models import Profile
 from .utils import check_quest_eligibility
 import json
 from django.utils.html import escape
+
+from threading import Timer
+
+timers = {}
+
+def stop_timers(profile):
+    # Logic to stop the timers
+    print(f"Stopping timers for profile {profile.id} due to missed heartbeat")
+    profile.activity_timer.pause()
+    character = PlayerCharacterLink().get_character(profile)
+    character.quest_timer.pause()
+
+@login_required
+@csrf_exempt
+def heartbeat(request):
+    if request.method == 'POST':
+        profile = request.user.profile
+        client_id = profile.id  # Use profile ID as an identifier
+        if client_id in timers:
+            timers[client_id].cancel()
+        timers[client_id] = Timer(10, stop_timers, [profile])  # Stop timers if no heartbeat within 10 seconds
+        timers[client_id].start()
+        return JsonResponse({'success': True})
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
 
 # Dashboard view
 @login_required
@@ -24,6 +48,197 @@ def dashboard_view(request):
 @login_required
 def game_view(request):
     return render(request, 'gameplay/game.html')
+
+# Fetch activities
+@login_required
+def fetch_activities(request):
+    if request.method == 'GET':
+        profile = request.user.profile
+        activities = Activity.objects.filter(profile=profile, created_at__date=timezone.now().date())
+        serializer = ActivitySerializer(activities, many=True)
+        
+        response = {
+            "success": True,
+            "activities": serializer.data,
+            "message": "Activities fetched"
+        }
+        return JsonResponse(response)
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+# Fetch quests
+@login_required
+def fetch_quests(request):
+    if request.method == 'GET':
+        profile = request.user.profile
+        character = PlayerCharacterLink().get_character(profile)
+        eligible_quests = check_quest_eligibility(character, profile)
+        for quest in eligible_quests:
+            quest.save()
+        serializer = QuestSerializer(eligible_quests, many=True)
+        
+        response = {
+            "success": True,
+            "quests": serializer.data,
+            "message": "Eligible quests fetched"
+        }
+        
+        return JsonResponse(response)
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+# Fetch info
+@login_required
+def fetch_info(request):
+    if request.method == "GET":
+        profile = request.user.profile
+        character = PlayerCharacterLink().get_character(profile)
+        profile.activity_timer.reset()
+        character.quest_timer.reset()
+        profile_serializer = ProfileSerializer(profile)
+        character_serializer = CharacterSerializer(character)
+        current_activity = ActivitySerializer(profile.activity_timer.activity).data if profile.activity_timer.status != 'empty' else False
+        current_quest = QuestSerializer(character.quest_timer.quest).data if character.quest_timer.status != 'empty' else False
+        if current_quest:
+            quest_duration = character.quest_timer.get_elapsed_time()
+        else:
+            quest_duration = 0
+        
+        return JsonResponse({"success": True, "profile": profile_serializer.data, 
+            "character": character_serializer.data, "current_activity": current_activity, 
+            "quest": current_quest, "duration": quest_duration, "message": "Profile and character fetched"})
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+# Choose quest AJAX
+@transaction.atomic
+@login_required
+@csrf_exempt
+def choose_quest(request):
+    if request.method == "POST" and request.headers.get('Content-Type') == 'application/json':
+        data = json.loads(request.body)
+        quest_id = escape(data.get('quest_id'))
+        quest = get_object_or_404(Quest, id=quest_id)
+        character = PlayerCharacterLink().get_character(request.user.profile)
+        duration = data.get('duration')
+        character.quest_timer.change_quest(quest, duration)
+        quest_serializer = QuestSerializer(quest)
+
+        response = {
+            "success": True,
+            "quest": quest_serializer.data,
+            "duration": duration,
+            "message": f"Quest {quest.name} selected",
+        }
+        return JsonResponse(response)
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+# Save activity view
+@transaction.atomic
+@login_required
+def save_activity(request):
+    if request.method == 'POST':
+        activity_name = escape(request.POST['activity'])
+        duration = int(request.POST['duration'])
+        Activity.objects.create(profile=request.user.profile, name=activity_name, duration=duration)
+        return JsonResponse({"success": True, "message": "Activity saved"})
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+@login_required
+@transaction.atomic
+@csrf_exempt
+def create_activity(request):
+    if request.method == "POST":
+        profile = request.user.profile
+        data = json.loads(request.body)
+        activity_name = escape(data.get("activityName"))
+        if not activity_name:
+            return JsonResponse({"error": "Activity name is required"}, status=400)
+        activity = Activity.objects.create(profile=profile, name=activity_name)
+        profile.activity_timer.new_activity(activity)
+
+        response = {
+            "success": True,
+            "message": "Activity timer created and ready",
+            }
+        return JsonResponse(response)
+        
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+@login_required
+@csrf_exempt
+def start_timers(request):
+    if request.method == "POST":
+        profile = request.user.profile
+        character = PlayerCharacterLink().get_character(profile)
+        profile.activity_timer.start()
+        character.quest_timer.start()
+        return JsonResponse({"success": True, "message": "Something something something darkside"})
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+@login_required
+@csrf_exempt
+def pause_timers(request):
+    if request.method == "POST":
+        profile = request.user.profile
+        character = PlayerCharacterLink().get_character(profile)
+        profile.activity_timer.pause()
+        character.quest_timer.pause()
+        return JsonResponse({"success": True, "message": "Something something something lightside"})
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+@login_required
+@transaction.atomic
+@csrf_exempt
+def submit_activity(request):
+    if request.method == "POST":
+        profile = request.user.profile
+        character = PlayerCharacterLink().get_character(profile)
+
+        profile.activity_timer.pause()
+        character.quest_timer.pause()
+
+        profile.add_activity(profile.activity_timer.elapsed_time)
+        xp_reward = profile.activity_timer.complete()
+        profile.add_xp(xp_reward)
+
+        activities = Activity.objects.filter(profile=profile, created_at__date=timezone.now().date())
+        activities_list = ActivitySerializer(activities, many=True)
+        profile_serializer = ProfileSerializer(profile)
+
+        return JsonResponse({"success": True, "message": "Activity submitted", "profile": profile_serializer.data, "activities": activities_list.data, "activity_rewards": xp_reward})
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+@login_required
+@transaction.atomic
+@csrf_exempt
+def quest_completed(request):
+    if request.method == "POST":
+        profile = request.user.profile
+        character = PlayerCharacterLink().get_character(profile)
+
+        profile.activity_timer.pause()
+        character.quest_timer.pause()
+
+        character.complete_quest(character.quest_timer.quest)
+        xp_reward = character.quest_timer.complete()
+        character.add_xp(xp_reward)
+        eligible_quests = check_quest_eligibility(character, profile)
+        character = CharacterSerializer(character)
+        quests = QuestSerializer(eligible_quests, many=True)
+
+        return JsonResponse({"success": True, "message": "Quest completed", "xp_reward": 5, "quests": quests.data, "character": character.data})
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+@csrf_exempt
+@login_required
+def get_timer_state(request):
+    if request.method == 'POST':
+        profile = request.user.profile
+        character = PlayerCharacterLink().get_character(profile)
+        activity_time = profile.activity_timer.get_elapsed_time()         
+        quest_time = character.quest_timer.get_elapsed_time()
+        return JsonResponse({"success": True, "activity_time": activity_time, "quest_time": quest_time})
+
+    return JsonResponse({"error": "Invalid method"}, status=405)
 
 @login_required
 def get_game_statistics(request):

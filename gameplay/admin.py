@@ -30,10 +30,7 @@ class QuestAdmin(admin.ModelAdmin):
     list_display = [
         'name',
         'is_premium',
-        'duration',
         'created_at',
-        'levelMin',
-        'levelMax',
     ]
     list_filter = [
         'created_at',

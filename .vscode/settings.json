@@ -8,5 +8,6 @@
     ],
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
-    "python.defaultInterpreterPath": "C:\\Users\\Duncan\\OneDrive\\Documents\\Coding projects\\progress_rpg\\venv-linux\\bin"
+    "python.defaultInterpreterPath": "C:\\Users\\Duncan\\OneDrive\\Documents\\Coding projects\\progress_rpg\\venv-linux\\bin",
+    "makefile.configureOnOpen": false
 }

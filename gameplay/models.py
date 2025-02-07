@@ -6,12 +6,12 @@ import json
 import math
 from random import random
 
+
 class Quest(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(max_length=2000, blank = True)
     intro_text = models.TextField(max_length=2000, blank = True)
     outro_text = models.TextField(max_length=2000, blank = True)
-    duration = models.PositiveIntegerField(default=1)  # Duration in seconds
     DURATION_CHOICES = [(300 * i, f"{5 * i} minutes") for i in range(1, 7)]
     duration_choices = models.JSONField(default=list)
     default_duration = models.IntegerField(choices=DURATION_CHOICES, default=5)
@@ -121,7 +121,7 @@ class Quest(models.Model):
         return True
     
     def checkEligible(self, character, profile):
-        print("you have arrived in checkEligible")
+        #print("you have arrived in checkEligible")
         #Simple comparison checks
         if not self.is_active:
             return False
@@ -457,9 +457,10 @@ class Timer(models.Model):
     def pause(self):
         if self.status != 'paused':
             self.status = 'paused'
-            server_elapsed = (now() - self.start_time).total_seconds()
-            self.elapsed_time += math.ceil(server_elapsed)
-            self.start_time = None
+            if self.start_time != None:
+                server_elapsed = (now() - self.start_time).total_seconds()
+                self.elapsed_time += math.ceil(server_elapsed)
+                self.start_time = None
             self.save()
 
     def complete(self):
@@ -472,7 +473,6 @@ class Timer(models.Model):
             self.status = 'empty'
             self.elapsed_time = 0
             self.start_time = None
-
 
 class ActivityTimer(Timer):
     profile = models.OneToOneField('users.profile', on_delete=models.CASCADE, related_name='activity_timer')

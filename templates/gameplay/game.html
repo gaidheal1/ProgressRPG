@@ -80,7 +80,9 @@
         </div>
       </div>
 
-
+      <div class="input-div" id="activity-input-div">
+        <input class="field-div" type="text" id="activity-input" placeholder="Enter activity" />
+      </div>
       <div class="button-frame" id="activity-buttons">
         <button class="button-filled" id="start-activity-btn">Start Activity</button>
         <button class="button-filled" id="stop-activity-btn" disabled="true" style="display: none;">Stop activity and
@@ -188,8 +190,8 @@
             </div>
             <div id="choose-quest">
               <div>
-                <label for="quest-duration">Select quest duration:/label>
-                <select id="quest-duration">
+                <label for="quest-durations">Select quest duration:</label>
+                <select id="quest-durations">
                 <!-- options loaded dynamically here -->
                 </select>
               </div>
@@ -210,6 +212,5 @@
 
 </div>
 <script src="{% static 'js/game.js' %}"></script>
-<script>window.profile_id = "{{ request.user.profile.id }}";</script>
 
 {% endblock %}
