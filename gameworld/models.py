@@ -6,10 +6,10 @@ from django.utils import timezone
 
 class CharacterRelationship(models.Model):
     character1 = models.ForeignKey(
-        'gameplay.Character', on_delete=models.CASCADE, related_name='relationship_as_char1'
+        'character.Character', on_delete=models.CASCADE, related_name='relationship_as_char1'
     )
     character2 = models.ForeignKey(
-        'gameplay.Character', on_delete=models.CASCADE, related_name='relationship_as_char2'
+        'character.Character', on_delete=models.CASCADE, related_name='relationship_as_char2'
     )
     
     RELATIONSHIP_TYPES = [
@@ -49,8 +49,8 @@ class CharacterRelationship(models.Model):
         return f"{self.character1.name} - {self.type} - {self.character2.name} ({self.strength}){bio}"
 
 class Partnership(models.Model):
-    partner1 = models.ForeignKey('gameplay.Character', related_name='partner1_relationships', on_delete=models.CASCADE)
-    partner2 = models.ForeignKey('gameplay.Character', related_name='partner2_relationships', on_delete=models.CASCADE)
+    partner1 = models.ForeignKey('character.Character', related_name='partner1_relationships', on_delete=models.CASCADE)
+    partner2 = models.ForeignKey('character.Character', related_name='partner2_relationships', on_delete=models.CASCADE)
 
     last_birth_date = models.DateField(null=True, blank=True)
     total_births = models.PositiveIntegerField(default=0)
@@ -70,7 +70,7 @@ class CharacterRole(models.Model):
     
     
 class CharacterProgression(models.Model):
-    character = models.OneToOneField('gameplay.Character', on_delete=models.CASCADE)
+    character = models.OneToOneField('character.Character', on_delete=models.CASCADE)
     role = models.ForeignKey(CharacterRole, on_delete=models.CASCADE)
     experience = models.IntegerField(default=0)
 

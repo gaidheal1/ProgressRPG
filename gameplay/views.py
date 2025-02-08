@@ -4,8 +4,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db import transaction
 from django.utils import timezone
-from .models import Quest, Activity, Character, QuestCompletion, ActivityTimer, QuestTimer, PlayerCharacterLink
-from .serializers import ActivitySerializer, QuestSerializer, CharacterSerializer
+from .models import Quest, Activity, QuestCompletion, ActivityTimer, QuestTimer
+from character.models import Character, PlayerCharacterLink
+from .serializers import ActivitySerializer, QuestSerializer
+from character.serializers import CharacterSerializer
 from users.serializers import ProfileSerializer
 from users.models import Profile
 from .utils import check_quest_eligibility
