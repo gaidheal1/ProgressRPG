@@ -715,7 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initialiseTimers();
   setupEventListeners();
   updateUI();
-  startHeartbeat();
+  //startHeartbeat();
 });
 
 function initialiseTimers() {
@@ -766,7 +766,7 @@ function startHeartbeat(maxFailures = 3) {
           quest: window.questSelected,
         }),
       });
-    failureCount = 0;
+      failureCount = 0;
     } catch (e) {
       console.error('Heartbeat failed:', e);
       failureCount++;
