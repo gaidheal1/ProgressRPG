@@ -18,10 +18,10 @@ timers = {}
 
 def stop_timers(profile):
     # Logic to stop the timers
-    print(f"Stopping timers for profile {profile.id} due to missed heartbeat")
-    profile.activity_timer.pause()
+    print(f"NOT stopping timers for profile {profile.id} due to missed heartbeat")
+    #profile.activity_timer.pause()
     character = PlayerCharacterLink().get_character(profile)
-    character.quest_timer.pause()
+    #character.quest_timer.pause()
 
 @login_required
 @csrf_exempt

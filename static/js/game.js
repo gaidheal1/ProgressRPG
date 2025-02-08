@@ -715,7 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initialiseTimers();
   setupEventListeners();
   updateUI();
-  startHeartbeat();
+  //startHeartbeat();
 });
 
 function initialiseTimers() {
