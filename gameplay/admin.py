@@ -20,7 +20,7 @@ class QuestAdmin(admin.ModelAdmin):
         'is_premium'),
         ('levelMin',
         'levelMax'),
-        ('duration_choices', 'default_duration'),
+        'duration_choices',
         'created_at',
         'frequency',
         ('intro_text',

@@ -13,10 +13,15 @@ function showQuestDetails(quest) {
   console.log("quest durations:", quest.duration_choices);
   dropdown.innerHTML = "";
   quest.duration_choices.forEach(choice => {
-    const minutes = Math.round(choice / 60);
+    let durationText = ""
+    if (choice >= 60) {
+      durationText = `${Math.round(choice / 60)} minutes`;
+    } else {
+      durationText = `${choice} seconds`;
+    }
     const option = document.createElement('option');
     option.value = choice;
-    option.textContent = `${minutes} minutes`;
+    option.textContent = durationText;
     dropdown.appendChild(option);
   });
   document.getElementById('quest-title').textContent = quest.name;

@@ -13,14 +13,15 @@ class Quest(models.Model):
     intro_text = models.TextField(max_length=2000, blank = True)
     outro_text = models.TextField(max_length=2000, blank = True)
     DURATION_CHOICES = [(300 * i, f"{5 * i} minutes") for i in range(1, 7)]
-    duration_choices = models.JSONField(default=list)
-    default_duration = models.IntegerField(choices=DURATION_CHOICES, default=5)
+    def default_duration_choices():
+        return [(300 * i, f"{5 * i} minutes") for i in range(1, 7)]
+    duration_choices = models.JSONField(default=default_duration_choices)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     stages = models.JSONField(default=list)
-    xp_rate = models.FloatField(default=0.2)
+    xp_rate = models.IntegerField(default=1)
 
     class Category(models.TextChoices):
         NONE = 'NONE', 'No category'
@@ -48,13 +49,8 @@ class Quest(models.Model):
         default=Frequency.NONE
     )
 
-    def save(self, *args, **kwargs):
-        """Ensure duration_choices always contains valid values"""
-        self.duration_choices = [choice[0] for choice in self.DURATION_CHOICES]
-        super().save(*args, **kwargs)
-
     def __str__(self):
-        return f"Quest. id: {self.id}, name: {self.name}, min/max lvl: {self.levelMin}/{self.levelMax}, premium: {self.is_premium}, repeatable: {self.canRepeat}, frequency: {self.frequency}, active: {self.is_active}"
+        return self.name
     
     def apply_results(self, character):
         self.results.apply(character)
@@ -136,7 +132,7 @@ class Quest(models.Model):
 
     
 class QuestResults(models.Model):
-    quest = models.OneToOneField(Quest, on_delete=models.CASCADE, related_name='results')
+    quest = models.OneToOneField('Quest', on_delete=models.CASCADE, related_name='results')
     dynamic_rewards = models.JSONField(default=dict, null=True, blank=True)
     xp_reward = models.PositiveIntegerField(null=True, blank=True)
     coin_reward = models.IntegerField(default=0)
@@ -344,7 +340,7 @@ class ActivityTimer(Timer):
 
 
 class QuestTimer(Timer):
-    character = models.OneToOneField('character.Character', on_delete=models.CASCADE, related_name='quest_timerWIP')
+    character = models.OneToOneField('character.Character', on_delete=models.CASCADE, related_name='quest_timer')
     quest = models.ForeignKey('Quest', on_delete=models.SET_NULL, related_name='quest_timer', null=True, blank=True)
     duration = models.IntegerField(default=0)
 

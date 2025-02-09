@@ -22,7 +22,7 @@ class CharacterAdmin(admin.ModelAdmin):
         #'current_player',
         'backstory',
         'parents',
-        'gender', 
+        'sex', 
         ('is_pregnant',
         'pregnancy_start_date',
         'pregnancy_due_date'),
@@ -31,9 +31,6 @@ class CharacterAdmin(admin.ModelAdmin):
         'cause_of_death',
         'coins',
         'reputation',
-        ('location', 
-        'x_coordinate',
-        'y_coordinate'),
         'is_npc',
         'total_quests',
     ]
