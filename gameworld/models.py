@@ -2,114 +2,148 @@
 
 from django.db import models
 from django.utils import timezone
+from random import random
 
-class Location(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    owner = models.ForeignKey("gameplay.Character", on_delete=models.SET_NULL, null=True, blank=True, related_name='owner')
-    public = models.BooleanField(default=True)
-    upkeep = models.PositiveIntegerField(default=0)
-    ROLE_CHOICES = [
-        ("domestic", "Domestic"),
-        ("commercial", "Commercial"),
-        ("guild", "Guild"),
-        ("religious", "Religious"),
-        ("military", "Military"),
-        ("none", "None"),
-    ]
-    role = models.CharField(max_length=50, default="none")
-    x_coordinate = models.IntegerField()  # X coordinate (horizontal position)
-    y_coordinate = models.IntegerField()  # Y coordinate (vertical position)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+class WeatherType(models.Model):
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True, null=True)
+    min_temp_change = models.IntegerField()
+    max_temp_change = models.IntegerField()
+    typical_duration = models.IntegerField(default=3) # default duration in days
+    crop_growth_modifier = models.FloatField(default=1.0)
+    travel_speed_modifier = models.FloatField(default=1.0)
+    cleanliness_modifier = models.FloatField(default=1.0)
 
     def __str__(self):
         return self.name
 
-class CharacterRelationship(models.Model):
-    character1 = models.ForeignKey(
-        'gameplay.Character', on_delete=models.CASCADE, related_name='relationship_as_char1'
-    )
-    character2 = models.ForeignKey(
-        'gameplay.Character', on_delete=models.CASCADE, related_name='relationship_as_char2'
-    )
-    
-    RELATIONSHIP_TYPES = [
-        ('friend', 'Friend'),
-        ('rival', 'Rival'),
-        ('mentor', 'Mentor'),
-        ('enemy', 'Enemy'),
-        ('ally', 'Ally'),
-        ('romantic', 'Romantic'),
-        ('spouse', 'Spouse'),
-        ('parent', 'Parent'),
-        ('child', 'Child'),
-        ('sibling', 'Sibling'),
-        ('cousin', 'Cousin'),
-    ]
-    
-    relationship_type = models.CharField(max_length=20, choices=RELATIONSHIP_TYPES)
-    strength = models.IntegerField(default=0)  # -100 (hatred) to 100 (deep bond)
-    history = models.JSONField(default=dict, blank=True)  # Logs key events
-    biological = models.BooleanField(default=True)  # True = blood relative, False = adopted/found family
-    
-    class Meta:
-        unique_together = ('character1', 'character2', 'relationship_type')  # Prevent duplicates
+class WeatherEvent(models.Model):
+    start_date = models.DateField()
+    end_date = models.DateField()
+    weather_type = models.ForeignKey('WeatherType', on_delete=models.SET_NULL, null=True)
+    base_temperature = models.IntegerField()
+    location = models.ForeignKey("locations.Location", on_delete=models.CASCADE)
 
-    def adjust_strength(self, amount):
-        """Modify relationship strength."""
-        self.strength = max(min(self.strength + amount, 100), -100)
-        self.save()
+    def generate_daily_temperatures(self):
+        num_days = (self.end_date - self.start_date).days
+        temperatures = [self.base_temperature]
 
-    def log_event(self, event):
-        """Add an event to the history log."""
-        self.history.setdefault('events', []).append(event)
-        self.save()
+        for _ in range(num_days - 1):
+            change = random.randint(self.weather_type.min_temperature_change, self.weather_type.max_temperature_change)
+            new_temp = max(min(temperatures[-1] + change, 40), -10)
+            temperatures.append(new_temp)
 
+        return temperatures
     def __str__(self):
-        bio = " (Biological)" if self.biological else " (Adopted)"
-        return f"{self.character1.name} - {self.type} - {self.character2.name} ({self.strength}){bio}"
+        return f"{self.weather_type.name} ({self.start_date} - {self.end_date})"
 
-class Partnership(models.Model):
-    partner1 = models.ForeignKey('gameplay.Character', related_name='partner1_relationships', on_delete=models.CASCADE)
-    partner2 = models.ForeignKey('gameplay.Character', related_name='partner2_relationships', on_delete=models.CASCADE)
+class Weather(models.Model):
+    SEASONS = ["Spring", "Summer", "Autumn", "Winter"]
 
-    last_birth_date = models.DateField(null=True, blank=True)
-    total_births = models.PositiveIntegerField(default=0)
+    BASE_TEMPERATURES = {
+        "Spring": (10, 20),
+        "Summer": (15, 30),
+        "Autumn": (5, 15),
+        "Winter": (-5, 5),
+    }
 
-    partner_is_pregnant = models.BooleanField(default=False)
+    date = models.DateField()
+    season = models.CharField(max_length=6, choices=[(s, s) for s in SEASONS])
+    weather_event = models.ForeignKey('WeatherEvent', on_delete=models.CASCADE)
+    temperature = models.IntegerField()
+    crop_growth_modifier = models.FloatField(default=1.0)
+    travel_speed_modifier = models.FloatField(default=1.0)
+    cleanliness_modifier = models.FloatField(default=1.0)
 
-    def __str__(self):
-        return f"Partnership between {self.partner1} and {self.partner2}"
-    
+    def get_season(self):
+        month = self.date.month
+        if month in [3, 4, 5]:
+            return "Spring"
+        elif month in [6, 7, 8]:
+            return "Summer"
+        elif month in [9, 10, 11]:
+            return "Autumn"
+        elif month in [12, 1, 2]:
+            return "Winter"
 
-class CharacterRole(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
+    @classmethod
+    def generate_weather_forecast(cls, start_date=None, days_ahead=30):
+        if not start_date:
+            start_date = timezone.now().date()
 
-    def __str__(self):
-        return f"Char role: {self.name}"
-    
-    
-class CharacterProgression(models.Model):
-    character = models.OneToOneField('gameplay.Character', on_delete=models.CASCADE)
-    role = models.ForeignKey(CharacterRole, on_delete=models.CASCADE)
-    experience = models.IntegerField(default=0)
+        end_date = start_date + timezone.timedelta(days=days_ahead)
+        current_date = start_date
 
-    base_progression_rate = models.PositiveIntegerField(default=1)
-    player_acceleration_factor = models.PositiveIntegerField(default=2)
-    date_started = models.DateField(default=timezone.now)
-    
-    def __str__(self):
-        return f"{self.character.name} - {self.role.name}"
-    
-    def update_progression(self):
-        time_elapsed = (timezone.now().date() - self.date_started).days
-        new_experience = time_elapsed * self.base_progression_rate
-        self.experience += new_experience
-        
-        if not self.character.is_npc:
-            self.experience *= self.player_acceleration_factor
+        while current_date < end_date:
+            # check if there's already a weather event covering this day
+            existing_event = WeatherEvent.objects.filter(start_date__lte=current_date, end_date__gte=current_date).first()
 
-        self.save()
-    
+            if not existing_event:
+                weather_type = random.choice(WeatherType.objects.all())
+                duration = random.randint(2, weather_type.typical_duration + 2)
+                end_event_date = current_date + timezone.timedelta(days=duration - 1)
+                min_temp, max_temp = cls.BASE_TEMPERATURES[cls.season]
+                base_temp = random.randint(min_temp, max_temp)
+
+                event = WeatherEvent.objects.create(
+                    start_date=current_date,
+                    end_date=end_event_date,
+                    weather_type=weather_type,
+                    base_temperature=base_temp
+                )
+
+            else:
+                event = existing_event
+
+            temperatures = event.generate_daily_temperatures()
+            for i in range(len(temperatures)):
+                weather_date = event.start_date + timezone.timedelta(days=i)
+                if weather_date >= end_date:
+                    break
+
+                Weather.objects.create(
+                    date=weather_date,
+                    weather_event=event,
+                    temperature=temperatures[i]
+                )
+
+            current_date = event.end_date + timezone.timedelta(days=1)  # Move past this event
+
+    @classmethod
+    def get_forecast(cls, days_ahead=7):
+        """Retrieve the weather forecast for the next X days"""
+        today = timezone.now().date()
+        return cls.objects.filter(date__gte=today, date__lte=today + timezone.timedelta(days=days_ahead))
+
+    def get_temperature(self):
+        min_temp, max_temp = self.BASE_TEMPERATURES[self.season]
+        temperature_change = random.randint(self.weather_type.min_temperature_change, self.weather_type.max_temperature_change)
+        new_temp = random.randint(min_temp, max_temp) + temperature_change
+        return new_temp
+
+    def update_weather(self):
+        self.season = self.get_season()
+        self.weather_type = self.get_weather_type()
+        self.temperature = self.get_temperature()
+        self.crop_growth_modifier = self.weather_type.crop_growth_modifier
+        self.travel_speed_modifier = self.weather_type.travel_speed_modifier
+        self.cleanliness_modifier = self.weather_type.cleanliness_modifier
+
+    def save(self, *args, **kwargs):
+        self.season = self.get_season()
+        super().save(*args, **kwargs)
+
+
+
+
+
+
+
+
+
+
+
+
+
+

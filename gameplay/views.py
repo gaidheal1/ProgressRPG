@@ -4,8 +4,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db import transaction
 from django.utils import timezone
-from .models import Quest, Activity, Character, QuestCompletion, ActivityTimer, QuestTimer, PlayerCharacterLink
-from .serializers import ActivitySerializer, QuestSerializer, CharacterSerializer
+from .models import Quest, Activity, QuestCompletion, ActivityTimer, QuestTimer
+from character.models import Character, PlayerCharacterLink
+from .serializers import ActivitySerializer, QuestSerializer
+from character.serializers import CharacterSerializer
 from users.serializers import ProfileSerializer
 from users.models import Profile
 from .utils import check_quest_eligibility
@@ -16,24 +18,35 @@ from threading import Timer
 
 timers = {}
 
+## Currently deactivated
 def stop_timers(profile):
     # Logic to stop the timers
-    print(f"Stopping timers for profile {profile.id} due to missed heartbeat")
-    profile.activity_timer.pause()
+    print(f"NOT stopping timers for profile {profile.name} due to missed heartbeat")
+    #profile.activity_timer.pause()
     character = PlayerCharacterLink().get_character(profile)
-    character.quest_timer.pause()
+    #character.quest_timer.pause()
 
+## Client heartbeat function deactivated so this shouldn't operate
 @login_required
 @csrf_exempt
 def heartbeat(request):
     if request.method == 'POST':
-        profile = request.user.profile
-        client_id = profile.id  # Use profile ID as an identifier
-        if client_id in timers:
-            timers[client_id].cancel()
-        timers[client_id] = Timer(20, stop_timers, [profile])  # Stop timers if no heartbeat within 10 seconds
-        timers[client_id].start()
-        return JsonResponse({'success': True})
+        try:
+            data = json.loads(request.body)
+            profile = request.user.profile
+            request.session['last_heartbeat'] = timezone.now().timestamp()
+            request.session.modified = True
+            client_id = profile.id  # Use profile ID as an identifier
+            if client_id in timers:
+                timers[client_id].cancel()
+            timers[client_id] = Timer(20, stop_timers, [profile])  # Stop timers if no heartbeat within 20 seconds
+            timers[client_id].start()
+            return JsonResponse({'success': True})
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            print(f"Heartbeat error: {e}")
+            return JsonResponse({'status': 'error', 'message': 'An error occurred'}, status=500)
     return JsonResponse({"error": "Invalid method"}, status=405)
 
 

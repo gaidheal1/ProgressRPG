@@ -15,7 +15,7 @@ from gameplay.serializers import ActivitySerializer
 
 from .forms import UserRegisterForm, ProfileForm
 from .models import Profile
-from gameplay.models import Character
+from character.models import Character
 
 logger = logging.getLogger(__name__)
 

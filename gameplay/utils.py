@@ -1,4 +1,5 @@
-from .models import Character, PlayerCharacterLink, QuestCompletion, Quest
+from .models import QuestCompletion, Quest
+from character.models import Character, PlayerCharacterLink
 from django.utils import timezone
 
 def assign_character_to_profile(profile):
