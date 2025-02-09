@@ -97,7 +97,7 @@ class Profile(Person):
     @property
     def current_character(self):
         """Returns the player's active character based on link records."""
-        from gameplay.models import PlayerCharacterLink
+        from character.models import PlayerCharacterLink
         active_link = PlayerCharacterLink.objects.filter(profile=self, is_active=True).first()
         return active_link.character if active_link else None
 
@@ -111,7 +111,7 @@ class Profile(Person):
 
     def change_character(self, new_character):
         """Handles switching player's character and updating"""
-        from gameplay.models import PlayerCharacterLink
+        from character.models import PlayerCharacterLink
         old_link = PlayerCharacterLink.objects.filter(profile=self, is_active=True).first()
         if old_link:
             old_link.unlink()

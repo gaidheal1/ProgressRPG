@@ -2,7 +2,8 @@ from django.db.models.signals import post_save
 from django.contrib.auth.signals import user_logged_in
 from django.dispatch import receiver
 from django.utils.timezone import now
-from .models import Character, Activity
+from .models import Activity
+from character.models import Character
 from users.models import Profile
 from events.models import Event, EventContribution
 from datetime import datetime, timedelta
