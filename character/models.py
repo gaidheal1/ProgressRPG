@@ -176,9 +176,6 @@ class Character(Person, LifeCycleMixin):
     def start_quest(self, quest):
         self.quest_timer.change_quest(quest)
 
-    def is_player_controlled(self):
-        return self.profile is not None
-
     def get_quest_completions(self, quest):
         return QuestCompletion.objects.filter(character=self, quest=quest)
 

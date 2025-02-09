@@ -24,7 +24,7 @@ for key, value in os.environ.items():
     pass
     #print(f"{key}: {value}")
 
-REGISTRATION_ENABLED = False
+REGISTRATION_ENABLED = True
 SECRET_KEY_FALLBACKS=['django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$qj&(5ri-$']
 
 ON_HEROKU = "DYNO" in os.environ

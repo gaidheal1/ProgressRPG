@@ -45,7 +45,7 @@ class QuestAdmin(admin.ModelAdmin):
     
 @admin.register(QuestResults)
 class QuestResultsAdmin(admin.ModelAdmin):
-    list_display = ['quest', 'xp_reward', 'coin_reward', 'dynamic_rewards', 'buffs']
+    list_display = ['quest', 'xp_rate', 'coin_reward', 'dynamic_rewards']
 
 
 @admin.register(QuestRequirement)

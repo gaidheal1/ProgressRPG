@@ -9,13 +9,6 @@ from events.models import Event, EventContribution
 from datetime import datetime, timedelta
 #from django.contrib.auth import get_user_model
 
-
-# @receiver(post_save, sender=Profile)
-# def create_character(sender, instance, created, **kwargs):
-#     """Create a profile for the user when a new user is created"""
-#     if created:
-#         Character.objects.create(profile=instance)
-
 @receiver(post_save, sender=Activity)
 def handle_new_activity(sender, instance, created, **kwargs):
     """Handles all activity submission jobs"""

@@ -21,7 +21,6 @@ class Quest(models.Model):
     end_date = models.DateTimeField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     stages = models.JSONField(default=list)
-    xp_rate = models.IntegerField(default=1)
 
     class Category(models.TextChoices):
         NONE = 'NONE', 'No category'
@@ -134,7 +133,7 @@ class Quest(models.Model):
 class QuestResults(models.Model):
     quest = models.OneToOneField('Quest', on_delete=models.CASCADE, related_name='results')
     dynamic_rewards = models.JSONField(default=dict, null=True, blank=True)
-    xp_reward = models.PositiveIntegerField(null=True, blank=True)
+    xp_rate = models.IntegerField(default=1)
     coin_reward = models.IntegerField(default=0)
     buffs = models.JSONField(default=list, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
@@ -146,12 +145,10 @@ class QuestResults(models.Model):
         """Calculates XP reward based on quest duration and other factors"""
         character_level = character.level
         quest_completions = character.get_quest_completions(self.quest).first()
-        base_xp = self.quest.xp_rate
-        time_xp = base_xp * (duration)
-
+        base_xp = self.xp_rate
+        time_xp = base_xp * duration
         level_scaling = 1 + (character_level * 0.05)
-        repeat_penalty = 0.9 ** quest_completions.times_completed
-
+        repeat_penalty = 0.99 ** quest_completions.times_completed
         final_xp = time_xp * level_scaling * repeat_penalty
         return max(1, round(final_xp))
 
@@ -212,7 +209,7 @@ class Activity(models.Model):
     duration = models.PositiveIntegerField(default=0)  # Time spent
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
-    xp_rate = models.FloatField(default=0.2)
+    xp_rate = models.IntegerField(default=1)
     skill = models.ForeignKey('Skill', on_delete=models.SET_NULL, null=True, blank=True, related_name="activities")
     project = models.ForeignKey('Project', on_delete=models.SET_NULL, null=True, blank=True, related_name="activities")
     
@@ -316,7 +313,7 @@ class ActivityTimer(Timer):
     activity = models.ForeignKey('Activity', on_delete=models.SET_NULL, related_name='activity_timer', null=True, blank=True)
 
     def __str__(self):
-        return f"ActivityTimer for profile {self.profile.name}: started {self.start_time}, {self.elapsed_time} elapsed"
+        return f"ActivityTimer for {self.profile.name}"
 
     def new_activity(self, activity):
         self.reset()
@@ -362,6 +359,7 @@ class QuestTimer(Timer):
         self.save()
 
     def calculate_xp(self):
+        print("Quest timer calc xp, duration:", self.duration)
         return self.quest.results.calculate_xp_reward(self.character, self.duration)
 
     def get_remaining_time(self):
