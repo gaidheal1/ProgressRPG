@@ -2,28 +2,28 @@
 
 // Base
 @use 'base/reset';
-@import 'base/variables';
-@import 'base/typography';
-@import 'base/global';
+//@use 'base/variables' as *;
+//@use 'base/typography' as *;
+@use 'base/global';
 
-@import 'utilities/mixins';
+@use 'utilities/mixins';
 
 
-@import 'components/button';
-@import 'components/form';
-@import 'components/timer';
-@import 'components/input';
+@use 'components/button';
+@use 'components/form';
+@use 'components/timer';
+@use 'components/input';
 
-@import 'layout/footer';
-@import 'layout/infobar';
-@import 'layout/lists';
-@import 'layout/modal';
-@import 'layout/navbar';
-@import 'layout/nav-drawer';
-@import 'layout/two-columns';
+@use 'layout/footer';
+@use 'layout/infobar';
+@use 'layout/lists';
+@use 'layout/modal';
+@use 'layout/navbar';
+@use 'layout/nav-drawer';
+@use 'layout/two-columns';
 
-@import 'pages/index';
-@import 'pages/game';
+@use 'pages/index';
+@use 'pages/game';
 
 
 

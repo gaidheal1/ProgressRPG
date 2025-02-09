@@ -16,3 +16,4 @@ staticfiles/
 local_backup.dump
 Makefile
 debug.log
+static/.sass-cache/

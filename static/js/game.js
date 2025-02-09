@@ -35,7 +35,7 @@ function showQuestDetails(quest) {
   //  li.textContent = `${key}: ${value}`;
   //  otherRewards.appendChild(li);
   //});
-  document.querySelectorAll(".quest-list-modal li").forEach(li => li.classList.remove("selected"));
+  document.querySelectorAll("#quest-list-modal li").forEach(li => li.classList.remove("selected"));
   document.querySelector(`li[data-index="${quest.id}"]`).classList.add("selected");
 }
 

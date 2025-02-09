@@ -1,4 +1,7 @@
 /* _global.scss */
+
+@use 'variables' as *;
+
 a {
   text-decoration: none;
   color: $primary-color;

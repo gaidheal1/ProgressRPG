@@ -359,7 +359,6 @@ class QuestTimer(Timer):
         self.save()
 
     def calculate_xp(self):
-        print("Quest timer calc xp, duration:", self.duration)
         return self.quest.results.calculate_xp_reward(self.character, self.duration)
 
     def get_remaining_time(self):
