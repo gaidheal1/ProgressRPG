@@ -18,37 +18,58 @@ from threading import Timer
 
 timers = {}
 
+
+
+def stop_heartbeat_timer(client_id):
+    if client_id in timers:
+        timers[client_id].cancel()
+        del timers[client_id]
+
+def start_heartbeat_timer(client_id):
+    stop_heartbeat_timer(client_id)
+    timer = Timer(HEARTBEAT_TIMEOUT, lambda: stop_server_timer(client_id))
+    timers[client_id] = timer
+    timer.start()
+
 ## Currently deactivated
 def stop_timers(profile):
     # Logic to stop the timers
-    print(f"NOT stopping timers for profile {profile.name} due to missed heartbeat")
+    print(f"Stopping timers for profile {profile.name} due to missed heartbeat")
     #profile.activity_timer.pause()
     character = PlayerCharacterLink().get_character(profile)
     #character.quest_timer.pause()
+
+HEARTBEAT_TIMEOUT = 20
 
 ## Client heartbeat function deactivated so this shouldn't operate
 @login_required
 @csrf_exempt
 def heartbeat(request):
     if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            profile = request.user.profile
-            request.session['last_heartbeat'] = timezone.now().timestamp()
-            request.session.modified = True
-            client_id = profile.id  # Use profile ID as an identifier
-            if client_id in timers:
-                timers[client_id].cancel()
-            timers[client_id] = Timer(20, stop_timers, [profile])  # Stop timers if no heartbeat within 20 seconds
-            timers[client_id].start()
-            return JsonResponse({'success': True})
-        except json.JSONDecodeError:
-            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
-        except Exception as e:
-            print(f"Heartbeat error: {e}")
-            return JsonResponse({'status': 'error', 'message': 'An error occurred'}, status=500)
+        if request.user.is_authenticated:
+            user_id = request.user.profile.id
+        else:
+            session_id = request.session.session_key
+            if not session_id:
+                request.session.create()
+                session_id = request.session.session_key
+            user_id = f"guest-{session_id}"
+        user_id = request.user.profile.id
+
+        request.session['last_heartbeat'] = timezone.now().timestamp()
+        request.session.modified = True
+        
+        start_heartbeat_timer(user_id)
+
+        return JsonResponse({'success': True, 'status': 'ok', 'server_time': now().timestamp()})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
+def check_heartbeat(request):
+    last_heartbeat = request.session.get('last_heartbeat', 0)
+    time_diff = now().timestamp() - last_heartbeat
+    if time_diff > HEARTBEAT_TIMEOUT:
+        return JsonResponse({'success': True, 'status': 'disconnected', 'message': 'Client inactive'})
+    return JsonResponse({'success': True, 'status': 'active', 'message': 'Client still connected'})
 
 # Dashboard view
 @login_required

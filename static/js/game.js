@@ -187,7 +187,7 @@ class Timer extends EventEmitter {
 }
 
 function onActivityTimerStopped(data) {
-  window.questTimer.stop();
+  //window.questTimer.stop();
 }
 
 function onActivitySubmitted(data) {
@@ -199,13 +199,18 @@ function onActivitySubmitted(data) {
 }
 
 function onQuestTimerStopped(data) {
-  window.activityTimer.stop();
+  //window.activityTimer.stop();
 }
 
 function onQuestCompleted(data) {
   window.activityTimer.stop();
   submitQuest();
   clearInterval(window.syncInterval);
+}
+
+function stopClientTimers() {
+  window.questTimer.stop();
+  window.activityTimer.stop();
 }
 
 function formatDuration(seconds) {
@@ -720,7 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initialiseTimers();
   setupEventListeners();
   updateUI();
-  //startHeartbeat();
+  startHeartbeat();
 });
 
 function initialiseTimers() {
@@ -759,9 +764,10 @@ function updateUI() {
 
 function startHeartbeat(maxFailures = 3) {
   let failureCount = 0;
-  const heartbeatInterval = setInterval(async () => {
+  let heartbeatInterval;
+  async function sendHeartBeat() => {
     try {
-      await fetch('/heartbeat/', {
+      const response = await fetch('/heartbeat/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -771,14 +777,27 @@ function startHeartbeat(maxFailures = 3) {
           quest: window.questSelected,
         }),
       });
+      const data = await response.json();
+      if (data.status === 'disconnected') {
+        console.warn('Server reports disconnection. Stopping timers.')
+        stopClientTimers();
+        return;
+      }
       failureCount = 0;
     } catch (e) {
       console.error('Heartbeat failed:', e);
       failureCount++;
       if (failureCount >= maxFailures) {
-        console.error('Max heartbeat failures reached. Stopping heartbeat.');
-        clearInterval(heartbeatInterval);
+        console.error('Max heartbeat failures reached. Stopping heartbeat')
+        stopHeartbeat();
       }
     }
-  }, 5000); // Send heartbeat every 5 seconds
+  }
+
+  function stopHeartbeat() {
+    clearInterval(heartbeatInterval);
+    console.warn('Client heartbeat stopped');
+  }
+
+  heartbeatInterval = setInterval(sendHeartbeat, 5000);
 }
