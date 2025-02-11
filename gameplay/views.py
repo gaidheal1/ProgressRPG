@@ -39,8 +39,6 @@ def stop_timers(profile):
         character = PlayerCharacterLink().get_character(profile)
         character.quest_timer.pause()
 
-
-
 @login_required
 @csrf_exempt
 def heartbeat(request):
