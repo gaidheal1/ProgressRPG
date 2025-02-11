@@ -13,14 +13,14 @@ class Quest(models.Model):
     intro_text = models.TextField(max_length=2000, blank = True)
     outro_text = models.TextField(max_length=2000, blank = True)
     DURATION_CHOICES = [(300 * i, f"{5 * i} minutes") for i in range(1, 7)]
-    duration_choices = models.JSONField(default=list)
-    default_duration = models.IntegerField(choices=DURATION_CHOICES, default=5)
+    def default_duration_choices():
+        return [(300 * i, f"{5 * i} minutes") for i in range(1, 7)]
+    duration_choices = models.JSONField(default=default_duration_choices)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     stages = models.JSONField(default=list)
-    xp_rate = models.FloatField(default=0.2)
 
     class Category(models.TextChoices):
         NONE = 'NONE', 'No category'
@@ -48,13 +48,8 @@ class Quest(models.Model):
         default=Frequency.NONE
     )
 
-    def save(self, *args, **kwargs):
-        """Ensure duration_choices always contains valid values"""
-        self.duration_choices = [choice[0] for choice in self.DURATION_CHOICES]
-        super().save(*args, **kwargs)
-
     def __str__(self):
-        return f"Quest. id: {self.id}, name: {self.name}, min/max lvl: {self.levelMin}/{self.levelMax}, premium: {self.is_premium}, repeatable: {self.canRepeat}, frequency: {self.frequency}, active: {self.is_active}"
+        return self.name
     
     def apply_results(self, character):
         self.results.apply(character)
@@ -136,9 +131,9 @@ class Quest(models.Model):
 
     
 class QuestResults(models.Model):
-    quest = models.OneToOneField(Quest, on_delete=models.CASCADE, related_name='results')
+    quest = models.OneToOneField('Quest', on_delete=models.CASCADE, related_name='results')
     dynamic_rewards = models.JSONField(default=dict, null=True, blank=True)
-    xp_reward = models.PositiveIntegerField(null=True, blank=True)
+    xp_rate = models.IntegerField(default=1)
     coin_reward = models.IntegerField(default=0)
     buffs = models.JSONField(default=list, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
@@ -150,12 +145,10 @@ class QuestResults(models.Model):
         """Calculates XP reward based on quest duration and other factors"""
         character_level = character.level
         quest_completions = character.get_quest_completions(self.quest).first()
-        base_xp = self.quest.xp_rate
-        time_xp = base_xp * (duration)
-
+        base_xp = self.xp_rate
+        time_xp = base_xp * duration
         level_scaling = 1 + (character_level * 0.05)
-        repeat_penalty = 0.9 ** quest_completions.times_completed
-
+        repeat_penalty = 0.99 ** quest_completions.times_completed
         final_xp = time_xp * level_scaling * repeat_penalty
         return max(1, round(final_xp))
 
@@ -197,13 +190,26 @@ class QuestRequirement(models.Model):
         return f"{self.prerequisite.name} required {self.times_required} time(s) for {self.quest.name}"
 
 
+class QuestCompletion(models.Model):
+    character = models.ForeignKey('character.Character', on_delete=models.CASCADE) # don't add related_name, use character.quest_completions!
+    quest = models.ForeignKey('gameplay.Quest', on_delete=models.CASCADE, related_name='quest_completions')
+    times_completed = models.PositiveIntegerField(default=0)
+    last_completed = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('character', 'quest')
+    
+    def __str__(self):
+        return f"character {self.character.name} has done quest {self.quest.name} {self.times_completed} times"
+
+
 class Activity(models.Model):
     profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name="activities")
     name = models.CharField(max_length=255)
     duration = models.PositiveIntegerField(default=0)  # Time spent
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
-    xp_rate = models.FloatField(default=0.2)
+    xp_rate = models.IntegerField(default=1)
     skill = models.ForeignKey('Skill', on_delete=models.SET_NULL, null=True, blank=True, related_name="activities")
     project = models.ForeignKey('Project', on_delete=models.SET_NULL, null=True, blank=True, related_name="activities")
     
@@ -255,177 +261,6 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
-class Character(Person):
-    quest_completions = models.ManyToManyField('gameplay.Quest', through='QuestCompletion', related_name='completed_by')
-    total_quests = models.PositiveIntegerField(default=0)
-
-    first_name = models.CharField(max_length=50, default="")
-    last_name = models.CharField(max_length=50, default="", null=True, blank=True)
-    backstory = models.TextField(default="")
-    parents = models.ManyToManyField('self', related_name='children', symmetrical=False)
-    gender = models.CharField(max_length=50, default="None")
-    is_pregnant = models.BooleanField(default=False)
-    pregnancy_start_date = models.DateField(null=True, blank=True)
-    pregnancy_due_date = models.DateTimeField(null=True, blank=True)
-    dob = models.DateField(default=now)
-    dod = models.DateField(null=True, blank=True)
-    cause_of_death = models.CharField(max_length=255, null=True, blank=True)
-    coins = models.PositiveIntegerField(default=0)
-    reputation = models.IntegerField(default=0)
-    buffs = models.ManyToManyField('Buff', related_name='characters', blank=True)
-    location = models.ForeignKey('gameworld.Location', on_delete=models.SET_NULL, null=True, blank=True)
-    x_coordinate = models.IntegerField(default=0)  # X coordinate (horizontal position)
-    y_coordinate = models.IntegerField(default=0)  # Y coordinate (vertical position)
-    is_npc = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.name if self.name else "Unnamed character"
-    
-    @property
-    def full_name(self):
-        return f"{self.first_name} {self.last_name}"
-    
-    def get_age(self):
-        return now().date() - self.dob
-    
-    def die(self):
-        self.dob = now().date()
-        self.save()
-
-    def is_alive(self):
-        """Returns True if character is alive"""
-        return self.dod is None
-    
-    def start_quest(self, quest):
-        self.quest_timer.change_quest(quest)
-
-    def is_player_controlled(self):
-        return self.profile is not None
-
-    def get_quest_completions(self, quest):
-        return QuestCompletion.objects.filter(character=self, quest=quest)
-
-    @transaction.atomic
-    def complete_quest(self, quest):
-        with transaction.atomic():
-            completion, created = QuestCompletion.objects.get_or_create(
-                character=self,
-                quest=quest,
-            )
-            if not created:
-                completion.times_completed += 1
-            completion.save()
-        if hasattr(quest, 'questreward'):
-            quest_reward = quest.questreward
-            print("quest reward:", quest_reward)
-            quest_reward.apply(self)
-
-        self.total_quests += 1
-        self.save()
-
-    def start_pregnancy(self):
-        from gameworld.models import Partnership
-        if not self.is_pregnant:
-            self.is_pregnant = True
-            self.pregnancy_start_date = now().date()
-        else:
-            print(f"{self.name} is already pregnant.")
-            return
-        
-        partner = self.get_partner()
-        if partner:
-            partnership = Partnership.objects.get(
-                models.Q(partner1=self, partner2=partner) | models.Q(partner1=partner, partner2=self)
-            )
-            if not partnership.partner_is_pregnant:
-                partnership.partner_is_pregnant = True
-                partnership.save()
-                print(f"{self.name} and {partner.name} are now expecting")
-        self.save()
-
-    def handle_childbirth(self):
-        from gameworld.models import Partnership
-        child_name = f"Child of {self.first_name}"
-        child = Character.objects.create(
-            name=child_name,
-            dob=now().date(),
-            gender="Male" if random() < 50 else "Female",
-            x_coordinate=self.x_coordinate,
-            y_coordinate=self.y_coordinate,
-        )
-
-        child.parents.add(self)
-        partner = self.get_partner()
-        if partner:
-            child.parents.add(partner)
-            partnership = Partnership.objects.get(
-                models.Q(partner1=self, partner2=partner) | models.Q(partner1=partner, partner2=self)
-            )
-            partnership.last_birth_date = now().date()
-            partnership.total_births += 1
-            partnership.partner_is_pregnant = False
-            partnership.save()
-        
-    def handle_miscarriage(self):
-        self.is_pregnant = False
-        self.pregnancy_start_date = None
-        self.save()
-
-    def get_miscarriage_change(self):
-        chance = 0.05
-        if self.get_age() > 40 * 365:
-            chance += 0.10
-        return chance
-
-    def get_partner(self):
-        """Get the character's active partner if one exists"""
-        from gameworld.models import Partnership
-        partnerships = Partnership.objects.filter(
-            models.Q(partner1=self) | models.Q(partner2=self),
-        )
-        if partnerships.exists():
-            partnership = partnerships.first()
-            return partnership.partner1 if partnership.partner2 == self else partnership.partner2
-        return None
-    
-    def is_in_partnership(self):
-        from gameworld.models import Partnership
-        return Partnership.objects.filter(
-            models.Q(partner1=self) | models.Q(partner2=self),
-        ).exists()
-    
-    def add_partner(self, partner):
-        from gameworld.models import Partnership
-        if not self.is_in_partnership():
-            partnership = Partnership.objects.create(partner1=self, partner2=partner)
-            return partnership
-        return None
-
-class PlayerCharacterLink(models.Model):
-    profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name='character_link')
-    character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='profile_link')
-    date_linked = models.DateField(auto_now_add=True)
-    date_unlinked = models.DateField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-
-    def get_character(self, profile):
-        link = PlayerCharacterLink.objects.filter(profile=profile, is_active=True).first()
-        return link.character if link else None
-    
-    def unlink(self):
-        """Marks link as inactive and records unlink date"""
-        self.date_unlinked = now().date()
-        self.is_active = False
-        self.save()
-
-class QuestCompletion(models.Model):
-    character = models.ForeignKey(Character, on_delete=models.CASCADE) # don't add related_name, use character.quest_completions!
-    quest = models.ForeignKey('gameplay.Quest', on_delete=models.CASCADE, related_name='quest_completions')
-    times_completed = models.PositiveIntegerField(default=0)
-    last_completed = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return f"character {self.character.name} has done quest {self.quest.name} {self.times_completed} times"
 
 class Timer(models.Model):
     start_time = models.DateTimeField(null=True, blank=True)
@@ -478,7 +313,7 @@ class ActivityTimer(Timer):
     activity = models.ForeignKey('Activity', on_delete=models.SET_NULL, related_name='activity_timer', null=True, blank=True)
 
     def __str__(self):
-        return f"ActivityTimer for profile {self.profile.name}: started {self.start_time}, {self.elapsed_time} elapsed"
+        return f"ActivityTimer for {self.profile.name}"
 
     def new_activity(self, activity):
         self.reset()
@@ -502,7 +337,7 @@ class ActivityTimer(Timer):
 
 
 class QuestTimer(Timer):
-    character = models.OneToOneField('Character', on_delete=models.CASCADE, related_name='quest_timer')
+    character = models.OneToOneField('character.Character', on_delete=models.CASCADE, related_name='quest_timer')
     quest = models.ForeignKey('Quest', on_delete=models.SET_NULL, related_name='quest_timer', null=True, blank=True)
     duration = models.IntegerField(default=0)
 

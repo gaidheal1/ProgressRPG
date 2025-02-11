@@ -1,20 +1,7 @@
-from .models import Character, PlayerCharacterLink, QuestCompletion, Quest
-from django.utils import timezone
+from .models import QuestCompletion, Quest
+from character.models import Character, PlayerCharacterLink
 
-def assign_character_to_profile(profile):
-    """Utility function to assign a Character to a Profile"""
 
-    PlayerCharacterLink.objects.filter(profile=profile, is_active=True).update(is_active=False)
-    
-    character = Character.objects.filter(profile__isnull=True, dod__isnull=True).first()
-
-    if character:
-         PlayerCharacterLink.objects.create(
-              profile=profile,
-              character=character,
-              is_active=True,
-              date_linked=timezone.now().date()
-         )
 
 def check_quest_eligibility(character, profile):
     char_quests = QuestCompletion.objects.filter(character=character)

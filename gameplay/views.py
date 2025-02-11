@@ -4,8 +4,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db import transaction
 from django.utils import timezone
-from .models import Quest, Activity, Character, QuestCompletion, ActivityTimer, QuestTimer, PlayerCharacterLink
-from .serializers import ActivitySerializer, QuestSerializer, CharacterSerializer
+from .models import Quest, Activity, QuestCompletion, ActivityTimer, QuestTimer
+from character.models import Character, PlayerCharacterLink
+from .serializers import ActivitySerializer, QuestSerializer
+from character.serializers import CharacterSerializer
 from users.serializers import ProfileSerializer
 from users.models import Profile
 from .utils import check_quest_eligibility
@@ -16,26 +18,56 @@ from threading import Timer
 
 timers = {}
 
+HEARTBEAT_TIMEOUT = 20
+
+def stop_heartbeat_timer(client_id):
+    if client_id in timers:
+        timers[client_id].cancel()
+        del timers[client_id]
+
+def start_heartbeat_timer(client_id):
+    stop_heartbeat_timer(client_id)
+    timer = Timer(HEARTBEAT_TIMEOUT, lambda: stop_server_timer(client_id))
+    timers[client_id] = timer
+    timer.start()
+
 def stop_timers(profile):
     # Logic to stop the timers
-    print(f"NOT stopping timers for profile {profile.id} due to missed heartbeat")
-    #profile.activity_timer.pause()
-    character = PlayerCharacterLink().get_character(profile)
-    #character.quest_timer.pause()
+    if profile.activity_timer.is_active():
+        print(f"Stopping timers for profile {profile.name} due to missed heartbeat")
+        profile.activity_timer.pause()
+        character = PlayerCharacterLink().get_character(profile)
+        character.quest_timer.pause()
 
 @login_required
 @csrf_exempt
 def heartbeat(request):
     if request.method == 'POST':
-        profile = request.user.profile
-        client_id = profile.id  # Use profile ID as an identifier
-        if client_id in timers:
-            timers[client_id].cancel()
-        timers[client_id] = Timer(20, stop_timers, [profile])  # Stop timers if no heartbeat within 10 seconds
-        timers[client_id].start()
-        return JsonResponse({'success': True})
+        if request.user.is_authenticated:
+            user_id = request.user.profile.id
+        else:
+            session_id = request.session.session_key
+            if not session_id:
+                request.session.create()
+                session_id = request.session.session_key
+            user_id = f"guest-{session_id}"
+        user_id = request.user.profile.id
+
+        request.session['last_heartbeat'] = timezone.now().timestamp()
+        request.session.modified = True
+        
+        start_heartbeat_timer(user_id)
+
+        return JsonResponse({'success': True, 'status': 'ok', 'server_time': now().timestamp()})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
+def check_heartbeat(request):
+    last_heartbeat = request.session.get('last_heartbeat', 0)
+    time_diff = now().timestamp() - last_heartbeat
+    if time_diff > HEARTBEAT_TIMEOUT:
+        stop_timers(request.user.profile)
+        return JsonResponse({'success': True, 'status': 'disconnected', 'message': 'Client inactive'})
+    return JsonResponse({'success': True, 'status': 'active', 'message': 'Client still connected'})
 
 # Dashboard view
 @login_required

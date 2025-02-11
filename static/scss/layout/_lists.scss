@@ -35,6 +35,12 @@
 	flex-grow: 0;
 }
 
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
 /* List  */
 
 .list {
@@ -45,9 +51,7 @@
 	padding: 0px;
 	gap: 4px;
 
-	list-style-type: none;
 	width: 100%;
-	//height: 44px;
 
 	/* Inside auto layout */
 	flex: none;
@@ -64,14 +68,27 @@
 		padding: 0px;
 		gap: 10px;
 		width: 100%;
-		//height: 20px;
 
 		/* Inside auto layout */
 		flex: none;
 		order: 0;
 		flex-grow: 0;
 
-		color: #000000;
-		background-color: #F2F2F2;
+		color: #FFFFFF;
+		//background-color: #F2F2F2;
+	}
+}
+
+ul.selectable {
+	li {
+		&:hover {
+			background-color: #FAFAFA;
+			cursor: pointer;
+		}
+		&.selected {
+			color: white;
+			background-color: #11AA11;
+			font-weight: bold;
+		}
 	}
 }

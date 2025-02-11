@@ -1,16 +1,11 @@
 from rest_framework import serializers
-from .models import Quest, Activity, Character, QuestResults
+from .models import Quest, Activity, QuestResults
 
-
-class CharacterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Character
-        fields = ['id', 'name', 'xp', 'xp_next_level', 'xp_modifier', 'level', 'total_quests']
 
 class QuestResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestResults
-        fields = ['dynamic_rewards', 'xp_reward', 'coin_reward']
+        fields = ['dynamic_rewards', 'xp_rate', 'coin_reward']
 
 class QuestSerializer(serializers.ModelSerializer):
     result = QuestResultSerializer(source='results', read_only=True)

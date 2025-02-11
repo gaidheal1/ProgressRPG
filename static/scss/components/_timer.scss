@@ -1,3 +1,4 @@
+@use '../base/typography' as t;
 
 /* Timer frame */
 .timer-frame {
@@ -34,7 +35,7 @@
 	
 	
 	font-weight: 500;
-	font-size: $text-20-font-size;
+	font-size: t.$text-20-font-size;
 	line-height: 24px;
 	/* identical to box height, or 150% */
 	display: flex;
