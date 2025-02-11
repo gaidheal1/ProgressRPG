@@ -42,7 +42,7 @@ jobs:
             POSTGRES_USER: ${{ secrets.DB_USER }}
             POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
             POSTGRES_DB: ${{ secrets.DB_DB_NAME }}
-          options: --health-cmd='pg_isready -U duncan' --health-timeout=5s --health-retries=5
+          options: --health-cmd='pg_isready --username=duncan' --health-timeout=5s --health-retries=5
      
     steps:
     - name: Checkout code
@@ -51,7 +51,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        python-version: 3.12
 
     - name: Install dependencies
       run: |

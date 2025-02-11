@@ -18,7 +18,7 @@ from threading import Timer
 
 timers = {}
 
-
+HEARTBEAT_TIMEOUT = 20
 
 def stop_heartbeat_timer(client_id):
     if client_id in timers:
@@ -31,17 +31,16 @@ def start_heartbeat_timer(client_id):
     timers[client_id] = timer
     timer.start()
 
-## Currently deactivated
 def stop_timers(profile):
     # Logic to stop the timers
-    print(f"Stopping timers for profile {profile.name} due to missed heartbeat")
-    #profile.activity_timer.pause()
-    character = PlayerCharacterLink().get_character(profile)
-    #character.quest_timer.pause()
+    if profile.activity_timer.is_active():
+        print(f"Stopping timers for profile {profile.name} due to missed heartbeat")
+        profile.activity_timer.pause()
+        character = PlayerCharacterLink().get_character(profile)
+        character.quest_timer.pause()
 
-HEARTBEAT_TIMEOUT = 20
 
-## Client heartbeat function deactivated so this shouldn't operate
+
 @login_required
 @csrf_exempt
 def heartbeat(request):
@@ -68,6 +67,7 @@ def check_heartbeat(request):
     last_heartbeat = request.session.get('last_heartbeat', 0)
     time_diff = now().timestamp() - last_heartbeat
     if time_diff > HEARTBEAT_TIMEOUT:
+        stop_timers(request.user.profile)
         return JsonResponse({'success': True, 'status': 'disconnected', 'message': 'Client inactive'})
     return JsonResponse({'success': True, 'status': 'active', 'message': 'Client still connected'})
 
