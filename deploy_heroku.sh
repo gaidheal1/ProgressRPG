@@ -16,11 +16,16 @@ BRANCH_NAME="main"          # Replace with your Git branch name (e.g., main/mast
 echo_message "Enabling maintenance mode"
 heroku maintenance:on --app $APP_NAME
 
-# Step 2: Commit changes
-echo_message "Staging and committing changes"
-git add .
-read -p "Enter commit message: " commit_message
-git commit -m "$commit_message"
+# Step 2: Check for changes and commit if any
+echo_message "Checking for changes to commit"
+if git diff-index --quiet HEAD --; then
+    echo_message "No changes to commit, skipping commit step."
+else
+  echo_message "Staging and committing changes"
+  git add .
+  read -p "Enter commit message: " commit_message
+  git commit -m "$commit_message"
+fi
 
 # Step 3: Push to Heroku
 echo_message "Pushing to Heroku"
