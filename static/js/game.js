@@ -309,17 +309,17 @@ function loadQuestList(quests) {
 }
 
 function updatePlayerInfo(profile) {
-    document.getElementById('player-name').innerText = profile.name;
-    document.getElementById('player-xp').innerText = profile.xp;
-    document.getElementById('player-xp-next').innerText = profile.xp_next_level;
-    document.getElementById('player-level').innerText = profile.level;
+  document.getElementById('player-name').innerText = profile.name;
+  document.getElementById('player-xp').innerText = profile.xp;
+  document.getElementById('player-xp-next').innerText = profile.xp_next_level;
+  document.getElementById('player-level').innerText = profile.level;
 }
 
 function updateCharacterInfo(character) {
-    document.getElementById('character-name').innerText = character.name;
-    document.getElementById('character-xp').innerText = character.xp;
-    document.getElementById('character-xp-next').innerText = character.xp_next_level;
-    document.getElementById('character-level').innerText = character.level;
+  document.getElementById('character-name').innerText = character.name;
+  document.getElementById('character-xp').innerText = character.xp;
+  document.getElementById('character-xp-next').innerText = character.xp_next_level;
+  document.getElementById('character-level').innerText = character.level;
 }
 
 function showInput() {
@@ -432,7 +432,7 @@ async function chooseQuest(event) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ "quest_id": questId , "duration": selectedDuration.value})
+      body: JSON.stringify({ "quest_id": questId, "duration": selectedDuration.value })
     });
     await checkResponse(response);
 
@@ -473,13 +473,13 @@ async function startTimers() {
 }
 
 function handleStartTimersResponse(data) {
-    if (data.success) {
-      console.log("Timers started successfully");
-      startTimerSync();    
-    } else {
-      console.error(data.message);
+  if (data.success) {
+    console.log("Timers started successfully");
+    startTimerSync();
+  } else {
+    console.error(data.message);
 
-    }
+  }
 }
 
 
@@ -611,7 +611,10 @@ function handleSubmitActivityResponse(data) {
     updatePlayerInfo(data.profile);
     document.getElementById('activity-input').value = "";
     document.getElementById('activity-status-text').innerText = "finished";
-    document.getElementById('quest-status-text').innerText = "waiting";
+    const questStatus = document.getElementById('quest-status-text')
+    if (questStatus.innerText !== "finished") {
+      questStatus.innerText = "waiting";
+    }
   } else {
     console.error(data.message);
   }
@@ -622,6 +625,9 @@ function handleChooseQuestResponse(data) {
     document.getElementById('quest-rewards').style.display = "none";
     document.getElementById('current-quest-outro').style.display = "none";
     loadQuest(data);
+    if (document.getElementById('activity-status-text').innerText !== "waiting") {
+      document.getElementById('quest-status-text').innerText = "waiting";
+    }
     closeModal();
     startTimerIfReady();
   } else {
@@ -725,7 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initialiseTimers();
   setupEventListeners();
   updateUI();
-  //startHeartbeat();
+  startHeartbeat();
 });
 
 function initialiseTimers() {
@@ -746,7 +752,7 @@ function setupEventListeners() {
   document.getElementById("stop-activity-btn").addEventListener("click", onActivitySubmitted);
   window.questTimer.on('completed', onQuestCompleted);
 
-  
+
 }
 
 function updateUI() {
@@ -765,8 +771,9 @@ function updateUI() {
 function startHeartbeat(maxFailures = 3) {
   let failureCount = 0;
   let heartbeatInterval;
-  async function sendHeartBeat() => {
+  async function sendHeartbeat() {
     try {
+      console.log('Sending heartbeat');
       const response = await fetch('/heartbeat/', {
         method: 'POST',
         headers: {

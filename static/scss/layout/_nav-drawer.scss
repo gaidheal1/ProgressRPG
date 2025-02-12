@@ -1,9 +1,12 @@
+@use '../base/variables' as *;
+@use '../base/typography' as *;
 
 /* Navigation Drawer */
 .nav-drawer {
     position: fixed;
     top: 0;
-    left: -250px; /* Hidden by default */
+    left: -250px;
+    /* Hidden by default */
     width: 250px;
     height: 100%;
     background: #ffffff;
@@ -16,7 +19,8 @@
 }
 
 .nav-drawer.open {
-    transform: translateX(250px); /* Slides in */
+    transform: translateX(250px);
+    /* Slides in */
 }
 
 .nav-drawer-header {
@@ -65,7 +69,7 @@
 
 /* Button to Open Drawer */
 .open-drawer-btn {
-    
+
     background: none;
     border: none;
     cursor: pointer;

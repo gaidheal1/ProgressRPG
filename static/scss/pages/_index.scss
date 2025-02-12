@@ -1,3 +1,5 @@
+@use '../base/variables' as *;
+@use '../base/typography' as *;
 
 .home-content {
     display: flex;
@@ -20,14 +22,14 @@
         justify-content: space-between;
         gap: 16px;
 
-        .home-intro{
+        .home-intro {
             display: flex;
             flex-direction: column;
-            font-size: text-20-font-size;    
+            font-size: text-20-font-size;
 
             ul {
                 text-align: left;
-                list-style-type: disc;   
+                list-style-type: disc;
                 gap: 8px;
             }
         }
@@ -39,8 +41,3 @@
         }
     }
 }
-
-
-
-
-

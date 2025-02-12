@@ -1,11 +1,13 @@
 /* Text field
 
-@use '../utilies/mixins' as *;
+
 Use a text field when someone needs to enter text into a UI, such as filling in contact or payment information.
 
 🛠 Additional options
 Support text - you can toggle supporting text between hide and show.
 */
+
+@use '../utilities/mixins' as *;
 
 .input-div {
 	/* Auto layout */
