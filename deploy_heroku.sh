@@ -32,7 +32,7 @@ heroku run python manage.py migrate --app $APP_NAME
 
 # Step 5: Collect static files (for Django projects)
 echo_message "Collecting static files"
-heroku run python manage.py collectstatic --noinput --app $APP_NAME
+heroku run python manage.py collectstatic --app $APP_NAME
 
 # Step 6: Disable maintenance mode
 echo_message "Disabling maintenance mode"

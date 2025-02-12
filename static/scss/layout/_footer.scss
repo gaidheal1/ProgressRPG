@@ -1,32 +1,34 @@
 /* _footer.scss */
 
+@use '../base/variables' as *;
+@use '../base/typography' as *;
 
 footer {
     display: flex;
     text-align: center;
     margin-top: 20px;
-    
+
     background: #fff;
     color: $primary-color;
 
     /* Auto layout */
-    
+
     flex-direction: column;
     align-items: center;
     padding: 20px 64px;
     gap: 28px;
 
     width: 100%;
-    max-width: 100%;   
+    max-width: 100%;
     align-self: stretch;
 
-    button > a {
-            color: #fff;
-            margin: 0 10px;
-            align-self: center;
-            text-decoration: none;
-            font-size: $text-20-font-size;
-        }
-    
-    
+    button>a {
+        color: #fff;
+        margin: 0 10px;
+        align-self: center;
+        text-decoration: none;
+        font-size: $text-20-font-size;
+    }
+
+
 }

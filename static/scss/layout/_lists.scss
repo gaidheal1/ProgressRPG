@@ -1,4 +1,3 @@
-
 /* List section */
 
 .list-section {
@@ -36,9 +35,9 @@
 }
 
 ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+	list-style: none;
+	padding: 0;
+	margin: 0;
 }
 
 /* List  */
@@ -74,7 +73,7 @@ ul {
 		order: 0;
 		flex-grow: 0;
 
-		color: #FFFFFF;
+		//color: #FFFFFF;
 		//background-color: #F2F2F2;
 	}
 }
@@ -85,6 +84,7 @@ ul.selectable {
 			background-color: #FAFAFA;
 			cursor: pointer;
 		}
+
 		&.selected {
 			color: white;
 			background-color: #11AA11;

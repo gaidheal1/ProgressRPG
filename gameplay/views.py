@@ -13,6 +13,7 @@ from users.models import Profile
 from .utils import check_quest_eligibility
 import json
 from django.utils.html import escape
+from django.utils.timezone import now
 
 from threading import Timer
 
@@ -27,7 +28,7 @@ def stop_heartbeat_timer(client_id):
 
 def start_heartbeat_timer(client_id):
     stop_heartbeat_timer(client_id)
-    timer = Timer(HEARTBEAT_TIMEOUT, lambda: stop_server_timer(client_id))
+    timer = Timer(HEARTBEAT_TIMEOUT, lambda: stop_heartbeat_timer(client_id))
     timers[client_id] = timer
     timer.start()
 
@@ -55,7 +56,7 @@ def heartbeat(request):
 
         request.session['last_heartbeat'] = timezone.now().timestamp()
         request.session.modified = True
-        
+        print(f"Received heartbeat from {user_id}")
         start_heartbeat_timer(user_id)
 
         return JsonResponse({'success': True, 'status': 'ok', 'server_time': now().timestamp()})
