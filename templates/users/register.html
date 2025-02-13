@@ -3,7 +3,7 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
-
+<div>
     <h2>Register</h2>
     <form method="POST">
         {% csrf_token %}
@@ -11,28 +11,28 @@
             <label for="{{ form.username.id_for_label }}">Username</label>
             {{ form.username }}
             {% if form.username.errors %}
-                <div class="error">{{ form.username.errors }}</div>
+            <div class="error">{{ form.username.errors }}</div>
             {% endif %}
         </div>
         <div class="form-group">
             <label for="{{ form.email.id_for_label }}">Email</label>
             {{ form.email }}
             {% if form.email.errors %}
-                <div class="error">{{ form.email.errors }}</div>
+            <div class="error">{{ form.email.errors }}</div>
             {% endif %}
         </div>
         <div class="form-group">
             <label for="{{ form.password1.id_for_label }}">Password</label>
             {{ form.password1 }}
             {% if form.password1.errors %}
-                <div class="error">{{ form.password1.errors }}</div>
+            <div class="error">{{ form.password1.errors }}</div>
             {% endif %}
         </div>
         <div class="form-group">
             <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
             {{ form.password2 }}
             {% if form.password2.errors %}
-                <div class="error">{{ form.password2.errors }}</div>
+            <div class="error">{{ form.password2.errors }}</div>
             {% endif %}
         </div>
         <div class="form-group">
@@ -41,12 +41,13 @@
             </label>
             {{ form.agree_to_terms }}
             {% if form.agree_to_terms.errors %}
-                <div class="error">{{ form.agree_to_terms.errors }}</div>
+            <div class="error">{{ form.agree_to_terms.errors }}</div>
             {% endif %}
         </div>
         <button type="submit" class="button-filled">Register</button>
     </form>
+</div>
+<div>
     <p>Have an account already? <a href="{% url 'login' %}">Sign in here</a></p>
-    
+</div>
 {% endblock %}
-

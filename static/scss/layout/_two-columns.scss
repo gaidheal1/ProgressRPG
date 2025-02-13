@@ -27,7 +27,7 @@
 
 @include respond-to (big) {
 	#gameplay-container {
-		max-width: 1200px;
+		max-width: 1400px;
 	}
 }
 
@@ -60,7 +60,6 @@
 
 @include respond-to(big) {
 	#game-content {
-		max-width: 1200px;
 		flex-direction: row;
 	}
 }

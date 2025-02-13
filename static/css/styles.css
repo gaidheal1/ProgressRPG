@@ -216,6 +216,7 @@ footer button > a {
   align-items: flex-start;
   background: #E8FFF1;
   border-radius: 0px 0px 8px 8px;
+  max-width: 100%;
   flex: none;
   order: 0;
   align-self: stretch;
@@ -252,6 +253,16 @@ footer button > a {
   border-radius: 8px;
 }
 
+@media (max-width: 576px) {
+  #info-box {
+    max-width: 100%;
+  }
+}
+@media (min-width: 577px) {
+  #info-box {
+    max-width: 50%;
+  }
+}
 #player-info {
   order: 0;
 }
@@ -689,7 +700,7 @@ header nav .right-links {
 }
 @media (min-width: 577px) {
   #gameplay-container {
-    max-width: 1200px;
+    max-width: 1400px;
   }
 }
 /* Game content */
@@ -716,7 +727,6 @@ header nav .right-links {
 }
 @media (min-width: 577px) {
   #game-content {
-    max-width: 1200px;
     flex-direction: row;
   }
 }
