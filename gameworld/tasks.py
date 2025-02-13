@@ -1,5 +1,5 @@
 from celery import shared_task
-from django.utils.timezone import timedelta, now
+from django.utils import timezone
 from character.models import Character
 from .models import Partnership
 import random
@@ -18,7 +18,7 @@ def check_character_deaths():
     death_count = 0
 
     for character in characters:
-        age = now().date() - character.dob
+        age = timezone.now().date() - character.dob
         chance = death_probability(age)
 
         if random.random() < chance:
@@ -29,7 +29,7 @@ def check_character_deaths():
 
 @shared_task
 def start_character_pregnancies():
-    today = now().date()
+    today = timezone.now().date()
     for partnership in Partnership.objects.filter(partner_is_pregnant=False):
         partner1 = partnership.partner1
         partner2 = partnership.partner2
@@ -54,13 +54,13 @@ def start_character_pregnancies():
 
 @shared_task
 def check_character_pregnancies():
-    today = now().date()
+    today = timezone.now().date()
     for character in Character.objects.filter(is_pregnant=True):
         pregnancy_duration = (today - character.pregnancy_start_date).days
 
         if pregnancy_duration >= 260:
             # Pick a random day in following week for birth
-            birth_day = today + timedelta(days=random.randint(7,13))
+            birth_day = today + timezone.timedelta(days=random.randint(7,13))
             # Pick a random time for birthday
             random_hour = random.randint(0, 23)
             random_minute = random.randint(0, 59)
