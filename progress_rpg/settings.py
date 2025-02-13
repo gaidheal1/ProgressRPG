@@ -20,9 +20,6 @@ import logging
 
 dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
 load_dotenv(dotenv_path)
-for key, value in os.environ.items():
-    pass
-    #print(f"{key}: {value}")
 
 REGISTRATION_ENABLED = True
 SECRET_KEY_FALLBACKS=['django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$qj&(5ri-$']
@@ -48,14 +45,13 @@ else:
     DB_PASSWORD = os.getenv('DB_PASSWORD')
 
     DB_HOST = os.getenv('DB_HOST', default='localhost')
-    #print("db host:", DB_HOST)
     DB_PORT = os.getenv('DB_PORT', default=5432)
 
     EMAIL_HOST = os.getenv('EMAIL_HOST')
     EMAIL_PORT = os.getenv('EMAIL_PORT')
     EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
-#print("Debug:", DEBUG)
+print("DEBUG:", DEBUG)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -147,7 +143,7 @@ WSGI_APPLICATION = 'progress_rpg.wsgi.application'
 
 if ON_HEROKU:
     DATABASES = {
-        'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+        'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
     }
 
 else:
