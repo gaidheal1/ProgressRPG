@@ -214,19 +214,24 @@ footer button > a {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 4px 12px;
   background: #E8FFF1;
   border-radius: 0px 0px 8px 8px;
-  /* Inside auto layout */
   flex: none;
   order: 0;
   align-self: stretch;
   flex-grow: 0;
 }
 
-@media (max-width: 450px) {
+@media (max-width: 576px) {
   #info-bar {
-    width: 100%;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+@media (min-width: 577px) {
+  #info-bar {
+    flex-direction: row;
+    gap: 8px;
   }
 }
 /* info box (one each for player and character) */
@@ -237,12 +242,14 @@ footer button > a {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 0px;
-  gap: 10px;
+  padding: 8px 16px;
+  gap: 8px;
   /* Inside auto layout */
   flex: none;
   align-self: stretch;
-  flex-grow: 0;
+  flex-grow: 1;
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  border-radius: 8px;
 }
 
 #player-info {
@@ -674,22 +681,21 @@ header nav .right-links {
   align-self: stretch;
   flex-grow: 0;
 }
+
 @media (max-width: 576px) {
-  #gameplay-container #gameplay-container {
+  #gameplay-container {
     max-width: 550px;
   }
 }
 @media (min-width: 577px) {
-  #gameplay-container #gameplay-container {
+  #gameplay-container {
     max-width: 1200px;
   }
 }
-
 /* Game content */
 #game-content {
   /* Auto layout */
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
   align-content: flex-start;
@@ -702,18 +708,18 @@ header nav .right-links {
   align-self: stretch;
   flex-grow: 0;
 }
+
 @media (max-width: 576px) {
-  #game-content #game-content {
+  #game-content {
     flex-direction: column;
   }
 }
 @media (min-width: 577px) {
-  #game-content #game-content {
+  #game-content {
     max-width: 1200px;
     flex-direction: row;
   }
 }
-
 .game-section {
   /* Auto layout */
   display: flex;
@@ -729,11 +735,7 @@ header nav .right-links {
   flex-grow: 1;
   align-self: stretch;
 }
-@media (max-width: 576px) {
-  .game-section .game-section {
-    width: 100%;
-  }
-}
+
 .home-content {
   display: flex;
   flex-direction: column;
