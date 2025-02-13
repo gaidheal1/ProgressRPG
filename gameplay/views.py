@@ -28,9 +28,8 @@ def stop_heartbeat_timer(client_id):
 
 def start_heartbeat_timer(client_id):
     stop_heartbeat_timer(client_id)
-    timer = Timer(HEARTBEAT_TIMEOUT, lambda: stop_heartbeat_timer(client_id))
-    timers[client_id] = timer
-    timer.start()
+    timers[client_id] = Timer(HEARTBEAT_TIMEOUT, lambda: stop_heartbeat_timer(client_id))
+    timers[client_id].start()
 
 def stop_timers(profile):
     # Logic to stop the timers
@@ -52,10 +51,14 @@ def heartbeat(request):
                 request.session.create()
                 session_id = request.session.session_key
             user_id = f"guest-{session_id}"
-        user_id = request.user.profile.id
-
+        profile = request.user.profile
+        profile.activity_timer.update_activity_time()
+        character = PlayerCharacterLink().get_character(profile)
+        character.quest_timer.update_time()
         request.session['last_heartbeat'] = timezone.now().timestamp()
         request.session.modified = True
+        
+
         print(f"Received heartbeat from {user_id}")
         start_heartbeat_timer(user_id)
 
@@ -124,20 +127,17 @@ def fetch_info(request):
     if request.method == "GET":
         profile = request.user.profile
         character = PlayerCharacterLink().get_character(profile)
-        profile.activity_timer.reset()
-        character.quest_timer.reset()
+        #profile.activity_timer.reset()
+        #character.quest_timer.reset()
         profile_serializer = ProfileSerializer(profile)
         character_serializer = CharacterSerializer(character)
         current_activity = ActivitySerializer(profile.activity_timer.activity).data if profile.activity_timer.status != 'empty' else False
         current_quest = QuestSerializer(character.quest_timer.quest).data if character.quest_timer.status != 'empty' else False
-        if current_quest:
-            quest_duration = character.quest_timer.get_elapsed_time()
-        else:
-            quest_duration = 0
+        quest_elapsed_time = character.quest_timer.elapsed_time if current_quest else 0
         
         return JsonResponse({"success": True, "profile": profile_serializer.data, 
             "character": character_serializer.data, "current_activity": current_activity, 
-            "quest": current_quest, "duration": quest_duration, "message": "Profile and character fetched"})
+            "quest": current_quest, "quest_elapsed_time": quest_elapsed_time, "message": "Profile and character fetched"})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
 # Choose quest AJAX

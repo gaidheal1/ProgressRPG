@@ -27,11 +27,12 @@ class CharacterRelationship(models.Model):
     strength = models.IntegerField(default=0)  # -100 (hatred) to 100 (deep bond)
     history = models.JSONField(default=dict, blank=True)  # Logs key events
     biological = models.BooleanField(default=True)  # True = blood relative, False = adopted/found family
-    
+    created_at = models.DateTimeField(default=now)
+    last_updated = models.DateTimeField(default=now)
     romantic_relationship = models.OneToOneField('RomanticRelationship', on_delete=models.SET_NULL, null=True, blank=True)
 
     def get_members(self):
-        return self.characters.all()
+        return [char for char in self.characters.all()]
     
     def is_romantic(self):
         return self.relationship_type == 'romantic'
@@ -47,8 +48,8 @@ class CharacterRelationship(models.Model):
         self.save()
 
     def __str__(self):
-        bio = " (Biological)" if self.biological else " (Adopted)"
-        return f"{self.character1.name} - {self.type} - {self.character2.name} ({self.strength}){bio}"
+        characters_list = [str(char) for char in self.get_members()]
+        return f"{self.relationship_type} between {', '.join(characters_list)}"
 
 class RomanticRelationship(models.Model):
     last_childbirth_date = models.DateField(null=True, blank=True)
@@ -158,7 +159,7 @@ class Character(Person, LifeCycleMixin):
     first_name = models.CharField(max_length=50, default="")
     last_name = models.CharField(max_length=50, default="", null=True, blank=True)
     backstory = models.TextField(default="")
-    parents = models.ManyToManyField('self', related_name='children', symmetrical=False)
+    parents = models.ManyToManyField('self', related_name='children', symmetrical=False, blank=True)
     sex = models.CharField(max_length=20, null=True)
     coins = models.PositiveIntegerField(default=0)
     reputation = models.IntegerField(default=0)
