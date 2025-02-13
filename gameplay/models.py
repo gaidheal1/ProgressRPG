@@ -218,11 +218,15 @@ class Activity(models.Model):
 
     def update_name(self, new_name):
         self.name = new_name
-        self.save()
+        self.save(update_fields=['name'])
 
     def add_time(self, num):
         self.duration += num
-        self.save()
+        self.save(update_fields=['duration'])
+
+    def new_time(self, num):
+        self.duration = num
+        self.save(update_fields=['duration'])
 
     def calculate_xp_reward(self):
         """
@@ -280,7 +284,13 @@ class Timer(models.Model):
         abstract = True
             
     def get_elapsed_time(self):
-            return (now() - self.start_time).total_seconds() if self.start_time else 0
+        return (now() - self.start_time).total_seconds() if self.start_time else 0
+    
+    def update_time(self):
+        if self.start_time:
+            self.elapsed_time += math.ceil(self.get_elapsed_time())
+            self.start_time = now()
+            self.save()
 
     def start(self):
         if self.status != 'active':
@@ -292,8 +302,7 @@ class Timer(models.Model):
         if self.status != 'paused':
             self.status = 'paused'
             if self.start_time != None:
-                server_elapsed = (now() - self.start_time).total_seconds()
-                self.elapsed_time += math.ceil(server_elapsed)
+                self.update_time()
                 self.start_time = None
             self.save()
 
@@ -320,9 +329,17 @@ class ActivityTimer(Timer):
         self.activity = activity
         self.save()
 
+    def pause(self):
+        super().pause()
+        self.update_activity_time()
+
+    def update_activity_time(self):
+        self.update_time()
+        if self.status == 'active':
+            self.activity.new_time(self.elapsed_time)
+
     def complete(self):
         super().complete()
-        self.activity.add_time(self.elapsed_time)
         xp = self.calculate_xp()
         self.reset()
         return xp

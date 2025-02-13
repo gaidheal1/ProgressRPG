@@ -127,9 +127,9 @@ class Timer extends EventEmitter {
   constructor(displayElementId, mode, duration = 0) {
     super();
     this.displayElement = document.getElementById(displayElementId);
+    this.statusElement = document.getElementById(`${mode}-status-text`);
     this.duration = duration;
     this.intervalIdTime = null;
-    this.intervalIdSync = null;
     this.startTime = new Date();
     this.elapsedTime = 0; // For countdown timers
     this.remainingTime = duration; // For countdown timers
@@ -139,8 +139,8 @@ class Timer extends EventEmitter {
 
   start() {
     if (this.isRunning) return;
-
     this.isRunning = true;
+    this.updateStatus("running");
     // Start timer
     this.intervalIdTime = setInterval(() => {
       this.elapsedTime += 1;
@@ -154,6 +154,7 @@ class Timer extends EventEmitter {
         }
       }
       this.updateDisplay();
+
     }, 1000);
   }
 
@@ -162,17 +163,24 @@ class Timer extends EventEmitter {
     this.isRunning = false;
     clearInterval(this.intervalIdTime);
     this.emit('stopped', { timer: this });
-    clearInterval(this.intervalIdSync);
   }
 
-  reset(newDuration = this.duration, elapsedTime = 0) {
+  reset(elapsedTime = 0, newDuration = this.duration) {
     this.stop();
+    console.log("Timer reset method");
+    console.log("elapsed time passed:", elapsedTime);
     this.elapsedTime = elapsedTime;
-    this.remainingTime = this.mode === "quest" ? newDuration : 0;
+    if (this.mode === "quest") {
+      this.remainingTime = newDuration;
+    }
     this.updateDisplay();
     this.emit('reset', { timer: this });
   }
 
+  updateStatus(message) {
+    console.log(`${this.mode} Timer update status method`, message);
+    this.statusElement.innerText = message;
+  }
   updateDisplay() {
     const timeToDisplay = this.mode === "quest" ? this.remainingTime : this.elapsedTime;
     const minutes = Math.floor(timeToDisplay / 60);
@@ -193,7 +201,11 @@ function onActivityTimerStopped(data) {
 function onActivitySubmitted(data) {
   clearInterval(window.syncInterval);
   window.activityTimer.reset();
+  window.activityTimer.updateStatus("finished");
   window.questTimer.stop();
+  if (window.questTimer.statusElement.innerText !== "finished") {
+    window.questTimer.updateStatus("waiting");
+  }
   submitActivity();
   console.log("Clearing sync interval:", window.syncInterval);
 }
@@ -203,8 +215,11 @@ function onQuestTimerStopped(data) {
 }
 
 function onQuestCompleted(data) {
+  console.log("I woz here");
   window.activityTimer.stop();
-  submitQuest();
+  window.activityTimer.updateStatus("waiting");
+  window.questTimer.updateStatus("finished");
+  questCompleted();
   clearInterval(window.syncInterval);
 }
 
@@ -226,7 +241,7 @@ function loadQuest(data) {
   window.currentQuest = new Quest(quest.id, quest.name, quest.description, quest.intro_text, quest.outro_text, duration, quest.stages);
   window.currentQuest.initialDisplay();
   window.questSelected = true;
-  window.questTimer.reset(window.currentQuest.duration);
+  window.questTimer.reset(0, window.currentQuest.duration);
 }
 
 
@@ -244,16 +259,12 @@ function startTimerSync() {
 // Start timers when both activity and quest are selected
 function startTimerIfReady() {
   if (window.activitySelected && window.questSelected) {
-
     // Change buttons
     document.getElementById('start-activity-btn').style.display = "none";
     document.getElementById('stop-activity-btn').style.display = "flex";
     document.getElementById('stop-activity-btn').removeAttribute("disabled");
     document.getElementById('show-quests-btn-frame').style.display = "none";
-    // Update statuses
-    document.getElementById('activity-status-text').innerText = "running";
-    document.getElementById('quest-status-text').innerText = "running";
-
+    // Start timers
     window.activityTimer.start();
     window.questTimer.start();
     startTimers();
@@ -289,9 +300,6 @@ function submitQuestDisplayUpdate() {
   document.getElementById('xp-reward-value').textContent = "";
   document.getElementById('coin-reward-value').textContent = "";
   document.getElementById('other-rewards-list').innerHTML = "";
-  // Update statuses
-  document.getElementById('activity-status-text').innerText = "waiting";
-  document.getElementById('quest-status-text').innerText = "finished";
   // Display outro message
   document.getElementById('current-quest-outro').style.display = "flex";
 }
@@ -340,8 +348,6 @@ function hideInput() {
   const stopActivityButton = document.getElementById('stop-activity-btn');
   stopActivityButton.removeAttribute("disabled");
   stopActivityButton.style.display = "flex";
-
-  document.getElementById('activity-input-div').style.display = "none";
 }
 
 function showQuests() {
@@ -445,7 +451,7 @@ async function chooseQuest(event) {
 }
 
 // Submit quest
-async function submitQuest() {
+async function questCompleted() {
   try {
     const response = await fetch('/quest_completed/', {
       method: 'POST',
@@ -586,6 +592,7 @@ async function fetchInfo() {
 function handleCreateActivityResponse(data) {
   if (data.success) {
     window.activitySelected = true;
+    window.activityTimer.updateStatus("waiting");
     startTimerIfReady();
     document.getElementById('start-activity-btn').setAttribute("disabled", true);
   } else {
@@ -610,11 +617,6 @@ function handleSubmitActivityResponse(data) {
     window.activitySelected = false;
     updatePlayerInfo(data.profile);
     document.getElementById('activity-input').value = "";
-    document.getElementById('activity-status-text').innerText = "finished";
-    const questStatus = document.getElementById('quest-status-text')
-    if (questStatus.innerText !== "finished") {
-      questStatus.innerText = "waiting";
-    }
   } else {
     console.error(data.message);
   }
@@ -625,8 +627,8 @@ function handleChooseQuestResponse(data) {
     document.getElementById('quest-rewards').style.display = "none";
     document.getElementById('current-quest-outro').style.display = "none";
     loadQuest(data);
-    if (document.getElementById('activity-status-text').innerText !== "waiting") {
-      document.getElementById('quest-status-text').innerText = "waiting";
+    if (window.activityTimer.statusElement.innerText !== "waiting") {
+      window.questTimer.updateStatus("waiting");
     }
     closeModal();
     startTimerIfReady();
@@ -690,12 +692,16 @@ function handleFetchQuestsResponse(data) {
 function handleFetchInfoResponse(data) {
   if (data.success) {
     window.profile_id = data.profile.id;
-
+    console.log("Data:", data);
     updatePlayerInfo(data.profile);
     updateCharacterInfo(data.character);
     if (data.current_activity) {
+      console.log("We got in - Jeff Bridges");
       document.getElementById('activity-input').value = data.current_activity.name;
-      //window.activityTimer.reset(elapsedTime = data.current_activity.duration);
+      console.log("Activity time from server:", data.current_activity.duration);
+      console.log("Activity timer before:", window.activityTimer);
+      window.activityTimer.reset(data.current_activity.duration);
+      console.log("Activity timer after:", window.activityTimer);
       window.activitySelected = true;
       hideInput();
     } else {
@@ -703,7 +709,7 @@ function handleFetchInfoResponse(data) {
     }
     if (data.current_quest) {
       loadQuest(data);
-      //window.questTimer.reset(elapsedTime = data.current_quest.elapsed_time);
+      window.questTimer.reset(data.quest_elapsed_time);
       window.questSelected = true;
     } else {
       window.questSelected = false;
@@ -757,6 +763,7 @@ function setupEventListeners() {
 
 function updateUI() {
   // Update the UI with current timer status, or any other necessary state
+  console.log("When does THIS happen");
   document.getElementById('activity-timer').textContent = window.activityTimer.elapsedTime;
   //document.getElementById(window.activityTimer.displayElement).textContent = window.activityTimer.elapsedTime;
   window.activityTimer.updateDisplay();

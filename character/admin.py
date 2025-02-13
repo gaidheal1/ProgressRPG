@@ -18,8 +18,8 @@ class CharacterAdmin(admin.ModelAdmin):
     fields = [
         'first_name', 
         'last_name',
-        'name',
         #'current_player',
+        'is_npc',
         'backstory',
         'parents',
         'sex', 
@@ -31,16 +31,19 @@ class CharacterAdmin(admin.ModelAdmin):
         'cause_of_death',
         'coins',
         'reputation',
-        'is_npc',
         'total_quests',
     ]
     list_display = [
-        'name',
+        'first_name',
+        'last_name',
         #'current_player',
         'is_npc',
         'birth_date',
-
         ]
+    search_fields = [
+        'first_name',
+        'last_name',
+    ]
     inlines = [LinkInline]
 
 admin.site.register(Character, CharacterAdmin)
@@ -50,20 +53,32 @@ class PlayerCharacterLinkAdmin(admin.ModelAdmin):
     list_display = ['profile', 'character', 'is_active']
     fields = ['profile', 'character', 'is_active'] #('date_linked', 'date_unlinked'),
 
+class CharacterInline(admin.TabularInline):
+    model = CharacterRelationship.characters.through  # Access the ManyToMany through model
+    extra = 1
 
 @admin.register(CharacterRelationship)
 class CharacterRelationshipAdmin(admin.ModelAdmin):
     list_display = [
         'relationship_type',
+        'get_linked_characters',
+        'last_updated',
     ]
     fields = [
-        'character1',
-        'character2',
         'relationship_type',
         'strength',
         'history',
         'biological',
+        ('created_at', 'last_updated'),
     ]
+    inlines = [CharacterInline]
+    readonly_fields = ['created_at', 'last_updated']
+    filter_horizontal = ['characters',]
+
+    def get_linked_characters(self, obj):
+        return ', '.join([str(char) for char in obj.get_members()])
+    
+    get_linked_characters.short_description = "Characters"
 
 @admin.register(CharacterRole)
 class CharacterRoleAdmin(admin.ModelAdmin):

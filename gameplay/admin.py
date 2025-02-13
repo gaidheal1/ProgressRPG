@@ -61,6 +61,20 @@ class QuestCompletionAdmin(admin.ModelAdmin):
 @admin.register(Activity)
 class ActivityAdmin(admin.ModelAdmin):
     list_display = ['profile', 'name', 'duration', 'created_at']
+    list_filter = [
+        'created_at',
+        ]
+    fields = [
+        'profile',
+        ('name', 
+        'duration'), 
+        ('created_at',
+        'last_updated'),
+    ]
+    readonly_fields = ['created_at', 'last_updated']
+    date_hierarchy = 'created_at'
+    search_fields = ['profile__name']
+    show_full_result_count = False
     
 @admin.register(ActivityTimer)
 class ActivityTimerAdmin(admin.ModelAdmin):

@@ -1,7 +1,6 @@
 from celery import shared_task
-from django.utils import timezone
-from datetime import timedelta, now
-from gameplay.models import Character
+from django.utils.timezone import timedelta, now
+from character.models import Character
 from .models import Partnership
 import random
 

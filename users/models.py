@@ -102,7 +102,7 @@ class Profile(Person):
         return active_link.character if active_link else None
 
     def __str__(self):
-        return f'profile {self.name if self.name else "Unnamed profile"} of user {self.user.username}'
+        return self.name if self.name else "Unnamed profile"
 
     def add_activity(self, time, num = 1):
         self.total_time += time
