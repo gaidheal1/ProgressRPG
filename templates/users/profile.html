@@ -3,12 +3,7 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-    <h2>Profile</h2>
-    <p>Welcome, {{  profile.user.username }}!</p>
-
-    <p><strong>Bio:</strong> {{ profile.bio }}</p>
-
-    <br>
+<div>
     <div>
         <div>
             <a href="{% url 'dashboard' %}">Go to dashboard</a>

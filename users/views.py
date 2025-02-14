@@ -5,15 +5,14 @@ from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.sessions.models import Session
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView
-import random, json, logging
+import random, json, logging, math
 from gameplay.serializers import ActivitySerializer
 
-from .forms import UserRegisterForm, ProfileForm
+from .forms import UserRegisterForm, ProfileForm, EmailAuthenticationForm
 from .models import Profile
 from character.models import Character, PlayerCharacterLink
 
@@ -27,7 +26,7 @@ def index_view(request):
 @transaction.atomic
 def login_view(request):
     if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
+        form = EmailAuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
@@ -45,7 +44,7 @@ def login_view(request):
         if request.user.is_authenticated:
             print("user is logged in already")
             return redirect('game')
-        form = AuthenticationForm()
+        form = EmailAuthenticationForm()
     return render(request, 'users/login.html', {'form': form})
 
 
@@ -106,7 +105,8 @@ def link_character_view(request):
 @login_required
 def profile_view(request):
     profile = request.user.profile
-    return render(request, 'users/profile.html', {'profile':profile})
+    total_minutes = round(profile.total_time / 60)
+    return render(request, 'users/profile.html', {'profile': profile, 'total_minutes': total_minutes})
 
 
 # Edit profile view
