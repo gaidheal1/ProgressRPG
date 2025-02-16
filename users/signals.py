@@ -1,13 +1,14 @@
 # user.signals
 
-from django.db.models.signals import post_save, user_logged_in
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.timezone import now
+from django.contrib.auth import get_user_model
+from django.contrib.auth.signals import user_logged_in
 from datetime import timedelta
 from .models import Profile
 from gameplay.models import ActivityTimer
 from character.models import Character
-from django.contrib.auth import get_user_model
 from .utils import assign_character_to_profile
 
 User=get_user_model()
@@ -27,7 +28,7 @@ def save_profile(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Profile)
 def assign_character(sender, instance, created, **kwargs):
-    """Create character when profile saved if not already existing"""
+    """Assign character when profile created"""
     if created:
         assign_character_to_profile(instance)
 

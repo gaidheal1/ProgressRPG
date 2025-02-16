@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from .models import Quest, QuestRequirement, Activity, QuestCompletion, QuestResults, Buff, AppliedBuff, ActivityTimer, QuestTimer, DailyStats, GameWorld
+from .models import Quest, QuestRequirement, Activity, Skill, Project, QuestCompletion, QuestResults, Buff, AppliedBuff, ActivityTimer, QuestTimer, DailyStats, GameWorld
 from character.models import Character
 from django.contrib.auth import get_user_model
 from datetime import datetime
@@ -20,11 +20,9 @@ class TestQuestCreate(TestCase):
         self.assertTrue(isinstance(quest, Quest))
         self.assertEqual(quest.name, 'Test Quest')
 
-class TestQuestOther(TestCase):
-    @skip("Skipping due to DB changes")
+class TestQuestModels(TestCase):
     def setUp(self):
-        
-        self.quest = Quest.objects.create(
+        self.quest1 = Quest.objects.create(
             name='Test Quest',
             description='Test Quest Description',
             levelMax=10,
@@ -37,40 +35,43 @@ class TestQuestOther(TestCase):
 
     def test_questrequirement_create(self):
         req = QuestRequirement.objects.create(
-            quest=self.quest,
+            quest=self.quest1,
             prerequisite=self.quest2
         )
         self.assertTrue(isinstance(req, QuestRequirement))
-        self.assertEqual(self.quest, req.quest)
+        self.assertEqual(self.quest1, req.quest)
         self.assertEqual(self.quest2, req.prerequisite)
 
     def test_questcompletion_create(self):
-        
+        char = Character.objects.create(
+            name="Bob"
+        )        
         User = get_user_model()
         user = User.objects.create_user(
-            username='testuser1',
             email='testuser1@example.com',
             password='testpassword123'
         )
 
-        char = Character.objects.create(
-            profile=user.profile,
-            name="Bob"
-        )
-
         qc = QuestCompletion.objects.create(
             character=char,
-            quest=self.quest,
+            quest=self.quest1,
             times_completed=1,
             last_completed=now(),
         )
 
         self.assertTrue(isinstance(qc, QuestCompletion))
         self.assertEqual(qc.character, char)
-        self.assertEqual(qc.quest, self.quest)
+        self.assertEqual(qc.quest, self.quest1)
+
+    def test_questresults_create(self):
+        qr = QuestResults.objects.create(
+            quest=self.quest1,
+        )
+        self.assertTrue(isinstance(qr, QuestResults))
+        self.assertEqual(qr.quest, self.quest1)
+        self.assertEqual(qr.xp_rate, 1)
 
 class TestQuestEligible(TestCase):
-    @skip("Skipping due to DB changes")
     def setUp(self):
         self.quest1 = Quest.objects.create(
             name='Test Quest',
@@ -123,31 +124,24 @@ class TestQuestEligible(TestCase):
             self.quest5,
             self.quest6,
         ]
-
+        self.char = Character.objects.create(
+            name="Bob"
+        )
         User = get_user_model()
         self.user = User.objects.create_user(
-            username='testuser',
             email='testuser@example.com',
             password='testpassword123'
         )
-
-        self.char = Character.objects.create(
-            profile=self.user.profile,
-            name="Bob"
-        )
-
         self.req = QuestRequirement.objects.create(
             quest=self.quest2,
             prerequisite=self.quest1
         )
-
         self.qc1 = QuestCompletion.objects.create(
             character=self.char,
             quest=self.quest1,
             times_completed=0,
             last_completed=now(),
         )
-        
         self.qc2 = QuestCompletion.objects.create(
             character=self.char,
             quest=self.quest3,
@@ -180,6 +174,31 @@ class TestQuestEligible(TestCase):
         self.assertTrue(len(eligible_quests)==2)
         self.assertTrue(eligible_quests[0].name == 'Test Quest')
 
+class TestQuestEligibleFrequency(TestCase):
+    @skip("Skipping due to being impossible to test!")
+    def setUp(self):
+        self.quest4 = Quest.objects.create(
+            name='Test Quest 4',
+            description='Test Quest Description 4',
+            levelMax=10,
+            canRepeat=True,
+            frequency=Quest.Frequency.DAILY,
+        )
+        self.quest5 = Quest.objects.create(
+            name='Test Quest 5',
+            description='Test Quest Description 5',
+            levelMax=10,
+            canRepeat=True,
+            frequency=Quest.Frequency.WEEKLY,
+        )
+        self.quest6 = Quest.objects.create(
+            name='Test Quest 6',
+            description='Test Quest Description 6',
+            levelMax=10,
+            canRepeat=True,
+            frequency=Quest.Frequency.MONTHLY,
+        )
+
     def test_frequency_eligible(self):
         eligible_quests = []
         for quest in self.questslist2:
@@ -211,6 +230,19 @@ class TestQuestEligible(TestCase):
             times_completed=3,
             last_completed=today,
         )
+        self.questslist2 = [
+            self.quest4,
+            self.quest5,
+            self.quest6,
+        ]
+        self.char = Character.objects.create(
+            name="Bob"
+        )
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            email='testuser@example.com',
+            password='testpassword123'
+        )
 
         self.assertTrue(self.quest4.frequency_eligible(self.char)==False)
         qc4.last_completed = yesterday
@@ -225,21 +257,19 @@ class TestQuestEligible(TestCase):
         qc6.save()
         self.assertTrue(self.quest6.frequency_eligible(self.char))
 
-class TestQuestFunc(TestCase):
-    @skip("Skipping due to DB changes")
+class TestQuestResults(TestCase):
     def setUp(self):
+        self.char = Character.objects.create(
+            name="Bob",
+            sex="Male"
+        )
         User = get_user_model()
         user = User.objects.create_user(
-            username='testuser1',
             email='testuser1@example.com',
             password='testpassword123'
         )
-
-        self.char = Character.objects.create(
-            profile=user.profile,
-            name="Bob"
-        )
         self.profile = user.profile
+
         self.quest1 = Quest.objects.create(
             name='Test Quest',
             description='Test Quest Description 1',
@@ -254,44 +284,39 @@ class TestQuestFunc(TestCase):
             frequency='DAY',
         )
 
-        self.buff1 = Buff.objects.create(
-            name = "Buff 1",
-            attribute = "xp_modifier",
-            duration = 100,
-            amount = 1,
-            buff_type = 'additive',
-        )
-
         self.result1 = QuestResults.objects.create(
             quest = self.quest1,
-            dynamic_rewards = {"role": "Blacksmith"},
-            xp_reward = 5,
+            #dynamic_rewards = {"role": "Blacksmith"},
             coin_reward = 5,
-            buffs = ["Buff 1"],
+            dynamic_rewards = {"sex": "Female",}
         )
+
+        # Add buff later when fully implemented
         
 
     def test_questresults(self):
         def display(char):
-            print("char", char.name, "| xp: ", char.xp, "| coins:", char.coins, "| role:", char.role, "| buffs:", char.buffs)
+            print("char", char.name, "| xp: ", char.xp, "| coins:", char.coins, "| sex:", char.sex)
         #print("before:")
         #display(self.char)
-        self.quest1.apply_results(self.char)
+
+        self.assertEqual(self.char.coins, 0)
+        self.assertEqual(self.char.sex, "Male")
+
+        self.char.complete_quest(self.quest1)
         #print("after:")
         #display(self.char)
 
-        self.assertEqual(self.char.xp, 5)
-        self.assertEqual(self.char.role, "Blacksmith")
+        self.assertEqual(self.char.coins, 5)
+        self.assertEqual(self.char.sex, "Female")
 
         # Add buff test later when fully implemented
     
 
-class TestOtherModels(TestCase):
-    @skip("Skipping due to DB changes")
+class TestActivityModel(TestCase):
     def setUp(self):
         User = get_user_model()
         user = User.objects.create_user(
-            username='testuser1',
             email='testuser1@example.com',
             password='testpassword123'
         )
@@ -326,42 +351,43 @@ class TestOtherModels(TestCase):
         act.add_time(5)
         self.assertEqual(act.duration, 15)
 
-        num = act.calculate_xp_reward(self.profile)
-        self.assertEqual(act.calculate_xp_reward(self.profile), act.duration * act.xp_rate)
+        num = act.calculate_xp_reward()
+        self.assertEqual(act.calculate_xp_reward(), act.duration * act.xp_rate)
 
-
-    def test_character_create(self):
-        char = Character.objects.create(
-            profile=self.profile,
-            name="Bob"
-        )
-
-        self.assertTrue(isinstance(char, Character))
-        self.assertEqual(char.profile, self.profile)
-        self.assertEqual(char.name, 'Bob')
-
-    def test_character_func(self):
-        char = Character.objects.create(
-            profile=self.profile,
+class TestSkillProjectModels(TestCase):
+    def setUp(self):
+        self.char = Character.objects.create(
             name="Bob",
-            current_quest = self.quest1,
+            sex="Male"
         )
-
-        char.complete_quest()
-        completion = QuestCompletion.objects.get(
-                character=char
+        User = get_user_model()
+        user = User.objects.create_user(
+            email='testuser1@example.com',
+            password='testpassword123'
         )
-        self.assertEqual(completion.times_completed, 1)
-        self.assertEqual(char.current_quest, None)
-        self.assertEqual(char.total_quests, 1)
+        self.profile = user.profile
 
+    def test_skill_create(self):
+        skill = Skill.objects.create(
+            profile=self.profile,
+            name="Test Skill",
+        )
+        self.assertTrue(isinstance(skill, Skill))
+        self.assertEqual(skill.name, "Test Skill")
 
+    def test_project_create(self):
+        project = Project.objects.create(
+            profile=self.profile,
+            name="Test Project",
+        )
+        self.assertTrue(isinstance(project, Project))
+        self.assertEqual(project.name, "Test Project")
+
+class TestQuestCompletionModel(TestCase):
     def test_questcompletion_create(self):
         char = Character.objects.create(
-            profile=self.profile,
             name="Bob"
         )
-        
         qc = QuestCompletion.objects.create(
             character=char,
             quest=self.quest1,
@@ -375,6 +401,7 @@ class TestOtherModels(TestCase):
         # Again, it prints 'None'
         #print(char.quest_completions)
 
+class TestBuffModel(TestCase):
     def test_buff_create(self):
         buff1 = Buff.objects.create(
             name = "Buff 1",
@@ -432,19 +459,20 @@ class TestOtherModels(TestCase):
         result1 = QuestResults.objects.create(
             quest = quest,
             dynamic_rewards = {},
-            xp_reward = 5,
             coin_reward = 5,
             buffs = ["buff1"],
         )
 
         #print(result1)
 
-class TestTimer(TestCase):
-    @skip("Skipping due to DB changes")
+class TestTimers(TestCase):
     def setUp(self):
+        self.char = Character.objects.create(
+            name="Bob"
+        )
+        quest_timer = QuestTimer.objects.create(character=self.char)
         User = get_user_model()
         user = User.objects.create_user(
-            username='testuser1',
             email='testuser1@example.com',
             password='testpassword123'
         )
@@ -466,69 +494,50 @@ class TestTimer(TestCase):
             levelMax=10,
             canRepeat=False
         )
-        self.char = Character.objects.create(
-            profile=self.profile,
-            name="Bob"
-        )
 
     def test_timer_create(self):
-        activity_timer = ActivityTimer.objects.create(
-            profile = self.profile,
-            activity = self.act,
-        )
-
+        activity_timer = ActivityTimer.objects.filter(profile = self.profile).first()
+        self.assertTrue(isinstance(activity_timer, ActivityTimer))
         self.assertEqual(activity_timer.profile, self.profile)
 
-        quest_timer = QuestTimer.objects.create(
-            character = self.char,
-            duration = self.quest1.duration,
-        )
-
+        quest_timer = QuestTimer.objects.filter(character = self.char).first()
+        self.assertTrue(isinstance(quest_timer, QuestTimer))
         self.assertEqual(quest_timer.character, self.char)
 
     def test_timer_start(self):
-        timer1 = ActivityTimer.objects.create(
-            profile = self.profile,
-            activity = self.act,
-        )
-        self.assertTrue(timer1.start_time == None)
-        self.assertTrue(timer1.is_running == False)
+        timer = ActivityTimer.objects.filter(profile = self.profile).first()
+        self.assertTrue(timer.start_time == None)
+        self.assertEqual(timer.status, "empty")
 
-        timer1.start()
-
-        self.assertTrue(timer1.is_running)
-        self.assertTrue(timer1.start_time)
-
-    def test_timer_stop(self):
-        timer2 = ActivityTimer.objects.create(
-            profile = self.profile,
-            activity = self.act,
-        )
-        timer2.start()
-
-        timer2.stop()
-        self.assertTrue(timer2.start_time == None)
-        self.assertTrue(timer2.is_running == False)
-        # Need to wait for couple secs before next test as it is integerised in Timer method
-        #self.assertTrue(timer2.elapsed_time > 0)
-
-    def test_timer_reset(self):
-        timer = ActivityTimer.objects.create(
-            profile = self.profile,
-            activity = self.act,
-        )
         timer.start()
 
-        timer.reset()
+        self.assertTrue(timer.start_time)
+        self.assertEqual(timer.status, "active")
+
+    def test_timer_pause(self):
+        timer = ActivityTimer.objects.filter(profile = self.profile).first()
+        timer.start()
+        timer.pause()
+
         self.assertTrue(timer.start_time == None)
-        self.assertTrue(timer.is_running == False)
+        self.assertEqual(timer.status, "paused")
+        # Need to wait for couple secs before next test as it is integerised in Timer method
+        #self.assertTrue(timer.elapsed_time > 0)
+
+    def test_timer_reset(self):
+        timer = ActivityTimer.objects.filter(profile = self.profile).first()
+        timer.start()
+        timer.new_activity(self.act)
+        timer.complete()
+        timer.reset()
+
+        self.assertTrue(timer.start_time == None)
+        self.assertEqual(timer.status, "empty")
         self.assertTrue(timer.elapsed_time == 0)
 
     def test_questtimer_func(self):        
-        timer = QuestTimer.objects.create(
-            character = self.char,
-            duration = self.quest1.duration,
-        )
+        timer = QuestTimer.objects.filter(character = self.char).first()
+        timer.duration = 5
         timer.start()
 
         self.assertTrue(timer.get_remaining_time() > 0)
@@ -538,7 +547,6 @@ class TestDailyStats(TestCase):
     def setUp(self):
         User = get_user_model()
         user = User.objects.create_user(
-            username='testuser1',
             email='testuser1@example.com',
             password='testpassword123'
         )
@@ -577,17 +585,15 @@ class TestStatsView(TestCase):
         self.statistics_url = reverse('get_game_statistics')
         User = get_user_model()
         user1 = User.objects.create_user(
-            username='testuser1',
             email='testuser1@example.com',
             password='testpassword123'
         )
         user2 = User.objects.create_user(
-            username='testuser2',
             email='testuser2@example.com',
             password='testpassword123'
         )
 
-        self.client.login(username='testuser1', password='testpassword123')
+        self.client.login(email='testuser1@example.com', password='testpassword123')
 
         self.profile1 = user1.profile
         self.activity = Activity.objects.create(

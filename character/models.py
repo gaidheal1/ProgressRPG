@@ -190,10 +190,10 @@ class Character(Person, LifeCycleMixin):
             if not created:
                 completion.times_completed += 1
             completion.save()
-        if hasattr(quest, 'questreward'):
-            quest_reward = quest.questreward
-            print("quest reward:", quest_reward)
-            quest_reward.apply(self)
+        if hasattr(quest, 'results'):
+            results = quest.results
+            print("quest reward:", results)
+            results.apply(self)
 
         self.total_quests += 1
         self.save()
