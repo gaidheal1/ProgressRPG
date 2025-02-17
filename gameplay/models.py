@@ -256,7 +256,7 @@ class Skill(models.Model):
 class Project(models.Model):
     profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name='projects')
     name = models.CharField(max_length=100)
-    description = models.TextField()
+    description = models.TextField(max_length=2000)
     time = models.PositiveIntegerField(default=0)
     total_activities = models.PositiveIntegerField(default=0)
     last_updated = models.DateTimeField(auto_now=True)
@@ -379,7 +379,7 @@ class QuestTimer(Timer):
         return self.quest.results.calculate_xp_reward(self.character, self.duration)
 
     def get_remaining_time(self):
-        if self.is_running:
+        if self.status == 'active':
             elapsed = self.get_elapsed_time()
             return max(self.duration - int(elapsed + self.elapsed_time), 0)
         return max(self.duration - self.elapsed_time, 0)

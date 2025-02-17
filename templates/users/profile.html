@@ -3,36 +3,45 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-    <h2>Profile</h2>
-    <p>Welcome, {{  profile.user.username }}!</p>
-
-    <p><strong>Bio:</strong> {{ profile.bio }}</p>
+<div>
+    <div>
+        <h2>Profile</h2>
+        <p>Welcome, {{ profile.name }}!</p>
+        <p><strong>Bio:</strong> {{ profile.bio }}</p>
+        <div>
+            <a href="{% url 'edit_profile' %}">Edit Profile</a>
+        </div>
+    </div>
+    <div>
+        <h2>Game stats</h2>
+        <ul>
+            <li>Level: {{ profile.level }}, XP: {{ profile.xp }}/{{ profile.get_xp_for_next_level }}</li>
+            <li>Total time tracked: {{ total_minutes }} minutes</li>
+            <li>Total activities tracked: {{ profile.total_activities }}</li>
+            <li>Current login streak: {{ profile.login_streak }} days</li>
+        </ul>
+    </div>
 
     <br>
     <div>
         <div>
-            <a href="{% url 'dashboard' %}">Go to dashboard</a>
+            <h2>Manage my data and account</h2>
+            <div>
+                <a href="{% url 'download_user_data' %}">Download my data</a>
+            </div>
+            <div>
+                <a href="{% url 'delete_account' %}">Delete account</a>
+            </div>
         </div>
         <div>
-            <a href="{% url 'edit_profile' %}">Edit Profile</a>
-        </div>
-        <div>
-            <a href="{% url 'download_user_data' %}">Download my data</a>
-        </div>
-        <div>
-            <a href="{% url 'delete_account' %}">Delete account</a>
-        </div>
-        <div>
-        {% if user.is_staff %}
+            <h2>Admin</h2>
+            <div>
+                {% if user.is_staff %}
                 <a href="/admin/">Go to Admin Panel</a>
-            
-        {% endif %}
-        </div>
-        <div>
-            <p>
-                <a href="{% url 'logout' %}">Log out</a>
-            </p>
-        </div>
-    </div>  
 
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

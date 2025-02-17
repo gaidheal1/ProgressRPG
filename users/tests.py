@@ -3,57 +3,62 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from unittest import skip
 from .models import Profile
-from character.models import Character
+from character.models import Character, PlayerCharacterLink
 
 
 # Create your tests here.
 
 
 class UserCreationTest(TestCase):
+    def setUp(self):
+        self.character = Character.objects.create(
+            first_name='Jane',
+            sex='Female'
+        )
+        self.UserModel = get_user_model()
+
     def test_create_user(self):
         """Test that a user can be created successfully."""
-        User = get_user_model()
-        user = User.objects.create_user(
-            username='testuser',
+        user = self.UserModel.objects.create_user(
             email='testuser@example.com',
             password='testpassword123'
         )
-
-        self.assertEqual(user.username, 'testuser')
         self.assertEqual(user.email, 'testuser@example.com')
         self.assertTrue(user.check_password('testpassword123'))
+
+        profile = user.profile
+        self.assertTrue(isinstance(user.profile, Profile))
+        self.assertEqual(user, user.profile.user)
+        self.assertEqual(user.profile.xp, 0)
 
     def test_create_superuser(self):
         """Test that a superuser can be created successfully."""
         User = get_user_model()
         superuser = User.objects.create_superuser(
-            username='admin',
             email='admin@example.com',
             password='adminpassword123'
         )
-
         self.assertTrue(superuser.is_superuser)
         self.assertTrue(superuser.is_staff)
 
-class SignalsTest(TestCase):
-    @skip("Skipping due to DB changes")
-    def test_character_created_on_profile(self):
-        User = get_user_model()
-        user = User.objects.create(username="testuser")
-        
-        self.assertTrue(Profile.objects.filter(user=user).exists())
-        self.assertTrue(Character.objects.filter(profile=user.profile).exists())
+    def test_character_assigned_on_profile(self):
+        user = self.UserModel.objects.create_user(
+            email='testuser1@example.com',
+            password='testpassword123'
+        )
+        link = PlayerCharacterLink.objects.filter(profile=user.profile).first()
+        character = link.character
+        self.assertEqual(character, self.character)
 
 class OnboardingTest(TestCase):
     @skip("Skipping due to DB changes")
     def setUp(self):
         User = get_user_model()
         self.user = User.objects.create_user(
-            username='testuser',
             email='testuser@example.com',
             password='testpassword123'
         )
-        self.client.login(username='testuser', password='testpassword123')
+        self.client.login(email='testuser@example.com', password='testpassword123')
         self.profile = self.user.profile
         self.character = Character.objects.get(profile=self.profile)
 
@@ -113,11 +118,10 @@ class OnboardingTest(TestCase):
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.onboarding_step, 4)
 
-class ModelsTest(TestCase):
+class PersonXpTest(TestCase):
     def setUp(self):
         User = get_user_model()
         self.user = User.objects.create_user(
-            username='testuser1',
             email='testuser1@example.com',
             password='testpassword123'
         )
@@ -145,13 +149,34 @@ class ModelsTest(TestCase):
         self.assertEqual(profile.level, 2)
         self.assertEqual(profile.get_xp_for_next_level(), 300)
 
+class ProfileMethodsTest(TestCase):
+    def setUp(self):
+        character=Character.objects.create(
+            first_name="Jane",
+        )
+        self.character2=Character.objects.create(
+            first_name="John",
+        )
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            email='testuser1@example.com',
+            password='testpassword123'
+        )
+
     def test_profile_addactivity(self):
         profile = self.user.profile
         profile.add_activity(10, 1)
         self.assertEqual(profile.total_time, 10)
         self.assertEqual(profile.total_activities, 1)
 
-        
+    def test_change_character(self):
+        profile = self.user.profile
+        link = PlayerCharacterLink.objects.filter(profile=profile).first()
+        character = link.character
+        self.assertTrue(character.first_name, "Jane")
+        profile.change_character(self.character2)
+        self.assertTrue(character.first_name, "John")
+
 
 # Testing views: mock the response, then write the assertions
 
@@ -166,12 +191,11 @@ class TestViews_LoggedIn(TestCase):
 
         User = get_user_model()
         user = User.objects.create_user(
-            username='testuser',
             email='testuser@example.com',
             password='testpassword123'
         )
 
-        self.client.login(username='testuser', password='testpassword123')
+        self.client.login(email='testuser@example.com', password='testpassword123')
 
     def test_index_GET(self):
         """
@@ -186,22 +210,17 @@ class TestViews_LoggedIn(TestCase):
         Check the profile is rendered successfully
         """
         response = self.client.get(self.profile_url)
-
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'users/profile.html')
     
     def test_profile_edit_GET(self):
 
         response = self.client.get(self.editprofile_url)
-
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'users/edit_profile.html')
 
-
 class TestViews_LoggedOut(TestCase):
     def setUp(self):
-        #self.client = Client()
-
         # urls
         self.index_url = reverse('index')
         self.profile_url = reverse('profile')
@@ -212,23 +231,18 @@ class TestViews_LoggedOut(TestCase):
         """
         Check redirect to login if user not logged in
         """
-
         response = self.client.get(self.profile_url)
-
         self.assertEqual(response.status_code, 302)
 
     def test_editprofile_GET_loggedout(self):
         """
         Check redirect to login if user not logged in
         """
-
         response = self.client.get(self.editprofile_url)
-
         self.assertEqual(response.status_code, 302)
 
     def test_register_GET(self):
         response = self.client.get(self.register_url)
-
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'users/register.html')
 

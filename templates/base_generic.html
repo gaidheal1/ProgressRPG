@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,48 +9,54 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 </head>
+
 <body>
     <header>
         <nav>
 
-			<div class="left-links">
+            <div class="left-links">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'game' %}">Game</a>
-                    <a href="{% url 'dashboard' %}">Dashboard</a>
-                    
-                {% else %}
-                    <a href="{% url 'index' %}">Home</a>
-                    <a href="https://gaidheal1.github.io" target="_blank">Blog</a>
-                    
-                {% endif %}
-			</div>
+                <a href="{% url 'game' %}">Game</a>
 
-			<div class="right-links">
-                {% if user.is_authenticated %}
-			        <div class="link"><div class="text-wrapper"><a href="{% url 'logout' %}">Log out</a></div></div>
-                    <button class="button-filled"><a href="{% url 'profile' %}">Account</a></button>
-                    
                 {% else %}
-                    <a href="{% url 'login' %}">Login</a>
-                    <button class="button-filled"><a href="{% url 'register' %}">Sign up</a></button>
-                    
+                <a href="{% url 'index' %}">Home</a>
+                <a href="https://gaidheal1.github.io" target="_blank">Blog</a>
+
                 {% endif %}
-			    <div class="account">
-				<!-- <div class="button-comp"> -->
-				<!-- <img class="arrow-icon" src="img/arrow-icon.svg" /> -->
-				
-				<!-- </div> -->
-			    </div>
-			</div>
+            </div>
+
+            <div class="right-links">
+                {% if user.is_authenticated %}
+                <div class="link">
+                    <div class="text-wrapper"><a href="{% url 'logout' %}">Log out</a></div>
+                </div>
+                <button class="button-filled"><a href="{% url 'profile' %}">Account</a></button>
+
+                {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <button class="button-filled"><a href="{% url 'register' %}">Sign up</a></button>
+
+                {% endif %}
+                <div class="account">
+                    <!-- <div class="button-comp"> -->
+                    <!-- <img class="arrow-icon" src="img/arrow-icon.svg" /> -->
+
+                    <!-- </div> -->
+                </div>
+            </div>
 
             <div class="icons">
-                 <a href=""><img class="icon open-drawer-btn" src="{% static 'images/menu-icon.png' %}" alt="Menu Icon"></a>
-                 <a href="{% url 'game' %}"><img class="icon" src="{% static 'images/home-icon.png' %}" alt="Home Icon"></a>
-                 <a href="{% url 'profile' %}"><img class="icon" src="{% static 'images/account-icon.png' %}" alt="Account Icon"></a>
+                <a href=""><img class="icon open-drawer-btn" src="{% static 'images/menu-icon.png' %}"
+                        alt="Menu Icon"></a>
+                <a href="{% url 'game' %}"><img class="icon" src="{% static 'images/home-icon.png' %}"
+                        alt="Home Icon"></a>
+                <a href="{% url 'profile' %}"><img class="icon" src="{% static 'images/account-icon.png' %}"
+                        alt="Account Icon"></a>
             </div>
-			
+
         </nav>
     </header>
     <div class="nav-drawer">
@@ -63,7 +70,7 @@
     </div>
 
     <div class="overlay hidden"></div>
-    
+
     {% if messages %}
     <div>
         {% for message in messages %}
@@ -78,11 +85,12 @@
     </main>
     <footer>
         {% if user.is_staff %}
-            <a href="/admin/">Admin Panel</a>
-        {% endif %}        
-        <p>&copy; 2024 Progress RPG</p>
+        <a href="/admin/">Admin Panel</a>
+        {% endif %}
+        <p>&copy; 2025 Progress RPG</p>
     </footer>
-    
+
     <script src="{% static 'js/base.js' %}"></script>
 </body>
+
 </html>
