@@ -32,12 +32,13 @@ def start_heartbeat_timer(client_id, profile):
     def timeout_callback():
         print(f"timeout callback func")
         stop_heartbeat_timer(client_id)
-        stop_timers(profile)
+        if profile.activity_timer.status == 'active':
+            pause_timers(profile)
 
     timers[client_id] = Timer(HEARTBEAT_TIMEOUT, timeout_callback)
     timers[client_id].start()
 
-def stop_timers(profile):
+def pause_timers(profile):
     # Logic to stop the timers
     #if profile.activity_timer.is_active():
     print(f"Stopping timers for profile {profile.name} due to missed heartbeat")
