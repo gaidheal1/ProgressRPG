@@ -225,7 +225,7 @@ class CharacterRole(models.Model):
 
     def __str__(self):
         return f"{self.name}"
-    
+
 class CharacterRoleSkill(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
@@ -233,8 +233,8 @@ class CharacterRoleSkill(models.Model):
 
     def __str__(self):
         return f"{self.name}"
-    
-    
+
+
 class CharacterProgression(models.Model):
     character = models.OneToOneField('character.Character', on_delete=models.CASCADE)
     role = models.ForeignKey(CharacterRole, on_delete=models.CASCADE)
