@@ -193,7 +193,7 @@ class QuestRequirement(models.Model):
 class QuestCompletion(models.Model):
     character = models.ForeignKey('character.Character', on_delete=models.CASCADE) # don't add related_name, use character.quest_completions!
     quest = models.ForeignKey('gameplay.Quest', on_delete=models.CASCADE, related_name='quest_completions')
-    times_completed = models.PositiveIntegerField(default=0)
+    times_completed = models.PositiveIntegerField(default=1)
     last_completed = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -289,7 +289,6 @@ class Timer(models.Model):
     def update_time(self):
         if self.start_time:
             self.elapsed_time += math.ceil(self.get_elapsed_time())
-            self.start_time = now()
             self.save()
 
     def start(self):
@@ -334,9 +333,7 @@ class ActivityTimer(Timer):
         self.update_activity_time()
 
     def update_activity_time(self):
-        self.update_time()
-        if self.status == 'active':
-            self.activity.new_time(self.elapsed_time)
+        self.activity.new_time(self.elapsed_time)
 
     def complete(self):
         super().complete()

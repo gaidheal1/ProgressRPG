@@ -19,25 +19,31 @@ from threading import Timer
 
 timers = {}
 
-HEARTBEAT_TIMEOUT = 20
+HEARTBEAT_TIMEOUT = 10
 
 def stop_heartbeat_timer(client_id):
     if client_id in timers:
         timers[client_id].cancel()
         del timers[client_id]
 
-def start_heartbeat_timer(client_id):
+def start_heartbeat_timer(client_id, profile):
     stop_heartbeat_timer(client_id)
-    timers[client_id] = Timer(HEARTBEAT_TIMEOUT, lambda: stop_heartbeat_timer(client_id))
+
+    def timeout_callback():
+        print(f"timeout callback func")
+        stop_heartbeat_timer(client_id)
+        stop_timers(profile)
+
+    timers[client_id] = Timer(HEARTBEAT_TIMEOUT, timeout_callback)
     timers[client_id].start()
 
 def stop_timers(profile):
     # Logic to stop the timers
-    if profile.activity_timer.is_active():
-        print(f"Stopping timers for profile {profile.name} due to missed heartbeat")
-        profile.activity_timer.pause()
-        character = PlayerCharacterLink().get_character(profile)
-        character.quest_timer.pause()
+    #if profile.activity_timer.is_active():
+    print(f"Stopping timers for profile {profile.name} due to missed heartbeat")
+    profile.activity_timer.pause()
+    character = PlayerCharacterLink().get_character(profile)
+    character.quest_timer.pause()
 
 @login_required
 @csrf_exempt
@@ -51,27 +57,18 @@ def heartbeat(request):
                 request.session.create()
                 session_id = request.session.session_key
             user_id = f"guest-{session_id}"
-        profile = request.user.profile
-        profile.activity_timer.update_activity_time()
-        character = PlayerCharacterLink().get_character(profile)
-        character.quest_timer.update_time()
+        #profile = request.user.profile
+        #profile.activity_timer.update_activity_time()
+        #character = PlayerCharacterLink().get_character(profile)
+        #character.quest_timer.update_time()
         request.session['last_heartbeat'] = timezone.now().timestamp()
         request.session.modified = True
         
-
         print(f"Received heartbeat from {user_id}")
-        start_heartbeat_timer(user_id)
+        start_heartbeat_timer(user_id, request.user.profile)
 
         return JsonResponse({'success': True, 'status': 'ok', 'server_time': now().timestamp()})
     return JsonResponse({"error": "Invalid method"}, status=405)
-
-def check_heartbeat(request):
-    last_heartbeat = request.session.get('last_heartbeat', 0)
-    time_diff = now().timestamp() - last_heartbeat
-    if time_diff > HEARTBEAT_TIMEOUT:
-        stop_timers(request.user.profile)
-        return JsonResponse({'success': True, 'status': 'disconnected', 'message': 'Client inactive'})
-    return JsonResponse({'success': True, 'status': 'active', 'message': 'Client still connected'})
 
 # Dashboard view
 @login_required
@@ -233,7 +230,10 @@ def submit_activity(request):
         xp_reward = profile.activity_timer.complete()
         profile.add_xp(xp_reward)
 
-        activities = Activity.objects.filter(profile=profile, created_at__date=timezone.now().date())
+        activities = Activity.objects.filter(profile=profile, created_at__date=timezone.now().date()).order_by('-created_at')
+        if not activities.exists():
+            activities = Activity.objects.filter(profile=profile).order_by('-created_at')[:5]
+            print("Activities from older days:", activities)
         activities_list = ActivitySerializer(activities, many=True)
         profile_serializer = ProfileSerializer(profile)
 

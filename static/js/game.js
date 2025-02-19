@@ -274,6 +274,7 @@ function startTimerIfReady() {
 function addActivityToList(activity) {
   const activityList = document.getElementById('activity-list');
   const listItem = document.createElement('li');
+  // Can't read .name???
   listItem.textContent = `${activity.name} - ${formatDuration(activity.duration)}`;
   activityList.prepend(listItem);
   const activitiesTimeMessage = document.getElementById('activities-time-message');
@@ -657,25 +658,22 @@ function handleFetchActivitiesResponse(data) {
     activityList.innerHTML = '';
     window.activitiesNumber = 0;
     window.activitiesTime = 0;
-    if (activities.length == 0) {
-      activityList.innerText = "No activities done today!";
-    } else {
-      activities.forEach(activity => {
-        window.activitiesNumber += 1;
-        window.activitiesTime += activity.duration;
-        const li = document.createElement('li');
-        li.id = `activity-${activity.id}`;
-        li.textContent = `${activity.name} - ${formatDuration(activity.duration)}`;
-        activityList.appendChild(li);
-      });
-      const activityTimeMessage = document.getElementById('activities-time-message');
-      if (activityTimeMessage.innerText == "") {
-        activityTimeMessage.innerText = "Total time today: ";
-        document.getElementById('activities-total-message').innerText = "; total activities today: ";
-      }
-      document.getElementById('activities-time-data').innerText = formatDuration(window.activitiesTime);
-      document.getElementById('activities-total-data').innerText = window.activitiesNumber;
+
+    activities.forEach(activity => {
+      window.activitiesNumber += 1;
+      window.activitiesTime += activity.duration;
+      const li = document.createElement('li');
+      li.id = `activity-${activity.id}`;
+      li.textContent = `${activity.name} - ${formatDuration(activity.duration)}`;
+      activityList.appendChild(li);
+    });
+    const activityTimeMessage = document.getElementById('activities-time-message');
+    if (activityTimeMessage.innerText == "") {
+      activityTimeMessage.innerText = "Total time today: ";
+      document.getElementById('activities-total-message').innerText = "; total activities today: ";
     }
+    document.getElementById('activities-time-data').innerText = formatDuration(window.activitiesTime);
+    document.getElementById('activities-total-data').innerText = window.activitiesNumber;
   } else {
     console.error(data.message);
   }
