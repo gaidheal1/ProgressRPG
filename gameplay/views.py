@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from django.db import transaction
+from django.db import transaction, connection
 from django.utils import timezone
 from .models import Quest, Activity, QuestCompletion, ActivityTimer, QuestTimer
 from character.models import Character, PlayerCharacterLink
@@ -19,7 +19,7 @@ from threading import Timer
 
 timers = {}
 
-HEARTBEAT_TIMEOUT = 10
+HEARTBEAT_TIMEOUT = 20
 
 def stop_heartbeat_timer(client_id):
     if client_id in timers:
@@ -46,6 +46,8 @@ def stop_timers(profile):
     character = PlayerCharacterLink().get_character(profile)
     character.quest_timer.pause()
 
+    connection.close()
+
 @login_required
 @csrf_exempt
 def heartbeat(request):
@@ -67,7 +69,7 @@ def heartbeat(request):
         
         print(f"Received heartbeat from {user_id}")
         start_heartbeat_timer(user_id, request.user.profile)
-
+        connection.close()
         return JsonResponse({'success': True, 'status': 'ok', 'server_time': now().timestamp()})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
@@ -96,6 +98,7 @@ def fetch_activities(request):
             "activities": serializer.data,
             "message": "Activities fetched"
         }
+        connection.close()
         return JsonResponse(response)
     return JsonResponse({"error": "Invalid method"}, status=405)
 
@@ -115,7 +118,7 @@ def fetch_quests(request):
             "quests": serializer.data,
             "message": "Eligible quests fetched"
         }
-        
+        connection.close()
         return JsonResponse(response)
     return JsonResponse({"error": "Invalid method"}, status=405)
 
@@ -127,14 +130,14 @@ def fetch_info(request):
         character = PlayerCharacterLink().get_character(profile)
         #profile.activity_timer.reset()
         #character.quest_timer.reset()
-        profile_serializer = ProfileSerializer(profile)
-        character_serializer = CharacterSerializer(character)
+        profile_serializer = ProfileSerializer(profile).data
+        character_serializer = CharacterSerializer(character).data
         current_activity = ActivitySerializer(profile.activity_timer.activity).data if profile.activity_timer.status != 'empty' else False
         current_quest = QuestSerializer(character.quest_timer.quest).data if character.quest_timer.status != 'empty' else False
         quest_elapsed_time = character.quest_timer.elapsed_time if current_quest else 0
-        
-        return JsonResponse({"success": True, "profile": profile_serializer.data, 
-            "character": character_serializer.data, "current_activity": current_activity, 
+        connection.close()
+        return JsonResponse({"success": True, "profile": profile_serializer, 
+            "character": character_serializer, "current_activity": current_activity, 
             "quest": current_quest, "quest_elapsed_time": quest_elapsed_time, "message": "Profile and character fetched"})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
@@ -158,6 +161,7 @@ def choose_quest(request):
             "duration": duration,
             "message": f"Quest {quest.name} selected",
         }
+        connection.close()
         return JsonResponse(response)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
@@ -170,6 +174,8 @@ def save_activity(request):
         activity_name = escape(request.POST['activity'])
         duration = int(request.POST['duration'])
         Activity.objects.create(profile=request.user.profile, name=activity_name, duration=duration)
+        
+        connection.close()
         return JsonResponse({"success": True, "message": "Activity saved"})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
@@ -185,11 +191,11 @@ def create_activity(request):
             return JsonResponse({"error": "Activity name is required"}, status=400)
         activity = Activity.objects.create(profile=profile, name=activity_name)
         profile.activity_timer.new_activity(activity)
-
         response = {
             "success": True,
             "message": "Activity timer created and ready",
             }
+        connection.close()
         return JsonResponse(response)
         
     return JsonResponse({"error": "Invalid method"}, status=405)
@@ -202,6 +208,8 @@ def start_timers(request):
         character = PlayerCharacterLink().get_character(profile)
         profile.activity_timer.start()
         character.quest_timer.start()
+
+        connection.close()
         return JsonResponse({"success": True, "message": "Something something something darkside"})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
@@ -213,6 +221,8 @@ def pause_timers(request):
         character = PlayerCharacterLink().get_character(profile)
         profile.activity_timer.pause()
         character.quest_timer.pause()
+
+        connection.close()
         return JsonResponse({"success": True, "message": "Something something something lightside"})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
@@ -235,10 +245,11 @@ def submit_activity(request):
         if not activities.exists():
             activities = Activity.objects.filter(profile=profile).order_by('-created_at')[:5]
             print("Activities from older days:", activities)
-        activities_list = ActivitySerializer(activities, many=True)
-        profile_serializer = ProfileSerializer(profile)
-
-        return JsonResponse({"success": True, "message": "Activity submitted", "profile": profile_serializer.data, "activities": activities_list.data, "activity_rewards": xp_reward})
+        activities_list = ActivitySerializer(activities, many=True).data
+        profile_serializer = ProfileSerializer(profile).data
+        
+        connection.close()
+        return JsonResponse({"success": True, "message": "Activity submitted", "profile": profile_serializer, "activities": activities_list, "activity_rewards": xp_reward})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
 @login_required
@@ -256,10 +267,11 @@ def quest_completed(request):
         xp_reward = character.quest_timer.complete()
         character.add_xp(xp_reward)
         eligible_quests = check_quest_eligibility(character, profile)
-        character = CharacterSerializer(character)
-        quests = QuestSerializer(eligible_quests, many=True)
+        character = CharacterSerializer(character).data
+        quests = QuestSerializer(eligible_quests, many=True).data
 
-        return JsonResponse({"success": True, "message": "Quest completed", "xp_reward": 5, "quests": quests.data, "character": character.data})
+        connection.close()
+        return JsonResponse({"success": True, "message": "Quest completed", "xp_reward": 5, "quests": quests, "character": character})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
 @csrf_exempt
