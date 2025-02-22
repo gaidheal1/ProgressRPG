@@ -200,7 +200,7 @@ class QuestCompletion(models.Model):
         unique_together = ('character', 'quest')
     
     def __str__(self):
-        return f"character {self.character.name} has done quest {self.quest.name} {self.times_completed} times"
+        return f"character {self.character.name} has completed {self.quest.name}"
 
 
 class Activity(models.Model):

@@ -57,6 +57,13 @@ class QuestRequirementAdmin(admin.ModelAdmin):
 @admin.register(QuestCompletion)
 class QuestCompletionAdmin(admin.ModelAdmin):
     list_display = ['character', 'quest', 'times_completed']
+    fields = [
+        'character', 
+        'quest', 
+        'times_completed',
+        'last_completed',
+    ]
+    readonly_fields = ['last_completed']
 
 @admin.register(Activity)
 class ActivityAdmin(admin.ModelAdmin):
