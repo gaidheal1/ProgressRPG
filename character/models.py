@@ -182,6 +182,9 @@ class Character(Person, LifeCycleMixin):
 
     @transaction.atomic
     def complete_quest(self, quest):
+        print(f"Completing quest: {quest} for character {self}")
+        if quest is None:
+            print("Quest is None in Character.complete_quest!")
         with transaction.atomic():
             completion, created = QuestCompletion.objects.get_or_create(
                 character=self,

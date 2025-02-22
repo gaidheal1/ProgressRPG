@@ -482,7 +482,7 @@ async function startTimers() {
 function handleStartTimersResponse(data) {
   if (data.success) {
     console.log("Timers started successfully");
-    startTimerSync();
+    //startTimerSync();
   } else {
     console.error(data.message);
 

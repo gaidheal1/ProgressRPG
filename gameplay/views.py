@@ -263,6 +263,8 @@ def quest_completed(request):
         profile.activity_timer.pause()
         character.quest_timer.pause()
 
+        print("Character quest timer:", character.quest_timer)
+        print("Timer quest:", character.quest_timer.quest)
         character.complete_quest(character.quest_timer.quest)
         xp_reward = character.quest_timer.complete()
         character.add_xp(xp_reward)
