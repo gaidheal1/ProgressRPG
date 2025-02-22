@@ -357,6 +357,7 @@ class QuestTimer(Timer):
 
     def change_quest(self, quest, duration=5):
         self.reset()
+        print("QuestTimer.change_quest(), quest passed:", quest)
         self.quest = quest
         self.duration = duration
         self.save()

@@ -31,6 +31,7 @@ class CustomUserAdmin(UserAdmin):
     )
     search_fields = ['email']
     ordering = ('email',)
+    readonly_fields = ['created_at']
 
 @admin.register(Profile)
 class PlayerAdmin(admin.ModelAdmin):

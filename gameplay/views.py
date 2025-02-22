@@ -149,10 +149,16 @@ def choose_quest(request):
     if request.method == "POST" and request.headers.get('Content-Type') == 'application/json':
         data = json.loads(request.body)
         quest_id = escape(data.get('quest_id'))
+        print("choose_quest(), quest_id:", quest_id)
         quest = get_object_or_404(Quest, id=quest_id)
+        print("choose_quest(), quest:", quest)
+        if quest == None:
+            return JsonResponse({"success": False, "message": "Error: quest not found"})
         character = PlayerCharacterLink().get_character(request.user.profile)
         duration = data.get('duration')
-        character.quest_timer.change_quest(quest, duration)
+        with transaction.atomic():
+            character.quest_timer.change_quest(quest, duration)
+
         quest_serializer = QuestSerializer(quest)
 
         response = {
@@ -165,19 +171,6 @@ def choose_quest(request):
         return JsonResponse(response)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
-
-# Save activity view
-@transaction.atomic
-@login_required
-def save_activity(request):
-    if request.method == 'POST':
-        activity_name = escape(request.POST['activity'])
-        duration = int(request.POST['duration'])
-        Activity.objects.create(profile=request.user.profile, name=activity_name, duration=duration)
-        
-        connection.close()
-        return JsonResponse({"success": True, "message": "Activity saved"})
-    return JsonResponse({"error": "Invalid method"}, status=405)
 
 @login_required
 @transaction.atomic
@@ -210,7 +203,7 @@ def start_timers(request):
         character.quest_timer.start()
 
         connection.close()
-        return JsonResponse({"success": True, "message": "Something something something darkside"})
+        return JsonResponse({"success": True, "message": "Server timers started"})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
 @login_required
@@ -223,7 +216,7 @@ def pause_timers(request):
         character.quest_timer.pause()
 
         connection.close()
-        return JsonResponse({"success": True, "message": "Something something something lightside"})
+        return JsonResponse({"success": True, "message": "Server timers paused"})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
 @login_required
@@ -236,10 +229,10 @@ def submit_activity(request):
 
         profile.activity_timer.pause()
         character.quest_timer.pause()
-
-        profile.add_activity(profile.activity_timer.elapsed_time)
-        xp_reward = profile.activity_timer.complete()
-        profile.add_xp(xp_reward)
+        with transaction.atomic():
+            profile.add_activity(profile.activity_timer.elapsed_time)
+            xp_reward = profile.activity_timer.complete()
+            profile.add_xp(xp_reward)
 
         activities = Activity.objects.filter(profile=profile, created_at__date=timezone.now().date()).order_by('-created_at')
         if not activities.exists():
@@ -265,9 +258,12 @@ def quest_completed(request):
 
         print("Character quest timer:", character.quest_timer)
         print("Timer quest:", character.quest_timer.quest)
-        character.complete_quest(character.quest_timer.quest)
-        xp_reward = character.quest_timer.complete()
-        character.add_xp(xp_reward)
+
+        with transaction.atomic():
+            character.complete_quest(character.quest_timer.quest)
+            xp_reward = character.quest_timer.complete()
+            character.add_xp(xp_reward)
+
         eligible_quests = check_quest_eligibility(character, profile)
         character = CharacterSerializer(character).data
         quests = QuestSerializer(eligible_quests, many=True).data

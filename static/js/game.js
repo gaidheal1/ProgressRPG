@@ -428,7 +428,7 @@ async function chooseQuest(event) {
       return;
     }
     const questId = selectedQuest.dataset.index;
-
+    console.log("chooseQuest(), questId:", questId);
     const selectedDuration = document.getElementById('quest-durations');
     if (!selectedDuration) {
       alert("Please select a duration for your quest.");
