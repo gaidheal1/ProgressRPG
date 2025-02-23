@@ -128,8 +128,6 @@ def fetch_info(request):
     if request.method == "GET":
         profile = request.user.profile
         character = PlayerCharacterLink().get_character(profile)
-        #profile.activity_timer.reset()
-        #character.quest_timer.reset()
         profile_serializer = ProfileSerializer(profile).data
         character_serializer = CharacterSerializer(character).data
         current_activity = ActivitySerializer(profile.activity_timer.activity).data if profile.activity_timer.status != 'empty' else False
@@ -159,6 +157,7 @@ def choose_quest(request):
         with transaction.atomic():
             character.quest_timer.change_quest(quest, duration)
 
+        print("change_quest() successful? ", character.quest_timer.quest)
         quest_serializer = QuestSerializer(quest)
 
         response = {
@@ -261,7 +260,7 @@ def quest_completed(request):
 
         with transaction.atomic():
             character.complete_quest(character.quest_timer.quest)
-            xp_reward = character.quest_timer.complete()
+            xp_reward = character.quest_timer.complete() # This resets the quest_timer
             character.add_xp(xp_reward)
 
         eligible_quests = check_quest_eligibility(character, profile)
