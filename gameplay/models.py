@@ -4,6 +4,7 @@ from django.utils.timezone import now, timedelta
 from datetime import datetime
 import json
 import math
+import traceback
 from random import random
 
 
@@ -275,6 +276,7 @@ class Timer(models.Model):
     STATUS_CHOICES = [
         ('active', 'Active'),
         ('paused', 'Paused'),
+        ('waiting', 'Waiting'),
         ('completed', 'Completed'),
         ('empty', 'Empty'),
     ]
@@ -284,11 +286,12 @@ class Timer(models.Model):
         abstract = True
             
     def get_elapsed_time(self):
-        return (now() - self.start_time).total_seconds() if self.start_time else 0
+        this_round = (now() - self.start_time).total_seconds() if self.start_time else 0
+        return int(this_round + self.elapsed_time)
     
     def update_time(self):
         if self.start_time:
-            self.elapsed_time += math.ceil(self.get_elapsed_time())
+            self.elapsed_time = self.get_elapsed_time()
             self.save()
 
     def start(self):
@@ -300,14 +303,18 @@ class Timer(models.Model):
     def pause(self):
         if self.status != 'paused':
             self.status = 'paused'
-            if self.start_time != None:
-                self.update_time()
-                self.start_time = None
+            self.update_time()
+            self.start_time = None
+            self.save()
+
+    def set_waiting(self):
+        if self.status != 'waiting':
+            self.status = 'waiting'
             self.save()
 
     def complete(self):
         if self.status != 'completed':
-            self.pause()
+            self.update_time()
             self.status = 'completed'
             
     def reset(self):
@@ -326,9 +333,11 @@ class ActivityTimer(Timer):
     def new_activity(self, activity):
         self.reset()
         self.activity = activity
+        self.set_waiting()
         self.save()
 
     def pause(self):
+        print("Activity timer pause()")
         super().pause()
         self.update_activity_time()
 
@@ -355,23 +364,34 @@ class QuestTimer(Timer):
     quest = models.ForeignKey('Quest', on_delete=models.SET_NULL, related_name='quest_timer', null=True, blank=True)
     duration = models.IntegerField(default=0)
 
+    def save(self, *args, **kwargs):
+        print(f"QuestTimer saved. {self}")
+        #traceback.print_stack()
+        super().save(*args, **kwargs)
+
     def change_quest(self, quest, duration=5):
         self.reset()
-        print("QuestTimer.change_quest(), quest passed:", quest)
+        #print(QuestTimer.objects.filter(pk=self.pk).values())
         self.quest = quest
         self.duration = duration
+        self.set_waiting()
+        print("QuestTimer after change_quest, just before save", self)
         self.save()
+        print(QuestTimer.objects.filter(pk=self.pk).values())
+
 
     def complete(self):
         super().complete()
+        print("QuestTimer.complete(). Quest:", self.quest)
         xp = self.calculate_xp()
-        self.reset()
+        self.save()
         return xp
 
     def reset(self):
         super().reset()
         self.quest = None
         self.save()
+        print("Quest timer reset. Quest:", self.quest)
 
     def calculate_xp(self):
         return self.quest.results.calculate_xp_reward(self.character, self.duration)
@@ -386,8 +406,11 @@ class QuestTimer(Timer):
         return self.get_remaining_time() <= 0
 
     def __str__(self):
-        return f"QuestTimer for {self.character.name}: quest {self.quest}, duration {self.duration}, started {self.start_time}, {self.elapsed_time} elapsed"
+        return f"QuestTimer for {self.character.name}: quest {self.quest}, status {self.status}, duration {self.duration}, started {self.start_time}, {self.elapsed_time} elapsed"
     
+
+
+
 
 
 class Buff(models.Model):

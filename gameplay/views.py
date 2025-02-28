@@ -6,11 +6,11 @@ from django.db import transaction, connection
 from django.utils import timezone
 from .models import Quest, Activity, QuestCompletion, ActivityTimer, QuestTimer
 from character.models import Character, PlayerCharacterLink
-from .serializers import ActivitySerializer, QuestSerializer
+from .serializers import ActivitySerializer, QuestSerializer, ActivityTimerSerializer, QuestTimerSerializer
 from character.serializers import CharacterSerializer
 from users.serializers import ProfileSerializer
 from users.models import Profile
-from .utils import check_quest_eligibility
+from .utils import check_quest_eligibility, start_timers
 import json
 from django.utils.html import escape
 from django.utils.timezone import now
@@ -28,7 +28,11 @@ def stop_heartbeat_timer(client_id):
 
 def start_heartbeat_timer(client_id, profile):
     stop_heartbeat_timer(client_id)
-
+    character = PlayerCharacterLink().get_character(profile)
+    character.quest_timer.refresh_from_db()
+    print("Starting heartbeat. Quest timer quest:", character.quest_timer.quest)
+    
+    #print("Now refreshed. Quest timer quest:", character.quest_timer.quest)
     def timeout_callback():
         print(f"timeout callback func")
         stop_heartbeat_timer(client_id)
@@ -42,7 +46,9 @@ def stop_timers(profile):
     # Logic to stop the timers
     #if profile.activity_timer.is_active():
     print(f"Stopping timers for profile {profile.name} due to missed heartbeat")
+    print("Activity status before pausing:", profile.activity_timer.status)
     profile.activity_timer.pause()
+    print("Activity status after pausing:", profile.activity_timer.status)
     character = PlayerCharacterLink().get_character(profile)
     character.quest_timer.pause()
 
@@ -60,16 +66,15 @@ def heartbeat(request):
                 request.session.create()
                 session_id = request.session.session_key
             user_id = f"guest-{session_id}"
-        #profile = request.user.profile
+        profile = request.user.profile
         #profile.activity_timer.update_activity_time()
-        #character = PlayerCharacterLink().get_character(profile)
-        #character.quest_timer.update_time()
+        character = PlayerCharacterLink().get_character(profile)
+        #character.quest_timer = QuestTimer.objects.get(id=character.quest_timer.id)
         request.session['last_heartbeat'] = timezone.now().timestamp()
         request.session.modified = True
-        
-        print(f"Received heartbeat from {user_id}")
+        print(f"Received heartbeat {profile.activity_timer}. {character.quest_timer}")
         start_heartbeat_timer(user_id, request.user.profile)
-        connection.close()
+        #connection.close()
         return JsonResponse({'success': True, 'status': 'ok', 'server_time': now().timestamp()})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
@@ -128,18 +133,25 @@ def fetch_info(request):
     if request.method == "GET":
         profile = request.user.profile
         character = PlayerCharacterLink().get_character(profile)
+        print("fetch_info(), character timer:", character.quest_timer)
         profile_serializer = ProfileSerializer(profile).data
         character_serializer = CharacterSerializer(character).data
         current_activity = ActivitySerializer(profile.activity_timer.activity).data if profile.activity_timer.status != 'empty' else False
         current_quest = QuestSerializer(character.quest_timer.quest).data if character.quest_timer.status != 'empty' else False
         quest_elapsed_time = character.quest_timer.elapsed_time if current_quest else 0
+        act_timer = ActivityTimerSerializer(profile.activity_timer).data
+        quest_timer = QuestTimerSerializer(character.quest_timer).data
+        print(act_timer)
+        action = start_timers(profile)
         connection.close()
         return JsonResponse({"success": True, "profile": profile_serializer, 
             "character": character_serializer, "current_activity": current_activity, 
-            "quest": current_quest, "quest_elapsed_time": quest_elapsed_time, "message": "Profile and character fetched"})
+            "quest": current_quest, "quest_elapsed_time": quest_elapsed_time, 
+            "message": "Profile and character fetched", "action": action,
+            "activity_timer": act_timer, "quest_timer": quest_timer})
     return JsonResponse({"error": "Invalid method"}, status=405)
 
-# Choose quest AJAX
+# Choose quest
 @transaction.atomic
 @login_required
 @csrf_exempt
@@ -154,19 +166,25 @@ def choose_quest(request):
             return JsonResponse({"success": False, "message": "Error: quest not found"})
         character = PlayerCharacterLink().get_character(request.user.profile)
         duration = data.get('duration')
+
         with transaction.atomic():
-            character.quest_timer.change_quest(quest, duration)
-
+            character.quest_timer.refresh_from_db()
+            character.quest_timer.change_quest(quest, duration) # status should be 'waiting' now
+        
         print("change_quest() successful? ", character.quest_timer.quest)
-        quest_serializer = QuestSerializer(quest)
-
+        print(f"{now()} - choose_quest")
+        
+        action = start_timers(request.user.profile)
+        quest_timer = QuestTimerSerializer(character.quest_timer).data
         response = {
             "success": True,
-            "quest": quest_serializer.data,
-            "duration": duration,
+            "quest_timer": quest_timer,
             "message": f"Quest {quest.name} selected",
+            "action": action,
         }
-        connection.close()
+        #connection.close()
+        print(f"Choose_quest(), just before return: {character.quest_timer}")
+
         return JsonResponse(response)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
@@ -181,11 +199,16 @@ def create_activity(request):
         activity_name = escape(data.get("activityName"))
         if not activity_name:
             return JsonResponse({"error": "Activity name is required"}, status=400)
-        activity = Activity.objects.create(profile=profile, name=activity_name)
-        profile.activity_timer.new_activity(activity)
+        with transaction.atomic():
+            activity = Activity.objects.create(profile=profile, name=activity_name)
+            profile.activity_timer.new_activity(activity)
+        activity_timer = ActivityTimerSerializer(profile.activity_timer).data
+        action = start_timers(profile)
         response = {
             "success": True,
             "message": "Activity timer created and ready",
+            "activity_timer": activity_timer,
+            "action": action,
             }
         connection.close()
         return JsonResponse(response)
@@ -194,12 +217,20 @@ def create_activity(request):
 
 @login_required
 @csrf_exempt
-def start_timers(request):
+def old_start_timers(request):
     if request.method == "POST":
+        print("old_start_timers()")
         profile = request.user.profile
         character = PlayerCharacterLink().get_character(profile)
+        #print(f"QuestTimer modified: {character.quest_timer.tracker.has_changed('quest')}")
+        #print(f"Before save? {character.quest_timer.pk} - {character.quest_timer._state.db} - {character.quest_timer._state.is_modified()}")
+        character.quest_timer = QuestTimer.objects.get(id=character.quest_timer.id)
         profile.activity_timer.start()
+        character.quest_timer.refresh_from_db()
+        print("Before timer start:", character.quest_timer)
+        print(f"{now()} - old_start_timers")
         character.quest_timer.start()
+        print("After timer start:", character.quest_timer)
 
         connection.close()
         return JsonResponse({"success": True, "message": "Server timers started"})
@@ -229,6 +260,7 @@ def submit_activity(request):
         profile.activity_timer.pause()
         character.quest_timer.pause()
         with transaction.atomic():
+            profile.activity_timer.refresh_from_db()
             profile.add_activity(profile.activity_timer.elapsed_time)
             xp_reward = profile.activity_timer.complete()
             profile.add_xp(xp_reward)
@@ -251,17 +283,16 @@ def quest_completed(request):
     if request.method == "POST":
         profile = request.user.profile
         character = PlayerCharacterLink().get_character(profile)
-
+        
+        profile.activity_timer.refresh_from_db()
         profile.activity_timer.pause()
+        print("Activity timer status:", profile.activity_timer.status)
         character.quest_timer.pause()
-
-        print("Character quest timer:", character.quest_timer)
-        print("Timer quest:", character.quest_timer.quest)
+        print("Quest timer:", character.quest_timer)
 
         with transaction.atomic():
-            character.complete_quest(character.quest_timer.quest)
-            xp_reward = character.quest_timer.complete() # This resets the quest_timer
-            character.add_xp(xp_reward)
+            character.quest_timer.refresh_from_db()
+            character.complete_quest()
 
         eligible_quests = check_quest_eligibility(character, profile)
         character = CharacterSerializer(character).data

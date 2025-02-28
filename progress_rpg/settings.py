@@ -158,6 +158,12 @@ else:
         }
     }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
 if ON_HEROKU:
     REDIS_HOST = (os.environ.get('REDIS_URL'))
 else:

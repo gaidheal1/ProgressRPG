@@ -181,7 +181,8 @@ class Character(Person, LifeCycleMixin):
         return QuestCompletion.objects.filter(character=self, quest=quest)
 
     @transaction.atomic
-    def complete_quest(self, quest):
+    def complete_quest(self):
+        quest = self.quest_timer.quest
         print(f"Completing quest: {quest} for character {self}")
         if quest is None:
             print("Quest is None in Character.complete_quest!")
@@ -198,6 +199,8 @@ class Character(Person, LifeCycleMixin):
             print("quest reward:", results)
             results.apply(self)
 
+        xp_reward = self.quest_timer.complete()
+        self.add_xp(xp_reward)
         self.total_quests += 1
         self.save()
 

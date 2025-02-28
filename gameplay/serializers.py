@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Quest, Activity, QuestResults
+from .models import Quest, Activity, QuestResults, ActivityTimer, QuestTimer
 
 
 class QuestResultSerializer(serializers.ModelSerializer):
@@ -20,3 +20,24 @@ class ActivitySerializer(serializers.ModelSerializer):
         model = Activity
         fields = ['id', 'name', 'duration', 'created_at', 'profile']
 
+class ActivityTimerSerializer(serializers.ModelSerializer):
+    activity = ActivitySerializer(read_only=True)
+    elapsed_time = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ActivityTimer
+        fields = ['id', 'status', 'activity', 'elapsed_time']
+
+    def get_elapsed_time(self, obj):
+        return obj.get_elapsed_time()
+
+class QuestTimerSerializer(serializers.ModelSerializer):
+    quest = QuestSerializer(read_only=True)
+    elapsed_time = serializers.SerializerMethodField()
+
+    class Meta:
+        model = QuestTimer
+        fields = ['id', 'status', 'quest', 'duration', 'elapsed_time', 'character',]
+
+    def get_elapsed_time(self, obj):
+        return obj.get_elapsed_time()
