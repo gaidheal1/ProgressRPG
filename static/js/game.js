@@ -538,9 +538,10 @@ function handleCreateActivityResponse(data) {
     window.activitySelected = true;
     window.activityTimer.updateStatus("waiting");
     document.getElementById('start-activity-btn').setAttribute("disabled", true);
-    if (data.timers == 'start') {
+    if (data.action == 'start_timers') {
       startTimers();
     }
+
   } else {
     console.error(data.message);
   }

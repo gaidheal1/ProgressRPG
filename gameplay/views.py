@@ -150,7 +150,7 @@ def fetch_quests(request):
             "quests": serializer.data,
             "message": "Eligible quests fetched"
         }
-        connection.close()
+        #connection.close()
         return JsonResponse(response)
     return JsonResponse({"error": "Invalid method"}, status=405)
 
@@ -204,6 +204,7 @@ def choose_quest(request):
         print("change_quest() successful? ", character.quest_timer.quest)
         
         action = start_timers(request.user.profile)
+        logger.debug(f"Action: {action}")
         quest_timer = QuestTimerSerializer(character.quest_timer).data
         response = {
             "success": True,
@@ -222,6 +223,7 @@ def choose_quest(request):
 @csrf_exempt
 def create_activity(request):
     if request.method == "POST":
+        logger.info(f"[CREATE ACTIVITY] reached")
         profile = request.user.profile
         data = json.loads(request.body)
         activity_name = escape(data.get("activityName"))
@@ -232,6 +234,7 @@ def create_activity(request):
             profile.activity_timer.new_activity(activity)
         activity_timer = ActivityTimerSerializer(profile.activity_timer).data
         action = start_timers(profile)
+        logger.debug(f"Action: {action}")
         response = {
             "success": True,
             "message": "Activity timer created and ready",
