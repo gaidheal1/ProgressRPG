@@ -15,4 +15,5 @@ staticfiles/
 local_backup.dump
 Makefile
 debug.log
+progress_rpg.log
 static/.sass-cache/
