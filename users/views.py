@@ -16,7 +16,7 @@ from .forms import UserRegisterForm, ProfileForm, EmailAuthenticationForm
 from .models import Profile
 from character.models import Character, PlayerCharacterLink
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("django")
 
 # Index view
 def index_view(request):

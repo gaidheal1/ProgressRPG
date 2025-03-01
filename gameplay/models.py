@@ -6,7 +6,7 @@ import json, math, logging
 import traceback
 from random import random
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("django")
 
 class Quest(models.Model):
     name = models.CharField(max_length=255)
@@ -337,7 +337,7 @@ class ActivityTimer(Timer):
         self.save()
 
     def pause(self):
-        print("Activity timer pause()")
+        #print("Activity timer pause()")
         super().pause()
         self.update_activity_time()
 
@@ -369,7 +369,7 @@ class QuestTimer(Timer):
     duration = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
-        print(f"QuestTimer saved. {self}")
+        #print(f"QuestTimer saved. {self}")
         #traceback.print_stack()
         super().save(*args, **kwargs)
 
@@ -394,7 +394,7 @@ class QuestTimer(Timer):
         super().reset()
         self.quest = None
         self.save()
-        print("Quest timer reset. Quest:", self.quest)
+        #print("Quest timer reset. Quest:", self.quest)
 
     def calculate_xp(self):
         return self.quest.results.calculate_xp_reward(self.character, self.duration)

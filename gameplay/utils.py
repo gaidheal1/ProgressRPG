@@ -3,7 +3,7 @@ from character.models import Character, PlayerCharacterLink
 from django.utils.timezone import now
 import logging
 
-logger = logging.getLogger(__name__)  # Get the logger for this module
+logger = logging.getLogger("django")  # Get the logger for this module
 
 def check_quest_eligibility(character, profile):
     char_quests = QuestCompletion.objects.filter(character=character)

@@ -6,7 +6,8 @@ import json, math, logging
 from random import random
 from django.utils.timezone import now, timedelta
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("django")
+
 class CharacterRelationship(models.Model):
     characters = models.ManyToManyField('Character', through='CharacterRelationshipMembership')
     
