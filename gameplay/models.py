@@ -2,11 +2,11 @@ from django.db import models, transaction
 from users.models import Person, Profile
 from django.utils.timezone import now, timedelta
 from datetime import datetime
-import json
-import math
+import json, math, logging
 import traceback
 from random import random
 
+logger = logging.getLogger(__name__)
 
 class Quest(models.Model):
     name = models.CharField(max_length=255)
@@ -328,7 +328,7 @@ class ActivityTimer(Timer):
     activity = models.ForeignKey('Activity', on_delete=models.SET_NULL, related_name='activity_timer', null=True, blank=True)
 
     def __str__(self):
-        return f"ActivityTimer for {self.profile.name}"
+        return f"ActivityTimer for {self.profile.name}: status {self.status}"
 
     def new_activity(self, activity):
         self.reset()
@@ -342,7 +342,11 @@ class ActivityTimer(Timer):
         self.update_activity_time()
 
     def update_activity_time(self):
-        self.activity.new_time(self.elapsed_time)
+        if self.activity:
+            self.activity.new_time(self.elapsed_time)
+            self.save()
+        else:
+            logger.info(f"[ACTIVITYTIMER.UPDATE_ACTIVITY_TIME] No activity found for timer {self}")
 
     def complete(self):
         super().complete()
@@ -375,14 +379,13 @@ class QuestTimer(Timer):
         self.quest = quest
         self.duration = duration
         self.set_waiting()
-        print("QuestTimer after change_quest, just before save", self)
+        #print("QuestTimer after change_quest, just before save", self)
         self.save()
-        print(QuestTimer.objects.filter(pk=self.pk).values())
-
+        #print(QuestTimer.objects.filter(pk=self.pk).values())
 
     def complete(self):
         super().complete()
-        print("QuestTimer.complete(). Quest:", self.quest)
+        #logger.debug(f"[QUESTTIMER.COMPLETE] {self}")
         xp = self.calculate_xp()
         self.save()
         return xp
@@ -406,7 +409,7 @@ class QuestTimer(Timer):
         return self.get_remaining_time() <= 0
 
     def __str__(self):
-        return f"QuestTimer for {self.character.name}: quest {self.quest}, status {self.status}, duration {self.duration}, started {self.start_time}, {self.elapsed_time} elapsed"
+        return f"QuestTimer for {self.character.name}: status {self.status}" #quest {self.quest.name}, 
     
 
 

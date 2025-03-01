@@ -2,11 +2,11 @@ from django.db import models, transaction
 from users.models import Person, Profile
 from gameplay.models import Buff, AppliedBuff, QuestCompletion
 from datetime import datetime
-import json
-import math
+import json, math, logging
 from random import random
 from django.utils.timezone import now, timedelta
 
+logger = logging.getLogger(__name__)
 class CharacterRelationship(models.Model):
     characters = models.ManyToManyField('Character', through='CharacterRelationshipMembership')
     
@@ -183,7 +183,8 @@ class Character(Person, LifeCycleMixin):
     @transaction.atomic
     def complete_quest(self):
         quest = self.quest_timer.quest
-        print(f"Completing quest: {quest} for character {self}")
+        logger.info(f"[COMPLETE_QUEST] for {self}")
+        logger.debug(f"{self.quest_timer}")
         if quest is None:
             print("Quest is None in Character.complete_quest!")
         with transaction.atomic():
@@ -196,7 +197,7 @@ class Character(Person, LifeCycleMixin):
             completion.save()
         if hasattr(quest, 'results'):
             results = quest.results
-            print("quest reward:", results)
+            #print("quest reward:", results)
             results.apply(self)
 
         xp_reward = self.quest_timer.complete()
