@@ -89,7 +89,7 @@ class Profile(Person):
     total_time = models.IntegerField(default=0)
     total_activities = models.IntegerField(default=0)
     is_premium = models.BooleanField(default=False)
-    last_login = models.DateTimeField(auto_now=True)
+    last_login = models.DateTimeField(default=now)
     login_streak = models.PositiveIntegerField(default=1)
     login_streak_max = models.PositiveIntegerField(default=1)
     buffs = models.ManyToManyField('gameplay.AppliedBuff', related_name='profiles', blank=True)

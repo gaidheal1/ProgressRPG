@@ -14,6 +14,7 @@ from gameplay.serializers import ActivitySerializer
 
 from .forms import UserRegisterForm, ProfileForm, EmailAuthenticationForm
 from .models import Profile
+from .utils import send_signup_email
 from character.models import Character, PlayerCharacterLink
 
 logger = logging.getLogger("django")
@@ -79,8 +80,11 @@ def create_profile_view(request):
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
+            profile.name = form.cleaned_data['name']
             profile.onboarding_step = 2
             profile.save()
+            if profile.name:
+                send_signup_email(request.user)
             return redirect('link_character')
     else:
         form = ProfileForm(instance=profile)

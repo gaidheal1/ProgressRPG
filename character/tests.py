@@ -1,6 +1,8 @@
+# character/tests.py
+
 from django.test import TestCase
 from .models import Character, PlayerCharacterLink
-from gameplay.models import QuestCompletion, Quest, QuestTimer
+from gameplay.models import QuestCompletion, Quest, QuestResults, QuestTimer
 
 # Create your tests here.
 
@@ -31,6 +33,9 @@ class TestCharacterMethods(TestCase):
             duration=10,
             elapsed_time=5,
         )
+        result = QuestResults.objects.create(
+            quest=self.quest1,
+        )
 
     def test_character_properties(self):
         self.assertEqual(self.char.full_name, "Bob Bobberson")
@@ -40,7 +45,7 @@ class TestCharacterMethods(TestCase):
         self.assertEqual(self.timer.quest, self.quest1)
 
     def test_complete_quest(self):
-        self.char.complete_quest(self.quest1)
+        self.char.complete_quest()
         self.assertEqual(self.char.total_quests, 1)
         completion = QuestCompletion.objects.filter(
             character=self.char,
