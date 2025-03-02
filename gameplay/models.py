@@ -189,6 +189,9 @@ class QuestRequirement(models.Model):
     times_required = models.PositiveIntegerField(default=1)
     last_updated = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        unique_together = ('quest', 'prerequisite')
+
     def __str__(self):
         return f"{self.prerequisite.name} required {self.times_required} time(s) for {self.quest.name}"
 
