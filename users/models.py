@@ -32,6 +32,8 @@ class CustomUser(AbstractUser):
     date_of_birth = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     objects = CustomUserManager()
+    pending_delete = models.BooleanField(default=False)
+    delete_at=models.DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

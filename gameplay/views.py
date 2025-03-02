@@ -92,7 +92,7 @@ def heartbeat(request):
         profile.activity_timer = ActivityTimer.objects.get(pk=profile.activity_timer.pk)
         
         qt = character.quest_timer
-        if qt.status != "completed" and qt.get_remaining_time() <= 0:
+        if qt.status == "active" and qt.get_remaining_time() <= 0:
             logger.info(f"[HEARTBEAT] Quest timer expired for user {user_id}, marking quest as complete")
             qt.elapsed_time = qt.duration
             stop_timers(profile)

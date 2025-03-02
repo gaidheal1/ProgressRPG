@@ -21,9 +21,10 @@ User=get_user_model()
 def create_profile(sender, instance, created, **kwargs):
     """Create a profile for the user when a new user is created"""
     if created:
-        logger.info(f"New user created: {instance}")
         profile = Profile.objects.create(user=instance)
+        logger.info(f"[CREATE PROFILE] New profile {profile.id} created for {instance}")
         ActivityTimer.objects.create(profile=profile)
+        logger.info(f"[CREATE PROFILE] New activity timer created for profile {profile.id}")
 
 @receiver(post_save, sender=User)
 def save_profile(sender, instance, **kwargs):

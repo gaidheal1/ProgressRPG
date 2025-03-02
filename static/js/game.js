@@ -8,6 +8,21 @@ function closeModal() {
   modal.style.display = "none";
 }
 
+function showToast(message) {
+  const toastContainer = document.getElementById("toast-container");
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.innerText = message;
+
+  toastContainer.appendChild(toast);
+
+  setTimeout(() => {
+      toast.classList.add("hide");
+      setTimeout(() => toast.remove(), 500);
+  }, 3000);  // Toast disappears after 3s
+}
+
+
 function showQuestDetails(quest) {
   const dropdown = document.getElementById('quest-durations');
   console.log("quest durations:", quest.duration_choices);

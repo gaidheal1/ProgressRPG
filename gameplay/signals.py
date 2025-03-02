@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.contrib.auth.signals import user_logged_in
 from django.dispatch import receiver
 from django.utils.timezone import now
-from .models import Activity
+from .models import Activity, Quest, QuestResults
 from character.models import Character
 from users.models import Profile
 from events.models import Event, EventContribution
@@ -40,3 +40,8 @@ def update_login_streak(sender, request, user, **kwargs):
             profile.login_streak = 1
     profile.last_login = now()
     profile.save()
+
+@receiver(post_save, sender=Quest)
+def create_quest_results(sender, instance, created, **kwargs):
+    if created:  # Only run when a new Quest is created
+        QuestResults.objects.create(quest=instance)
