@@ -144,6 +144,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://progress-rpg-dev-6581f3bc144e.herokuapp.com/',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
+    'http://localhost:5173',
 ]
 
 # Application definition
@@ -157,7 +158,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_beat',
     'rest_framework',
-
+    #'django-vite',
     'character',
     'users',
     'gameplay',
