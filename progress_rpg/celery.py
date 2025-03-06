@@ -30,5 +30,9 @@ app.conf.beat_schedule = {
     'weekly-pregnancy-check': {
         'task': 'gameworld.tasks.check_character_pregnancies',
         'schedule': crontab(day_of_week=0, hour=0, minute=0),
+    },
+    'check_user_deletion': {
+        'task': 'users.tasks.perform_account_deletion',
+        'schedule': crontab(minute=0, hour=0)
     }
 }

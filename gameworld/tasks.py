@@ -1,7 +1,7 @@
 from celery import shared_task
 from django.utils import timezone
 from character.models import Character
-from .models import Partnership
+
 import random
 
 
@@ -27,7 +27,7 @@ def check_character_deaths():
 
     print(f"{death_count} people died of old age today.")
 
-@shared_task
+# @shared_task
 def start_character_pregnancies():
     today = timezone.now().date()
     for partnership in Partnership.objects.filter(partner_is_pregnant=False):

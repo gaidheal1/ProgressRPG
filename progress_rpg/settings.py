@@ -17,16 +17,69 @@ import os
 from dotenv import load_dotenv
 import logging
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("progress_rpg.log"),
-        logging.StreamHandler()
-    ]
-)
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-logger = logging.getLogger(__name__)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters' : {
+        'verbose': {
+            "format": "[%(asctime)s] [%(levelname)s] [%(module)s] %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+        "simple": {
+            "format": "[%(levelname)s] %(message)s",
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "file_general": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(BASE_DIR, "logs/general.log"),
+            "formatter": "verbose",
+            "maxBytes": 5*1024*1024, # 5MB per file
+            "backupCount": 3, # Keep last 3 log files
+        },
+        "file_errors": {
+            "level": "ERROR",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(BASE_DIR, "logs/errors.log"),
+            "formatter": "verbose",
+            "maxBytes": 5*1024*1024, # 5MB per file
+            "backupCount": 3, # Keep last 3 log files
+        },
+        "file_activity": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(BASE_DIR, "logs/activity.log"),
+            "formatter": "verbose",
+            "maxBytes": 5*1024*1024, # 5MB per file
+            "backupCount": 6, # Keep last 5 log files
+        },
+    },
+
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file_general"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "errors": {
+            "handlers": ["file_errors"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
+
 
 dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
 load_dotenv(dotenv_path)
@@ -63,8 +116,7 @@ else:
 
 print("DEBUG:", DEBUG)
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -92,6 +144,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://progress-rpg-dev-6581f3bc144e.herokuapp.com/',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
+    'http://localhost:5173',
 ]
 
 # Application definition
@@ -105,7 +158,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_beat',
     'rest_framework',
-
+    #'django-vite',
     'character',
     'users',
     'gameplay',

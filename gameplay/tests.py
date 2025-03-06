@@ -1,3 +1,5 @@
+# gameplay/tests.py
+
 from django.test import TestCase, Client
 from django.urls import reverse
 from .models import Quest, QuestRequirement, Activity, Skill, Project, QuestCompletion, QuestResults, Buff, AppliedBuff, ActivityTimer, QuestTimer, DailyStats, GameWorld
@@ -283,13 +285,12 @@ class TestQuestResults(TestCase):
             canRepeat=True,
             frequency='DAY',
         )
-
         self.result1 = QuestResults.objects.create(
             quest = self.quest1,
-            #dynamic_rewards = {"role": "Blacksmith"},
             coin_reward = 5,
             dynamic_rewards = {"sex": "Female",}
         )
+        self.char.quest_timer.change_quest(self.quest1)
 
         # Add buff later when fully implemented
         
@@ -303,7 +304,7 @@ class TestQuestResults(TestCase):
         self.assertEqual(self.char.coins, 0)
         self.assertEqual(self.char.sex, "Male")
 
-        self.char.complete_quest(self.quest1)
+        self.char.complete_quest()
         #print("after:")
         #display(self.char)
 
@@ -387,6 +388,10 @@ class TestQuestCompletionModel(TestCase):
     def test_questcompletion_create(self):
         char = Character.objects.create(
             name="Bob"
+        )
+        self.quest1 = Quest.objects.create(
+            name="Test Quest 1",
+            levelMax=10,
         )
         qc = QuestCompletion.objects.create(
             character=char,

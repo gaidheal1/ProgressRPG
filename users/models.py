@@ -2,7 +2,9 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.timezone import now, timedelta
 from django.db import models, transaction
 from django.db.models import F, ExpressionWrapper, fields
+import logging
 
+logger = logging.getLogger("django")
 
 class CustomUserManager(BaseUserManager):
     @transaction.atomic
@@ -30,6 +32,8 @@ class CustomUser(AbstractUser):
     date_of_birth = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     objects = CustomUserManager()
+    pending_delete = models.BooleanField(default=False)
+    delete_at=models.DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -87,7 +91,7 @@ class Profile(Person):
     total_time = models.IntegerField(default=0)
     total_activities = models.IntegerField(default=0)
     is_premium = models.BooleanField(default=False)
-    last_login = models.DateTimeField(auto_now=True)
+    last_login = models.DateTimeField(default=now)
     login_streak = models.PositiveIntegerField(default=1)
     login_streak_max = models.PositiveIntegerField(default=1)
     buffs = models.ManyToManyField('gameplay.AppliedBuff', related_name='profiles', blank=True)

@@ -1,3 +1,5 @@
+# gameplay.models
+
 from django.db import models, transaction
 from users.models import Person, Profile
 from django.utils.timezone import now, timedelta
@@ -6,16 +8,16 @@ import json, math, logging
 import traceback
 from random import random
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("django")
 
 class Quest(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(max_length=2000, blank = True)
     intro_text = models.TextField(max_length=2000, blank = True)
     outro_text = models.TextField(max_length=2000, blank = True)
-    DURATION_CHOICES = [(300 * i, f"{5 * i} minutes") for i in range(1, 7)]
+    DURATION_CHOICES = [(300 * i) for i in range(1, 7)]
     def default_duration_choices():
-        return [(300 * i, f"{5 * i} minutes") for i in range(1, 7)]
+        return [(300 * i) for i in range(1, 7)]
     duration_choices = models.JSONField(default=default_duration_choices)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     start_date = models.DateTimeField(blank=True, null=True)
@@ -187,6 +189,9 @@ class QuestRequirement(models.Model):
     times_required = models.PositiveIntegerField(default=1)
     last_updated = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        unique_together = ('quest', 'prerequisite')
+
     def __str__(self):
         return f"{self.prerequisite.name} required {self.times_required} time(s) for {self.quest.name}"
 
@@ -337,7 +342,7 @@ class ActivityTimer(Timer):
         self.save()
 
     def pause(self):
-        print("Activity timer pause()")
+        #print("Activity timer pause()")
         super().pause()
         self.update_activity_time()
 
@@ -369,7 +374,7 @@ class QuestTimer(Timer):
     duration = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
-        print(f"QuestTimer saved. {self}")
+        #print(f"QuestTimer saved. {self}")
         #traceback.print_stack()
         super().save(*args, **kwargs)
 
@@ -394,7 +399,7 @@ class QuestTimer(Timer):
         super().reset()
         self.quest = None
         self.save()
-        print("Quest timer reset. Quest:", self.quest)
+        #print("Quest timer reset. Quest:", self.quest)
 
     def calculate_xp(self):
         return self.quest.results.calculate_xp_reward(self.character, self.duration)
@@ -451,66 +456,4 @@ class AppliedBuff(Buff):
                 total_value *= self.amount
         return total_value
 
-# Don't think I actually need this after all!
-# I can use created_at fields which have time too
-class DailyStats(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True) #auto_now_add=True
-    newUsers = models.PositiveIntegerField(default=0)
-    questsCompleted = models.PositiveIntegerField(default=0)
-    activitiesCompleted = models.PositiveIntegerField(default=0)
-    activityTimeLogged = models.PositiveIntegerField(default=0)
-    today = now().date()
-    recordDate = models.DateField(default=now)
 
-    def __str__(self):
-        return f"Daily Stats for {self.recordDate} \
-            {self.newUsers} new users, "
-
-class GameWorld(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length=50, blank=True, null=True)
-    num_profiles = models.PositiveIntegerField(default=0)
-    highest_login_streak_ever = models.PositiveIntegerField(default=0)
-    highest_login_streak_current = models.PositiveIntegerField(default=0)
-    total_activity_num = models.PositiveIntegerField(default=0)
-    total_activity_time = models.PositiveIntegerField(default=0)
-    #activities_num_average = models.Float?
-    #activities_time_average = models.Float?
-
-    def time_up(self):
-        return now()-self.created_at
-
-    def update(self):
-        profiles = Profile.objects.all()
-        self.num_profiles = len(profiles)
-        for profile in profiles:
-            if self.highest_login_streak_ever < profile.login_streak_max:
-                self.highest_login_streak_ever = profile.login_streak_max
-            if self.highest_login_streak_current < profile.login_streak:
-                self.highest_login_streak_current = profile.login_streak
-
-        activities = Activity.objects.all()
-        self.total_activity_num = len(activities)
-        total_activity_time = 0
-        for activity in activities:
-            total_activity_time += activity.duration
-        self.total_activity_time = total_activity_time
-
-        activities_num_average = self.total_activity_num / self.num_profiles
-        activities_time_average = self.total_activity_time / self.num_profiles
-
-        questsCompleted = QuestCompletion.objects.all()
-        unique_quests = set()
-        total_quests = 0
-        for qc in questsCompleted:
-            unique_quests.add(qc.quest)
-            total_quests += qc.times_completed
-
-    def createDailyStats(self):
-        ds = DailyStats.objects.create(
-            name=f"DailyStats for world {self.name}",
-            
-        )
-
-    def __str__(self):
-        return f"This game has been running for {self.time_up()} since {self.created_at}"

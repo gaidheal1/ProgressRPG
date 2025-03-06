@@ -17,7 +17,7 @@ from threading import Timer
 
 import json, logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("django")
 
 timers = {}
 
@@ -32,11 +32,11 @@ def start_heartbeat_timer(client_id, profile):
     stop_heartbeat_timer(client_id)
     character = PlayerCharacterLink().get_character(profile)
     #character.quest_timer.refresh_from_db()
-    logger.info(f"[START HEARTBEAT TIMER] reached")
-    logger.debug(f"Timer status: {profile.activity_timer.status}/{character.quest_timer.status}")
+    logger.info(f"[START HEARTBEAT TIMER] Profile {profile.id} sent heartbeat")
+    logger.debug(f"Timers status: {profile.activity_timer.status}/{character.quest_timer.status}")
     
     def timeout_callback():
-        logger.info(f"[TIMEOUT CALLBACK] reached")
+        logger.info(f"[TIMEOUT CALLBACK] Missed heartbeat from profile {profile.id}")
         logger.debug(f"Timer status: {profile.activity_timer.status}/{character.quest_timer.status}")
         stop_heartbeat_timer(client_id)
         if profile.activity_timer.status == 'active':
@@ -66,7 +66,12 @@ def stop_timers(profile):
 @transaction.atomic
 @csrf_exempt
 def heartbeat(request):
-    if request.method == 'POST':
+    logger.info("[HEARTBEAT] Request received")
+    if request.method != 'POST':    
+        logger.warning("[HEARTBEAT] Invalid method")
+        return JsonResponse({"error": "Invalid method"}, status=405)
+
+    try:
         if request.user.is_authenticated:
             user_id = request.user.profile.id
         else:
@@ -75,35 +80,41 @@ def heartbeat(request):
                 request.session.create()
                 session_id = request.session.session_key
             user_id = f"guest-{session_id}"
-        logger.info(f"[HEARTBEAT] Received heartbeat")
+
+        #logger.debug(f"[HEARTBEAT] User ID: {user_id}")
+        
         profile = request.user.profile
         character = PlayerCharacterLink().get_character(profile)
+
         request.session['last_heartbeat'] = timezone.now().timestamp()
         request.session.modified = True
-        #logger.debug(f"Timer statuses: {profile.activity_timer.status}/{character.quest_timer.status}")
-        #profile.activity_timer.refresh_from_db()
+        
         profile.activity_timer = ActivityTimer.objects.get(pk=profile.activity_timer.pk)
         
-        #character.quest_timer.refresh_from_db()
         qt = character.quest_timer
-        if qt.status != "completed" and qt.get_remaining_time() <= 0:
+        if qt.status == "active" and qt.get_remaining_time() <= 0:
+            logger.info(f"[HEARTBEAT] Quest timer expired for user {user_id}, marking quest as complete")
             qt.elapsed_time = qt.duration
             stop_timers(profile)
             return JsonResponse({'success': True, 'status': 'quest_complete'})
 
-        print("(heartbeat), Trying id logging:", id(profile.activity_timer))
-        logger.debug(f"Heartbeat ID log: id={id(profile.activity_timer)}, pk={profile.activity_timer.pk}, status={profile.activity_timer.status}")
-        logger.debug(f"And now after refresh: {profile.activity_timer.status}/{character.quest_timer.status}")
+        #logger.debug(f"[HEARTBEAT] Activity Timer: ID={profile.activity_timer.pk}, Status={profile.activity_timer.status}")
+        #logger.debug(f"[HEARTBEAT] Quest Timer: ID={qt.pk}, Status={qt.status}")
+
         start_heartbeat_timer(user_id, request.user.profile)
-        #for query in connection.queries:
-        #    print(query)
-        qt = character.quest_timer
-        if qt.status != "completed" and qt.get_remaining_time() <= 0:
-            stop_timers(profile)
-            return JsonResponse({'success': True, 'status': 'quest_complete'})
-        #connection.close()
-        return JsonResponse({'success': True, 'status': 'ok', 'activity_timer_status': profile.activity_timer.status, 'quest_timer_status': character.quest_timer.status})
-    return JsonResponse({"error": "Invalid method"}, status=405)
+        
+        response = {
+            'success': True,
+            'status': 'ok',
+            'activity_timer_status': profile.activity_timer.status,
+            'quest_timer_status': character.quest_timer.status,
+        }
+        return JsonResponse(response)
+    
+    except Exception as e:
+        logger.error(f"[HEARTBEAT] Error processing heartbeat for user {user_id}: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "An error occurred"}, status=500)
+
 
 # Dashboard view
 @login_required
@@ -115,85 +126,139 @@ def dashboard_view(request):
 @transaction.atomic
 @login_required
 def game_view(request):
-    return render(request, 'gameplay/game.html')
+    try:
+        logger.info(f"[GAME VIEW] Accessed by user {request.user.profile.id}")
+        return render(request, 'gameplay/game.html')
+    except Exception as e:
+        logger.error(f"[GAME VIEW] Error rendering game view for user {request.user.profile.id}: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "An error occurred"}, status=500)
 
 # Fetch activities
 @login_required
 def fetch_activities(request):
-    if request.method == 'GET':
-        profile = request.user.profile
+    if request.method != 'GET':
+        logger.warning(f"[FETCH ACTIVITIES] Invalid method {request.method} used by user {request.user.profile.id}")
+        return JsonResponse({"error": "Invalid method"}, status=405)
+    
+
+    profile = request.user.profile
+    logger.info(f"[FETCH ACTIVITIES] Request received from user {profile.id}")
+
+    try:
         activities = Activity.objects.filter(profile=profile, created_at__date=timezone.now().date())
-        serializer = ActivitySerializer(activities, many=True)
+        serializer = ActivitySerializer(activities, many=True).data
         
         response = {
             "success": True,
-            "activities": serializer.data,
+            "activities": serializer,
             "message": "Activities fetched"
         }
-        #connection.close()
+        logger.debug(f"[FETCH ACTIVITIES] {len(activities)} activities fetched for user {profile.id}")
         return JsonResponse(response)
-    return JsonResponse({"error": "Invalid method"}, status=405)
+    except Exception as e:
+            logger.error(f"[FETCH ACTIVITIES] Error fetching activities for user {profile.id}: {str(e)}", exc_info=True)
+            return JsonResponse({"error": "An error occurred while fetching activities"}, status=500)
+
+    
 
 # Fetch quests
 @login_required
 def fetch_quests(request):
-    if request.method == 'GET':
-        profile = request.user.profile
-        character = PlayerCharacterLink().get_character(profile)
+    if request.method != 'GET':
+        logger.warning(f"[FETCH QUESTS] Invalid method {request.method} used by user {request.user.profile.id}")
+        return JsonResponse({"error": "Invalid method"}, status=405)
+
+    profile = request.user.profile
+    logger.info(f"[FETCH QUESTS] Request received from user {profile.id}")
+    character = PlayerCharacterLink().get_character(profile)
+
+    try:
+        logger.info(f"[FETCH QUESTS] Checking eligible quests for character {character.id}, {profile.id}")
         eligible_quests = check_quest_eligibility(character, profile)
+        
         for quest in eligible_quests:
             quest.save()
-        serializer = QuestSerializer(eligible_quests, many=True)
+            logger.debug(f"[FETCH QUESTS] Quest {quest.id} - {quest.name} saved for character {character.id}")
+
+        serializer = QuestSerializer(eligible_quests, many=True).data
         
         response = {
             "success": True,
-            "quests": serializer.data,
+            "quests": serializer,
             "message": "Eligible quests fetched"
         }
-        #connection.close()
         return JsonResponse(response)
-    return JsonResponse({"error": "Invalid method"}, status=405)
+    except Exception as e:
+        logger.error(f"[FETCH QUESTS] Error fetching quests for user {profile.id}: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "An error occurred while fetching quests"}, status=500)
 
+    
 # Fetch info
 @login_required
 def fetch_info(request):
-    if request.method == "GET":
-        profile = request.user.profile
-        character = PlayerCharacterLink().get_character(profile)
-        logger.info(f"[FETCH INFO] reached")
-        print(f"Timers:\n{profile.activity_timer}\n{character.quest_timer}")
+    if request.method != "GET":
+        logger.warning(f"[FETCH INFO] Invalid method {request.method} used by user {request.user.profile.id}")
+        return JsonResponse({"error": "Invalid method"}, status=405)
+    
+    profile = request.user.profile
+    character = PlayerCharacterLink().get_character(profile)
+    try:
+        logger.info(f"[FETCH INFO] Fetching data for profile {profile.id}, character {character.id}")
+
+        logger.debug(f"[FETCH INFO] Timers status: {profile.activity_timer.status}/{character.quest_timer.status}")
+
         profile_serializer = ProfileSerializer(profile).data
         character_serializer = CharacterSerializer(character).data
-        current_activity = ActivitySerializer(profile.activity_timer.activity).data if profile.activity_timer.status != 'empty' else False
-        current_quest = QuestSerializer(character.quest_timer.quest).data if character.quest_timer.status != 'empty' else False
-        quest_elapsed_time = character.quest_timer.elapsed_time if current_quest else 0
+
         act_timer = ActivityTimerSerializer(profile.activity_timer).data
         quest_timer = QuestTimerSerializer(character.quest_timer).data
-        #print(act_timer)
+        
         action = start_timers(profile)
-        #print("")
-        #connection.close()
-        return JsonResponse({"success": True, "profile": profile_serializer, 
-            "character": character_serializer, "current_activity": current_activity, 
-            "quest": current_quest, "quest_elapsed_time": quest_elapsed_time, 
-            "message": "Profile and character fetched", "action": action,
-            "activity_timer": act_timer, "quest_timer": quest_timer})
-    return JsonResponse({"error": "Invalid method"}, status=405)
+        if action:
+            logger.info(f"[FETCH INFO] Timers started for profile {profile.id}: {action}")
+
+        response = {
+            "success": True,
+            "profile": profile_serializer,
+            "character": character_serializer,
+            "message": "Profile and character fetched",
+            "activity_timer": act_timer,
+            "quest_timer": quest_timer,
+            "action": action,
+        }
+
+        logger.debug(f"[FETCH INFO] Response generated successfully for profile {profile.id}")
+
+        return JsonResponse(response)
+    
+    except Exception as e:
+        logger.error(f"[FETCH INFO] Error fetching info for user {profile.id}: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "An error occurred while fetching info"}, status=500)
+    
 
 # Choose quest
 @transaction.atomic
 @login_required
 @csrf_exempt
 def choose_quest(request):
-    if request.method == "POST" and request.headers.get('Content-Type') == 'application/json':
-        logger.info(f"[CHOOSE QUEST] reached")
+    if request.method != "POST":
+        logger.warning(f"[CHOOSE QUEST] Invalid method {request.method} used by user {request.user.profile.id}")
+        return JsonResponse({"error": "Invalid request"}, status=400)
+    
+    if request.headers.get('Content-Type') != 'application/json':
+        logger.warning(f"[CHOOSE QUEST] Invalid content type: {request.headers.get('Content-Type')}")
+        return JsonResponse({"error": "Invalid content type"}, status=400)
+        
+    try:
+        logger.info(f"[CHOOSE QUEST] User {request.user.profile.id} initiated quest selection")
         data = json.loads(request.body)
         quest_id = escape(data.get('quest_id'))
-        #print("choose_quest(), quest_id:", quest_id)
         quest = get_object_or_404(Quest, id=quest_id)
-        #print("choose_quest(), quest:", quest)
-        if quest == None:
+        
+        if not quest:
+            logger.warning(f"[CHOOSE QUEST] Quest ID {quest_id} not found for user {request.user.profile.id}")
             return JsonResponse({"success": False, "message": "Error: quest not found"})
+        
         character = PlayerCharacterLink().get_character(request.user.profile)
         duration = data.get('duration')
 
@@ -201,10 +266,12 @@ def choose_quest(request):
             character.quest_timer.change_quest(quest, duration) # status should be 'waiting' now
             character.quest_timer.refresh_from_db()
         
-        print("change_quest() successful? ", character.quest_timer.quest)
+        logger.info(f"[CHOOSE QUEST] Quest {quest.name} (ID: {quest.id}) selected by user {request.user.profile.id}")
         
         action = start_timers(request.user.profile)
-        logger.debug(f"Action: {action}")
+        if action:
+            logger.info(f"[CHOOSE QUEST] Timers started for user {request.user.profile.id}: {action}")
+
         quest_timer = QuestTimerSerializer(character.quest_timer).data
         response = {
             "success": True,
@@ -212,52 +279,89 @@ def choose_quest(request):
             "message": f"Quest {quest.name} selected",
             "action": action,
         }
-        #connection.close()
-        logger.debug(f"Just before return:\n{character.quest_timer}")
+        
+        logger.debug(f"[CHOOSE QUEST] Response generated successfully for user {request.user.profile.id}")
+        
         return JsonResponse(response)
 
-    return JsonResponse({"error": "Invalid request"}, status=400)
+    except json.JSONDecodeError as e:
+        logger.error(f"[CHOOSE QUEST] JSON decode error for user {request.user.profile.id}: {e}")
+        return JsonResponse({"error": "Invalid JSON format"}, status=400)
+    except Exception as e:
+        logger.exception(f"[CHOOSE QUEST] Unexpected error for user {request.user.profile.id}: {e}")
+        return JsonResponse({"error": "An unexpected error occurred"}, status=500)
+    
 
 @login_required
 @transaction.atomic
 @csrf_exempt
 def create_activity(request):
-    if request.method == "POST":
-        logger.info(f"[CREATE ACTIVITY] reached")
-        profile = request.user.profile
+    if request.method != "POST":
+        logger.warning(f"[CREATE ACTIVITY] Invalid method {request.method} used by user {request.user.profile.id}")
+        return JsonResponse({"error": "Invalid method"}, status=405)
+    
+    profile = request.user.profile
+
+    try:
+        logger.info(f"[CREATE ACTIVITY] Profile {profile.id} initiated activity creation")
         data = json.loads(request.body)
         activity_name = escape(data.get("activityName"))
+
         if not activity_name:
+            logger.warning(f"[CREATE ACTIVITY] Activity name missing from request for user {profile.id}")
             return JsonResponse({"error": "Activity name is required"}, status=400)
+        
+        logger.debug(f"[CREATE ACTIVITY] Received activity name: {activity_name}")
+
         with transaction.atomic():
             activity = Activity.objects.create(profile=profile, name=activity_name)
             profile.activity_timer.new_activity(activity)
+        
+        logger.info(f"[CREATE ACTIVITY] Activity '{activity_name}' created for profile {profile.id}")
+
         activity_timer = ActivityTimerSerializer(profile.activity_timer).data
+        
         action = start_timers(profile)
-        logger.debug(f"Action: {action}")
+        if action:
+            logger.info(f"[CHOOSE QUEST] Timers started for user {request.user.profile.id}: {action}")
+        
         response = {
             "success": True,
             "message": "Activity timer created and ready",
             "activity_timer": activity_timer,
             "action": action,
             }
-        #connection.close()
-        return JsonResponse(response)
+        logger.debug(f"[CREATE ACTIVITY] Response generated for profile {profile.id}: {response}")
         
-    return JsonResponse({"error": "Invalid method"}, status=405)
+        return JsonResponse(response)
+    
+    except json.JSONDecodeError as e:
+        logger.error(f"[CREATE ACTIVITY] JSON decode error for profile {profile.id}: {e}")
+        return JsonResponse({"error": "Invalid JSON format"}, status=400)
+    except Exception as e:
+        logger.exception(f"[CREATE ACTIVITY] Unexpected error for profile {profile.id}: {e}")
+        return JsonResponse({"error": "An unexpected error occurred"}, status=500)
+        
+    
 
 
 @login_required
 @transaction.atomic
 @csrf_exempt
 def submit_activity(request):
-    if request.method == "POST":
-        profile = request.user.profile
-        character = PlayerCharacterLink().get_character(profile)
-        logger.info("[SUBMIT ACTIVITY] reached")
+    if request.method != "POST":
+        logger.warning(f"[SUBMIT ACTIVITY] Invalid method {request.method} used by user {request.user.profile.id}")
+        return JsonResponse({"error": "Invalid method"}, status=405)
+    
+    profile = request.user.profile
+    character = PlayerCharacterLink().get_character(profile)
+
+    try:
+        logger.info(f"[SUBMIT ACTIVITY] Profile {profile.id} submitting activity")
 
         profile.activity_timer.pause()
         character.quest_timer.pause()
+        logger.debug(f"[SUBMIT ACTIVITY] Timers paused: activity_timer status = {profile.activity_timer.status}, quest_timer status = {character.quest_timer.status}")
 
         with transaction.atomic():
             profile.add_activity(profile.activity_timer.elapsed_time)
@@ -265,29 +369,45 @@ def submit_activity(request):
             profile.activity_timer.refresh_from_db()
             profile.add_xp(xp_reward)
 
-        logger.debug(f"After activity submission and reset: status: {profile.activity_timer.status}, elapsed_time: {profile.activity_timer.elapsed_time}")
+        logger.debug(f"After activity submission and reset: status: {profile.activity_timer.status}, elapsed_time: {profile.activity_timer.elapsed_time}, XP reward: {xp_reward}")
 
         activities = Activity.objects.filter(profile=profile, created_at__date=timezone.now().date()).order_by('-created_at')
         if not activities.exists():
             activities = Activity.objects.filter(profile=profile).order_by('-created_at')[:5]
-            print("Activities from older days:", activities)
+            logger.debug(f"[SUBMIT ACTIVITY] No activities for today. Showing recent activities: {activities}")
 
         activities_list = ActivitySerializer(activities, many=True).data
         profile_serializer = ProfileSerializer(profile).data
         
-        #connection.close()
-        return JsonResponse({"success": True, "message": "Activity submitted", "profile": profile_serializer, "activities": activities_list, "activity_rewards": xp_reward})
-    return JsonResponse({"error": "Invalid method"}, status=405)
+        response = {
+            "success": True,
+            "message": "Activity submitted",
+            "profile": profile_serializer,
+            "activities": activities_list,
+            "activity_rewards": xp_reward,
+        }
+        return JsonResponse(response)
+    
+    except Exception as e:
+        logger.error(f"[SUBMIT ACTIVITY] Error submitting activity for user {profile.id}: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "An error occurred while submitting activity"}, status=500)
+    
 
 @login_required
 @transaction.atomic
 @csrf_exempt
 def quest_completed(request):
-    if request.method == "POST":
-        profile = request.user.profile
-        character = PlayerCharacterLink().get_character(profile)
-        logger.info(f"[QUEST COMPLETED] reached")
-        logger.debug(f"Timers before:\n{profile.activity_timer}\n{character.quest_timer}")
+    if request.method != "POST":
+        logger.warning(f"[QUEST COMPLETED] Invalid method {request.method} used by user {request.user.profile.id}")
+        return JsonResponse({"error": "Invalid method"}, status=405)
+    
+    profile = request.user.profile
+    character = PlayerCharacterLink().get_character(profile)
+    
+    try:
+        logger.info(f"[QUEST COMPLETED] Profile {profile.id} initiating quest completion")
+        logger.debug(f"[QUEST COMPLETED] Timers status before: {profile.activity_timer.status}/{character.quest_timer.status}")
+
         profile.activity_timer.pause()
         profile.activity_timer.refresh_from_db()
         character.quest_timer.pause()
@@ -296,26 +416,41 @@ def quest_completed(request):
             with transaction.atomic():
                 character.complete_quest()
                 character.quest_timer.refresh_from_db()
+                logger.info(f"[QUEST COMPLETED] Quest completed for character {character.id}, timers refreshed.")
         except IntegrityError as e:
-            print(f"IntegrityError: {e}")
+            logger.error(f"[QUEST COMPLETED] IntegrityError while completing quest for character {character.id}: {str(e)}", exc_info=True)
         except Exception as e:
-            print(f"General error: {e}")
+            logger.error(f"[QUEST COMPLETED] General error while completing quest for character {character.id}: {str(e)}", exc_info=True)
             raise
 
         eligible_quests = check_quest_eligibility(character, profile)
         characterdata = CharacterSerializer(character).data
         quests = QuestSerializer(eligible_quests, many=True).data
-        print("(complete quest), Trying id logging:", id(profile.activity_timer))
-        logger.debug(f"Complete quest, ID log: id={id(profile.activity_timer)}, pk={profile.activity_timer.pk}, status={profile.activity_timer.status}")
-
-        logger.debug(f"Timers after:\n{profile.activity_timer}\n{character.quest_timer}")
-
-        #for query in connection.queries:
-        #    print(query)
-        #connection.close()
         
-        return JsonResponse({"success": True, "message": "Quest completed", "xp_reward": 5, "quests": quests, "character": characterdata, 'activity_timer_status': profile.activity_timer.status, 'quest_timer_status': character.quest_timer.status})
-    return JsonResponse({"error": "Invalid method"}, status=405)
+        logger.debug(f"[QUEST COMPLETED] After quest completion, Activity Timer ID: {id(profile.activity_timer)}, PK: {profile.activity_timer.pk}, Status: {profile.activity_timer.status}")
+        logger.debug(f"[QUEST COMPLETED] Timers status after: {profile.activity_timer.status}/{character.quest_timer.status}")
+
+        response = {
+            "success": True,
+            "message": "Quest completed",
+            "xp_reward": 5,
+            "quests": quests,
+            "character": characterdata,
+            'activity_timer_status': profile.activity_timer.status,
+            'quest_timer_status': character.quest_timer.status,
+            }
+        
+        return JsonResponse(response)
+    
+    except Exception as e:
+        logger.error(f"[QUEST COMPLETED] Error completing quest for user {profile.id}: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "An error occurred while completing quest"}, status=500)
+
+
+
+
+
+
 
 @login_required
 def get_game_statistics(request):

@@ -10,6 +10,9 @@ from .models import Profile
 from gameplay.models import ActivityTimer
 from character.models import Character
 from .utils import assign_character_to_profile
+import logging
+
+logger = logging.getLogger("django")
 
 User=get_user_model()
 
@@ -19,7 +22,9 @@ def create_profile(sender, instance, created, **kwargs):
     """Create a profile for the user when a new user is created"""
     if created:
         profile = Profile.objects.create(user=instance)
+        logger.info(f"[CREATE PROFILE] New profile {profile.id} created for {instance}")
         ActivityTimer.objects.create(profile=profile)
+        logger.info(f"[CREATE PROFILE] New activity timer created for profile {profile.id}")
 
 @receiver(post_save, sender=User)
 def save_profile(sender, instance, **kwargs):
@@ -37,13 +42,18 @@ def update_login_streak(sender, request, user, **kwargs):
     profile = user.profile
     today = now().date()
 
-    if profile.last_login.date() == today:
-        return  # Already logged in today, no update needed
+    logger.info(f"[UPDATE LOGIN STREAK] Updating login streak for {user.username}. Last login: {profile.last_login}")
 
-    if profile.last_login.date() == today - timedelta(days=1):
+    if profile.last_login.date() == today:
+        logger.debug(f"[UPDATE LOGIN STREAK] Profile {profile.id} already logged in today. No update needed.")
+        return
+    elif profile.last_login.date() == today - timedelta(days=1):
         profile.login_streak += 1  # Continue the streak
+        logger.debug(f"[UPDATE LOGIN STREAK] Profile {profile.id} logged in two days in a row.")
     else:
         profile.login_streak = 1  # Reset streak
+        logger.debug(f"[UPDATE LOGIN STREAK] Profile {profile.id} missed a day. Resetting login streak.")
 
     profile.last_login = now()
     profile.save()
+    logger.debug(f"[UPDATE LOGIN STREAK] Updated login streak for profile {profile.id}: {profile.login_streak}")

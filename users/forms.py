@@ -33,6 +33,8 @@ class EmailAuthenticationForm(AuthenticationForm):
         return self.cleaned_data
                                
 class ProfileForm(forms.ModelForm):
+    name = forms.CharField(required=True, label="Required. Enter a username.")
+
     class Meta:
         model = Profile
         fields = ['name', 'bio']

@@ -1,56 +1,81 @@
-from django.forms import BaseModelForm
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, JsonResponse
 from django.urls import reverse_lazy
 from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.sessions.models import Session
 from django.conf import settings
+from django.core.mail import send_mail
 from django.shortcuts import render, redirect
-from django.views.generic.edit import CreateView
-import random, json, logging, math
+from django.views.generic.edit import CreateView, FormView
+from django.utils.timezone import now, timedelta
+import json, logging
 from gameplay.serializers import ActivitySerializer
 
 from .forms import UserRegisterForm, ProfileForm, EmailAuthenticationForm
 from .models import Profile
-from character.models import Character, PlayerCharacterLink
+from .utils import send_signup_email
+from character.models import PlayerCharacterLink
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("django")
 
 # Index view
 def index_view(request):
     return render(request, 'index.html')
 
-# Login view
-@transaction.atomic
-def login_view(request):
-    if request.method == 'POST':
-        form = EmailAuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            if user.profile.onboarding_step != 5:
-                match user.profile.onboarding_step:
-                    case 0 | 1 : return redirect('create_profile')
-                    case 2: return redirect('link_character')
-                    case 3: return redirect('subscribe')
-                    case 4: return redirect('game')
-                    case _: raise ValueError("Onboarding step number incorrect")
-            return redirect('game')
-        else:
-            messages.error(request, 'Invalid credentials')
+def get_client_ip(request):
+    """ Helper function to get the user's IP address """
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
     else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+# Login view
+class LoginView(FormView):
+    template_name = 'users/login.html'
+    form_class = EmailAuthenticationForm
+    success_url = reverse_lazy('game')
+
+    def form_valid(self, form):
+        user = form.get_user()
+        logger.info(f"Successful login for user: {user.email} (ID: {user.id})")
+        login(self.request, user)
+
+        # If the user has initiated account deletion, cancel it
+        if user.pending_delete and user.delete_at > now():
+            user.pending_delete = False
+            user.delete_at = None  # Clear the scheduled deletion timestamp
+            user.save()
+
+        if user.profile.onboarding_step != 5:
+            logger.debug(f"User {user.email} onboarding step: {user.profile.onboarding_step}")
+            match user.profile.onboarding_step:
+                case 0 | 1 : return redirect('create_profile')
+                case 2: return redirect('link_character')
+                case 3: return redirect('subscribe')
+                case 4: return redirect('game')
+                case _: 
+                    logger.error(f"Invalid onboarding step for user {user.id}: {user.profile.onboarding_step}")
+                    raise ValueError("Onboarding step number incorrect")
+                
+    def form_invalid(self, form):
+        logger.warning(f"Failed login attempt for email: {self.request.POST.get('email', 'UNKNOWN')}")
+        messages.error(self.request, 'Invalid credentials')
+        return self.render_to_response(self.get_context_data(form=form))
+    
+    def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            print("user is logged in already")
+            logger.info(f"User {request.user.email} already logged in, redirecting to game")
             return redirect('game')
-        form = EmailAuthenticationForm()
-    return render(request, 'users/login.html', {'form': form})
+        return super().get(request, *args, **kwargs)
 
 
 # Logout view
 def logout_view(request):
     logout(request)
+    logger.info(f"User {request.user.id} logged out.")
     return redirect('index')
 
 
@@ -63,11 +88,18 @@ class RegisterView(CreateView):
 
     def form_valid(self, form) -> HttpResponse:
         user = form.save()
-        user = authenticate(username=user.username, password=form.cleaned_data['password1'])
+        logger.info(f"User registered successfully: {user.email} (ID: {user.id})")
+
+        user = authenticate(username=user.email, password=form.cleaned_data['password1'])
         if user is not None:
             login(self.request, user)
+            logger.info(f"User {user.email} authenticated and logged in successfully.")
+
+            send_signup_email(user)
+
         else:
-            print('Authentication failed')
+            logger.warning(f"Authentication failed for user {user.username}.")
+
         return redirect(self.success_url)
     
 # Create profile view
@@ -79,9 +111,23 @@ def create_profile_view(request):
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
+
+            logger.info(f"Profile updated for user {request.user.username} (ID: {request.user.id})")
+
+            profile.name = form.cleaned_data['name']
             profile.onboarding_step = 2
             profile.save()
+
+            logger.debug(f"Name set to '{profile.name}' and onboarding step set to 2 for user {request.user.username}.")
+
+            if profile.name:
+                logger.debug(f"Sending signup email to {request.user.email} for user {request.user.username}.")
+                
+
             return redirect('link_character')
+        else: 
+            logger.warning(f"Profile form validation failed for user {request.user.username}.")
+    
     else:
         form = ProfileForm(instance=profile)
     return render(request, 'users/create_profile.html', {'form': form})
@@ -89,15 +135,25 @@ def create_profile_view(request):
 @transaction.atomic
 @login_required
 def link_character_view(request):
+    profile = request.user.profile
     if request.method == "POST":
-        profile = request.user.profile
         profile.onboarding_step = 3
         profile.save()
+
+        logger.info(f"User {request.user.username} (ID: {request.user.id}) updated onboarding_step to 3.")
+
         return redirect('subscribe')
     else:
-        profile = request.user.profile
         link = PlayerCharacterLink.objects.filter(profile=profile, is_active=True).first()
+        
+        if link is None:
+            logger.warning(f"User {request.user.username} (ID: {request.user.id}) has no active character link.")
+            return redirect('create_profile')  # or any other appropriate redirect
+        
         character = link.character
+
+        logger.debug(f"User {request.user.username} (ID: {request.user.id}) linked character '{character.name}' (ID: {character.id}).")
+
     return render(request, 'users/link_character.html', {'random_name': character.name})
 
 
@@ -106,6 +162,9 @@ def link_character_view(request):
 def profile_view(request):
     profile = request.user.profile
     total_minutes = round(profile.total_time / 60)
+
+    logger.info(f"User {request.user.username} (ID: {request.user.id}) viewed their profile. Total time spent: {total_minutes} minutes.")
+
     return render(request, 'users/profile.html', {'profile': profile, 'total_minutes': total_minutes})
 
 
@@ -114,11 +173,17 @@ def profile_view(request):
 @login_required
 def edit_profile_view(request):
     profile = Profile.objects.get(user=request.user)
+
+    logger.info(f"User {request.user.username} (ID: {request.user.id}) is editing their profile.")
+    
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
+            logger.info(f"User {request.user.username} (ID: {request.user.id}) successfully updated their profile.")
             return redirect('profile')
+        else:
+            logger.warning(f"User {request.user.username} (ID: {request.user.id}) failed to update their profile. Form is invalid.")
     else:
         form = ProfileForm(instance=profile)
     return render(request, 'users/edit_profile.html', {'form': form})
@@ -129,7 +194,12 @@ def edit_profile_view(request):
 def download_user_data(request):
     user = request.user
     profile = user.profile
-    character = Character.objects.get(profile=profile)
+    try:
+        character = PlayerCharacterLink().get_character(profile)
+    except character.DoesNotExist:
+        logger.error(f"Character not found for user {user.username} (ID: {user.id}).")
+        return JsonResponse({"error": "Character data not found."}, status=404)
+    
     activities_json = ActivitySerializer(profile.activities.all(), many=True).data
     user_data = {
         "username": user.username,
@@ -153,12 +223,17 @@ def download_user_data(request):
         },
     }
 
+    logger.info(f"User {user.username} (ID: {user.id}) initiated download of their data.")
+    
     # Convert to JSON and create a downloadable response
     response = HttpResponse(
         json.dumps(user_data, indent=4), # Pretty-printed JSON
         content_type="application/json"
     )
     response["Content-Disposition"] = 'attachment; filename="user_data.json"'
+
+    logger.info(f"User {user.username} (ID: {user.id}) successfully downloaded their data.")
+    
     return response
 
 
@@ -169,17 +244,26 @@ def delete_account(request):
     if request.method == "POST":
         user = request.user
 
-        logger.info(f"User {user.username} (ID: {user.id}) deleted their account.")
+        logger.info(f"User {user.username} (ID: {user.id}) initiated account deletion.")
 
-        user.profile.activities.all().delete()
-        
-        user.profile.delete()
+        user.pending_deletion = True
+        user.delete_at = now() + timedelta(days=14)
+        user.save()
 
-        user.delete()
+        send_mail(
+            'Account Deletion Scheduled',
+            'Hello,\nYour account will be deleted in 14 days. If you wish to cancel the deletion, please log in again.\nThank you for using Progress, and we\'re sorry to see you go!',
+            'admin@progressrpg.com',  # Use your actual email address
+            [user.email],
+            fail_silently=False,
+        )
 
         request.user.auth_token.delete()
         request.session.flush()
         logout(request)
 
+        logger.info(f"User {user.username} (ID: {user.id}) logged out and scheduled for soft delete.")
+
         return redirect("index")
-    else: return render(request, 'users/delete_account.html')
+    else: 
+        return render(request, 'users/delete_account.html')
