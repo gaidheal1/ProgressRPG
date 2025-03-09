@@ -1,21 +1,25 @@
 from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db import transaction, connection, IntegrityError
 from django.utils import timezone
-from .models import Quest, Activity, QuestCompletion, ActivityTimer, QuestTimer
-from character.models import Character, PlayerCharacterLink
-from .serializers import ActivitySerializer, QuestSerializer, ActivityTimerSerializer, QuestTimerSerializer
-from character.serializers import CharacterSerializer
-from users.serializers import ProfileSerializer
-from users.models import Profile
-from .utils import check_quest_eligibility, start_timers
 from django.utils.html import escape
 from django.utils.timezone import now
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from asgiref.sync import async_to_sync, sync_to_async
 from threading import Timer
+import json, logging, asyncio
 
-import json, logging
+from .models import Quest, Activity, QuestCompletion, ActivityTimer, QuestTimer
+from .serializers import ActivitySerializer, QuestSerializer, ActivityTimerSerializer, QuestTimerSerializer
+from .utils import check_quest_eligibility, start_timers, pause_timers
+
+from character.models import Character, PlayerCharacterLink
+from character.serializers import CharacterSerializer
+
+from users.serializers import ProfileSerializer
+from users.models import Profile
+
 
 logger = logging.getLogger("django")
 
@@ -59,8 +63,6 @@ def stop_timers(profile):
     character.quest_timer.pause()
     logger.debug(f"And after pausing: {character.quest_timer.status}")
 
-    #transaction.on_commit(lambda: logger.debug("Timers committed to DB"))
-    #transaction.commit()
 
 @login_required
 @transaction.atomic
@@ -139,7 +141,6 @@ def fetch_activities(request):
     if request.method != 'GET':
         logger.warning(f"[FETCH ACTIVITIES] Invalid method {request.method} used by user {request.user.profile.id}")
         return JsonResponse({"error": "Invalid method"}, status=405)
-    
 
     profile = request.user.profile
     logger.info(f"[FETCH ACTIVITIES] Request received from user {profile.id}")
@@ -202,6 +203,7 @@ def fetch_info(request):
     
     profile = request.user.profile
     character = PlayerCharacterLink().get_character(profile)
+
     try:
         logger.info(f"[FETCH INFO] Fetching data for profile {profile.id}, character {character.id}")
 
@@ -212,10 +214,7 @@ def fetch_info(request):
 
         act_timer = ActivityTimerSerializer(profile.activity_timer).data
         quest_timer = QuestTimerSerializer(character.quest_timer).data
-        
-        action = start_timers(profile)
-        if action:
-            logger.info(f"[FETCH INFO] Timers started for profile {profile.id}: {action}")
+        async_to_sync(start_timers)(profile.id, profile.activity_timer, character.quest_timer)
 
         response = {
             "success": True,
@@ -224,7 +223,6 @@ def fetch_info(request):
             "message": "Profile and character fetched",
             "activity_timer": act_timer,
             "quest_timer": quest_timer,
-            "action": action,
         }
 
         logger.debug(f"[FETCH INFO] Response generated successfully for profile {profile.id}")
@@ -249,6 +247,8 @@ def choose_quest(request):
         logger.warning(f"[CHOOSE QUEST] Invalid content type: {request.headers.get('Content-Type')}")
         return JsonResponse({"error": "Invalid content type"}, status=400)
         
+    profile = request.user.profile
+
     try:
         logger.info(f"[CHOOSE QUEST] User {request.user.profile.id} initiated quest selection")
         data = json.loads(request.body)
@@ -256,39 +256,38 @@ def choose_quest(request):
         quest = get_object_or_404(Quest, id=quest_id)
         
         if not quest:
-            logger.warning(f"[CHOOSE QUEST] Quest ID {quest_id} not found for user {request.user.profile.id}")
+            logger.warning(f"[CHOOSE QUEST] Quest ID {quest_id} not found for user {profile.id}")
             return JsonResponse({"success": False, "message": "Error: quest not found"})
         
-        character = PlayerCharacterLink().get_character(request.user.profile)
+        character = PlayerCharacterLink().get_character(profile)
         duration = data.get('duration')
 
         with transaction.atomic():
             character.quest_timer.change_quest(quest, duration) # status should be 'waiting' now
             character.quest_timer.refresh_from_db()
         
-        logger.info(f"[CHOOSE QUEST] Quest {quest.name} (ID: {quest.id}) selected by user {request.user.profile.id}")
+        logger.info(f"[CHOOSE QUEST] Quest {quest.name} (ID: {quest.id}) selected by user {profile.id}")
         
-        action = start_timers(request.user.profile)
-        if action:
-            logger.info(f"[CHOOSE QUEST] Timers started for user {request.user.profile.id}: {action}")
+        async_to_sync(start_timers)(profile.id, profile.activity_timer, character.quest_timer)
+        #if action:
+        #    logger.info(f"[CHOOSE QUEST] Timers started for user {profile.id}: {action}")
 
         quest_timer = QuestTimerSerializer(character.quest_timer).data
         response = {
             "success": True,
             "quest_timer": quest_timer,
             "message": f"Quest {quest.name} selected",
-            "action": action,
         }
         
-        logger.debug(f"[CHOOSE QUEST] Response generated successfully for user {request.user.profile.id}")
+        logger.debug(f"[CHOOSE QUEST] Response generated successfully for user {profile.id}")
         
         return JsonResponse(response)
 
     except json.JSONDecodeError as e:
-        logger.error(f"[CHOOSE QUEST] JSON decode error for user {request.user.profile.id}: {e}")
+        logger.error(f"[CHOOSE QUEST] JSON decode error for user {profile.id}: {e}")
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
     except Exception as e:
-        logger.exception(f"[CHOOSE QUEST] Unexpected error for user {request.user.profile.id}: {e}")
+        logger.exception(f"[CHOOSE QUEST] Unexpected error for user {profile.id}: {e}")
         return JsonResponse({"error": "An unexpected error occurred"}, status=500)
     
 
@@ -321,15 +320,15 @@ def create_activity(request):
 
         activity_timer = ActivityTimerSerializer(profile.activity_timer).data
         
-        action = start_timers(profile)
-        if action:
-            logger.info(f"[CHOOSE QUEST] Timers started for user {request.user.profile.id}: {action}")
+        character = PlayerCharacterLink().get_character(profile)
+        async_to_sync(start_timers)(profile.id, profile.activity_timer, character.quest_timer)
+        #if action:
+        #    logger.info(f"[CREATE ACTIVITY] Timers started for user {request.user.profile.id}: {action}")
         
         response = {
             "success": True,
             "message": "Activity timer created and ready",
             "activity_timer": activity_timer,
-            "action": action,
             }
         logger.debug(f"[CREATE ACTIVITY] Response generated for profile {profile.id}: {response}")
         
@@ -341,8 +340,6 @@ def create_activity(request):
     except Exception as e:
         logger.exception(f"[CREATE ACTIVITY] Unexpected error for profile {profile.id}: {e}")
         return JsonResponse({"error": "An unexpected error occurred"}, status=500)
-        
-    
 
 
 @login_required
@@ -359,8 +356,7 @@ def submit_activity(request):
     try:
         logger.info(f"[SUBMIT ACTIVITY] Profile {profile.id} submitting activity")
 
-        profile.activity_timer.pause()
-        character.quest_timer.pause()
+        async_to_sync(pause_timers)(profile.id, profile.activity_timer, character.quest_timer)
         logger.debug(f"[SUBMIT ACTIVITY] Timers paused: activity_timer status = {profile.activity_timer.status}, quest_timer status = {character.quest_timer.status}")
 
         with transaction.atomic():
@@ -394,41 +390,40 @@ def submit_activity(request):
     
 
 @login_required
-@transaction.atomic
+#@transaction.atomic
 @csrf_exempt
-def quest_completed(request):
+def complete_quest(request):
     if request.method != "POST":
-        logger.warning(f"[QUEST COMPLETED] Invalid method {request.method} used by user {request.user.profile.id}")
+        logger.warning(f"[COMPLETE QUEST] Invalid method {request.method} used by user {request.user.profile.id}")
         return JsonResponse({"error": "Invalid method"}, status=405)
     
     profile = request.user.profile
     character = PlayerCharacterLink().get_character(profile)
     
     try:
-        logger.info(f"[QUEST COMPLETED] Profile {profile.id} initiating quest completion")
-        logger.debug(f"[QUEST COMPLETED] Timers status before: {profile.activity_timer.status}/{character.quest_timer.status}")
+        logger.info(f"[COMPLETE QUEST] Profile {profile.id} initiating quest completion")
+        logger.debug(f"[COMPLETE QUEST] Timers status before: {profile.activity_timer.status}/{character.quest_timer.status}")
 
-        profile.activity_timer.pause()
-        profile.activity_timer.refresh_from_db()
-        character.quest_timer.pause()
+        async_to_sync(pause_timers)(profile.id, profile.activity_timer, character.quest_timer)
+        logger.debug(f"[COMPLETE QUEST] Timers paused: activity_timer status = {profile.activity_timer.status}, quest_timer status = {character.quest_timer.status}")
 
         try:
-            with transaction.atomic():
-                character.complete_quest()
-                character.quest_timer.refresh_from_db()
-                logger.info(f"[QUEST COMPLETED] Quest completed for character {character.id}, timers refreshed.")
+            #with transaction.atomic():
+            character.complete_quest()
+            #character.quest_timer.refresh_from_db()
+            logger.info(f"[COMPLETE QUEST] Quest completed for character {character.id}, timers refreshed.")
         except IntegrityError as e:
-            logger.error(f"[QUEST COMPLETED] IntegrityError while completing quest for character {character.id}: {str(e)}", exc_info=True)
+            logger.error(f"[COMPLETE QUEST] IntegrityError while completing quest for character {character.id}: {str(e)}", exc_info=True)
         except Exception as e:
-            logger.error(f"[QUEST COMPLETED] General error while completing quest for character {character.id}: {str(e)}", exc_info=True)
+            logger.error(f"[COMPLETE QUEST] General error while completing quest for character {character.id}: {str(e)}", exc_info=True)
             raise
 
         eligible_quests = check_quest_eligibility(character, profile)
         characterdata = CharacterSerializer(character).data
         quests = QuestSerializer(eligible_quests, many=True).data
         
-        logger.debug(f"[QUEST COMPLETED] After quest completion, Activity Timer ID: {id(profile.activity_timer)}, PK: {profile.activity_timer.pk}, Status: {profile.activity_timer.status}")
-        logger.debug(f"[QUEST COMPLETED] Timers status after: {profile.activity_timer.status}/{character.quest_timer.status}")
+        logger.debug(f"[COMPLETE QUEST] After quest completion, Activity Timer ID: {id(profile.activity_timer)}, PK: {profile.activity_timer.pk}, Status: {profile.activity_timer.status}")
+        logger.debug(f"[COMPLETE QUEST] Timers status after: {profile.activity_timer.status}/{character.quest_timer.status}")
 
         response = {
             "success": True,
@@ -443,32 +438,23 @@ def quest_completed(request):
         return JsonResponse(response)
     
     except Exception as e:
-        logger.error(f"[QUEST COMPLETED] Error completing quest for user {profile.id}: {str(e)}", exc_info=True)
+        logger.error(f"[COMPLETE QUEST] Error completing quest for user {profile.id}: {str(e)}", exc_info=True)
         return JsonResponse({"error": "An error occurred while completing quest"}, status=500)
 
 
-
-
-
-
-
 @login_required
-def get_game_statistics(request):
-    if request.method == 'GET':
-        profiles = Profile.objects.all()
-        profiles_num = len(profiles)
-        highest_login_streak_ever = max(profile.login_streak_max for profile in profiles)
-        highest_login_streak_current = max(profile.login_streak for profile in profiles)
-        activities = Activity.objects.all()
-        total_activity_num = len(activities)
-        total_activity_time = sum(activity.duration for activity in activities)
-        activities_num_average = total_activity_num / profiles_num
-        activities_time_average = total_activity_time / profiles_num
-        characters = Character.objects.all()
-        characters_num = len(characters)
-        questsCompleted = QuestCompletion.objects.all()
-        unique_quests = set(qc.quest for qc in questsCompleted)
-        total_quests = sum(qc.times_completed for qc in questsCompleted)
-        quests_num_average = total_quests / characters_num
+@csrf_exempt
+def submit_bug_report(request):
+    if request.method != "POST":
+        logger.warning(f"[SUBMIT BUG REPORT] Invalid method {request.method} used by user {request.user.profile.id}")
+        return JsonResponse({"error": "Invalid method"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        logger.error(f"Bug Report Received: {data}")
         return JsonResponse({"success": True})
-    return JsonResponse({"error": "Invalid method"}, status=405)
+
+    except Exception as e:
+        logger.error(f"Failed to process bug report: {e}", exc_info=True)
+        return JsonResponse({"success": False}, status=500)
+

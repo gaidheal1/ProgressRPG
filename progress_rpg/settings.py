@@ -158,6 +158,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_beat',
     'rest_framework',
+    'channels',
     #'django-vite',
     'character',
     'users',
@@ -199,7 +200,9 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'progress_rpg.wsgi.application'
+#WSGI_APPLICATION = 'progress_rpg.wsgi.application'
+ASGI_APPLICATION = "progress_rpg.asgi.application"
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -221,27 +224,33 @@ else:
         }
     }
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-    }
-}
-
 if ON_HEROKU:
     REDIS_HOST = (os.environ.get('REDIS_URL'))
 else:
-    REDIS_HOST = ('localhost', 6379)
+    REDIS_HOST = ('redis://localhost:6379')
 
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": 'channels_redis.core.RedisChannelLayer',
         "CONFIG": {
-            "hosts": [REDIS_HOST],
-            
+            "hosts": [REDIS_HOST],   
         },
     },
 }
+
+
+CACHES = {
+    'default': {
+        "BACKEND": 'django.core.cache.backends.redis.RedisCache',
+        "LOCATION": REDIS_HOST,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+        }
+
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
