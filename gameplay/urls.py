@@ -11,7 +11,6 @@ urlpatterns = [
     path('fetch_quests/', views.fetch_quests, name='fetch_quests'),
     path('fetch_activities/', views.fetch_activities, name='fetch_activities'),
     path('fetch_info/', views.fetch_info, name='fetch_info'),
-    path('heartbeat/', views.heartbeat, name='heartbeat'),
     path('submit_bug_report/', views.submit_bug_report, name='submit_bug_report'),
 ]
 

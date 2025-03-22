@@ -1,11 +1,9 @@
-const modal = document.getElementById("quest-modal");
-
 function openModal() {
-  modal.style.display = "block";
+  window.modal.style.display = "block";
 }
 
 function closeModal() {
-  modal.style.display = "none";
+  window.modal.style.display = "none";
 }
 
 function showToast(message) {
@@ -180,7 +178,7 @@ class Timer extends EventEmitter {
 
   start() {
     console.log(`${this.mode} timer start method. Status: ${this.status}`);
-    if (this.status === "active") return;
+    //if (this.status === "active") return;
     this.updateStatus("active");
     // Start timer
     this.intervalIdTime = setInterval(() => {
@@ -199,7 +197,7 @@ class Timer extends EventEmitter {
 
   pause() {
     console.log(`${this.mode} timer start method. Status: ${this.status}`);
-    if (this.status !== "active") return;
+    if (this.status === "completed") return;
     this.updateStatus("waiting");
     clearInterval(this.intervalIdTime);
     this.emit("paused", { timer: this });
@@ -239,23 +237,15 @@ class Timer extends EventEmitter {
 
 // activityHandlers.js
 function onActivitySubmitted(data) {
-  ws.pauseTimers();
-
-  window.activityTimer.reset();
-  window.activityTimer.updateStatus("completed");
+  window.ws.submitActivity();
   window.questTimer.pause();
-
-  if (window.questTimer.status !== "completed") {
-    window.questTimer.updateStatus("waiting");
-  }
-  submitActivity();
 }
 
 // questHandlers.js
 function onQuestCompleted(data) {
-  ws.pauseTimers();
+  console.log("[ON QUEST COMPLETED]");
   window.activityTimer.pause();
-  completeQuest();
+  window.ws.completeQuest();
 }
 
 // format.js
@@ -292,6 +282,11 @@ function loadQuest(quest_timer) {
 
 // timerHandlers.js
 function startTimers() {
+  // Double-check that timers are ready
+  // if (
+  //   window.activityTimer.status in ["paused", "waiting", "ready"] &&
+  //   window.questTimer.status in ["paused", "waiting", "ready"]
+  // ) {
   // Change buttons
   document.getElementById("start-activity-btn").style.display = "none";
   document.getElementById("stop-activity-btn").style.display = "flex";
@@ -300,6 +295,11 @@ function startTimers() {
   // Start timers
   window.activityTimer.start();
   window.questTimer.start();
+  // } else {
+  //   console.error(
+  //     `Timers not ready to start. Timers status: ${window.activityTimer.status}/${window.questTimer.status}`
+  //   );
+  // }
 }
 
 // timerHandlers.js
@@ -307,8 +307,12 @@ function pauseTimers() {
   // Change buttons
 
   // Pause timers
-  window.activityTimer.pause();
-  window.questTimer.pause();
+  if (window.activityTimer.status === "active") {
+    window.activityTimer.pause();
+  }
+  if (window.questTimer.status === "active") {
+    window.questTimer.pause();
+  }
 }
 
 // activityHandlers.js
@@ -432,7 +436,7 @@ function validateInput(input) {
 ///////////////////////////
 
 // api/activityApi.js
-async function createActivityTimer() {
+async function createActivity() {
   const activityInput = document.getElementById("activity-input");
   if (!validateInput(activityInput.value)) {
     alert("Invalid input. Please use only letters, numbers, and spaces.");
@@ -532,14 +536,18 @@ async function completeQuest() {
     const response = await fetch("/complete_quest/", {
       method: "POST",
     });
-    //console.log('response ok:', response.ok);
+
     await checkResponse(response);
     const data = await response.json();
-    handleCompleteQuestResponse(data);
+    handleQuestCompleteResponse(data);
 
     localStorage.removeItem("pendingQuest");
   } catch (e) {
-    console.error("There was a problem:", e);
+    if (e instanceof TypeError) {
+      console.error("Network error:", e.message);
+    } else {
+      console.error("API error:", e.message);
+    }
 
     localStorage.setItem("pendingQuest", JSON.stringify(true));
     console.warn(
@@ -601,6 +609,9 @@ function handleCreateActivityResponse(data) {
     document
       .getElementById("start-activity-btn")
       .setAttribute("disabled", true);
+    if (window.questSelected === true) {
+      window.ws.createActivity();
+    }
   } else {
     console.error(data.message);
   }
@@ -614,16 +625,20 @@ function handleUpdateActivityNameResponse(data) {
   }
 }
 
-
 function handleSubmitActivityResponse(data) {
   if (data.success) {
-    //console.log("Activities response:", data.activities[0]);
+    console.log("[HANDLE SUBMIT ACTIVITY] First activity in list:", data.activities[0]);
     addActivityToList(data.activities[0]);
+    document.getElementById("activity-input").value = "";
     showInput();
     window.activityTimer.reset();
     window.activitySelected = false;
+
     updatePlayerInfo(data.profile);
-    document.getElementById("activity-input").value = "";
+
+    if (window.questTimer.status !== "completed") {
+      window.questTimer.updateStatus("waiting");
+    }
   } else {
     console.error(data.message);
   }
@@ -637,21 +652,28 @@ function handleChooseQuestResponse(data) {
 
     loadQuest(data.quest_timer);
     closeModal();
+    window.activityTimer.updateStatus("waiting");
+    window.ws.chooseQuest();
   } else {
     document.getElementById("feedback-message").textContent =
       "Quest selection failed, please try again.";
   }
 }
 
-function handleCompleteQuestResponse(data) {
+function handleQuestCompleteResponse(data) {
   if (data.success) {
     console.log(
       `[QUEST COMPLETE RESPONSE] Server timer status: ${data.activity_timer_status}/${data.quest_timer_status}`
     );
     submitQuestDisplayUpdate();
     window.questSelected = false;
-    window.currentQuest.renderPreviousStage();
+    if (window.currentQuest) {
+      window.currentQuest.renderPreviousStage();
+    }
     document.getElementById("current-stage-section").style.display = "none";
+    // document
+    //   .getElementById("start-activity-btn")
+    //   .setAttribute("disabled", true);
     updateCharacterInfo(data.character);
     loadQuestList(data.quests);
   } else {
@@ -705,37 +727,36 @@ function handleFetchQuestsResponse(data) {
 
 function handleFetchInfoResponse(data) {
   if (data.success) {
-    window.profile_id = data.profile.id;
-    connectWebsocket();
-    const activity_timer = data.activity_timer;
-    const quest_timer = data.quest_timer;
-    //console.log("Data:", data);
-    //console.log("Activity timer:", activity_timer);
-    //console.log("Quest timer:", quest_timer);
+    //window.profile_id = data.profile.id;
     updatePlayerInfo(data.profile);
     updateCharacterInfo(data.character);
-    if (activity_timer.status !== "empty") {
+
+    const activity_timer = data.activity_timer;
+    //console.log("Data:", data);
+    console.log("[HANDLE FETCH INFO] Activity timer:", activity_timer);
+
+    window.activityTimer.setup(
+      activity_timer.status,
+      activity_timer.elapsed_time
+    );
+
+    if (activity_timer.status !== "empty" && activity_timer.activity) {
+      window.activitySelected = true;
       document.getElementById("activity-input").value =
         activity_timer.activity.name;
-      //console.log("Activity time from server:", activity_timer.elapsed_time);
-      //console.log("Activity timer before:", window.activityTimer);
-      window.activityTimer.setup(
-        activity_timer.status,
-        activity_timer.elapsed_time
-      );
-      //console.log("Activity timer after:", window.activityTimer);
-      window.activitySelected = true;
-      window.activityTimer.updateStatus(activity_timer.status);
       hideInput();
-    } else {
-      window.activitySelected = false;
     }
-    console.log("[FETCH INFO RESPONSE] Quest status:", quest_timer.status);
-    if (quest_timer.status !== "empty") {
+
+    const quest_timer = data.quest_timer;
+    console.log("[HANDLE FETCH INFO] Quest timer:", quest_timer);
+    if (quest_timer.status in ["active", "waiting", "paused", "completed"]) {
       loadQuest(data.quest_timer);
-    } else {
-      window.questSelected = false;
     }
+
+    if (window.ws) {
+        window.ws.startTimers();
+    }
+
   } else {
     console.error(data.message);
   }
@@ -743,7 +764,8 @@ function handleFetchInfoResponse(data) {
 
 async function checkResponse(response) {
   if (!response.ok) {
-    throw new Error("Network response was not ok");
+    const errorMessage = await response.text();
+    throw new Error(`HTTP ${response.status}: ${errorMessage}`);
   }
   return response;
 }
@@ -757,22 +779,33 @@ class ProfileWebSocket {
     this.profile_id = profile_id;
     this.socket = null;
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 10;
+    this.maxReconnectAttempts = 5;
   }
 
   connect() {
     return new Promise((resolve, reject) => {
+      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+        console.log("Already connected to the WebSocket.");
+        return resolve(); // Immediately resolve as the connection is already established
+      }
+
       const protocol = window.location.protocol === "https:" ? "wss" : "ws";
       const url = `${protocol}://${window.location.host}/ws/profile_${this.profile_id}/`;
+
       this.socket = new WebSocket(url);
 
       this.socket.onopen = () => {
         console.log("Connected to timer socket");
         resolve();
         this.startPing();
-        startTimers();
+
+        //if (
+        //  window.activityTimer.status in ["paused", "waiting", "ready"] &&
+        //  window.questTimer.status in ["paused", "waiting", "ready"]
+        //) {
+        //  this.startTimers();
+        //}
         this.reconnectAttempts = 0;
-        handleReconnect();
       };
 
       this.socket.onmessage = (event) => {
@@ -788,7 +821,14 @@ class ProfileWebSocket {
 
       this.socket.onerror = (error) => {
         console.error("WebSocket Error:", error);
-        reject(error);
+
+        (async () => {
+          try {
+            await submitBugReport({ message: "WebSocket error", error });
+          } catch (reportError) {
+            console.error("Bug report submission failed:", reportError);
+          }
+        })();
       };
 
       this.socket.onclose = (event) => {
@@ -801,12 +841,50 @@ class ProfileWebSocket {
   }
 
   startTimers() {
-    this.send({ action: "start_timers_request" });
+    this.send({
+      type: "client_request",
+      action: "start_timers",
+    });
   }
 
   pauseTimers() {
     console.log("WS attempting to pause timers...");
-    this.send({ action: "pause_timers_request" });
+    this.send({
+      type: "client_request",
+      action: "pause_timers",
+    });
+  }
+
+  createActivity() {
+    console.log("WS attempting to create activity...");
+    this.send({
+      type: "client_request",
+      action: "create_activity",
+    });
+  }
+
+  chooseQuest() {
+    console.log("WS attempting to choose quest...");
+    this.send({
+      type: "client_request",
+      action: "choose_quest",
+    });
+  }
+
+  submitActivity() {
+    console.log("WS attempting to submit activity...");
+    this.send({
+      type: "client_request",
+      action: "submit_activity",
+    });
+  }
+
+  completeQuest() {
+    console.log("WS attempting to complete quest...");
+    this.send({
+      type: "client_request",
+      action: "complete_quest",
+    });
   }
 
   get readyState() {
@@ -816,7 +894,7 @@ class ProfileWebSocket {
   send(data) {
     if (this.socket) {
       if (this.socket.readyState === WebSocket.OPEN) {
-        console.log("Websocket Sending message:", data);
+        console.log("Websocket sending message:", data);
         this.socket.send(JSON.stringify(data));
       } else {
         console.error("Socket not open, cannot send message");
@@ -829,8 +907,8 @@ class ProfileWebSocket {
   startPing() {
     this.pingInterval = setInterval(() => {
       if (this.socket.readyState === WebSocket.OPEN) {
-        console.log("Sending ping...");
-        this.send({ action: "ping" });
+        //console.log("Sending ping...");
+        this.send({ type: "ping" });
       }
     }, 10000);
   }
@@ -854,52 +932,85 @@ class ProfileWebSocket {
       return;
     }
 
-    let timeout = Math.min(5000, 1000 * 2 ** this.reconnectAttempts);
+    let timeout = Math.min(5000, 1000 * 3 ** this.reconnectAttempts);
     console.log(`Reconnecting in ${timeout / 1000} seconds...`);
+
     setTimeout(() => {
+      if (this.socket && this.socket.readyState !== WebSocket.CLOSED) {
+        this.socket.close(); // Close the existing connection if open
+      }
+
       this.reconnectAttempts++;
+
       this.connect();
+      this.socket.onopen = () => {
+        console.log("Reconnected to timer socket");
+        handleReconnect();
+      };
     }, timeout);
   }
 }
 
 function handleSocketMessage(data) {
-  switch (data.action) {
-    case "start_timers":
-      console.log("Received start timers command");
-      handleStartTimersResponse(data);
-      break;
-    case "pause_timers":
-      console.log("Received pause timers command");
-      handlePauseTimersResponse(data);
-      break;
-    case "pong":
-      handlePong(data);
-      break;
-    case "console.log":
-      console.log(data.message);
-      break;
-    default:
-      console.error("Unknown message action:", data.action);
+  if (data.action) {
+    switch (data.action) {
+      case "start_timers":
+        console.log("Received start timers command");
+        handleStartTimersResponse(data);
+        break;
+      case "pause_timers":
+        console.log("Received pause timers command");
+        handlePauseTimersResponse(data);
+        break;
+      case "create_activity":
+        console.log("Received create activity notification");
+        startTimers();
+        break;
+      case "choose_quest":
+        console.log("Received choose quest notification");
+        startTimers();
+        break;
+      case "submit_activity":
+        console.log("Received submity activity notification");
+        submitActivity(data);
+        break;
+      case "quest_complete":
+        console.log("Received quest complete notification");
+        completeQuest();
+        break;
+      case "pong":
+        handlePong(data);
+        break;
+      case "console.log":
+        console.log(data.message);
+        break;
+      case "warn":
+        console.error(data.message);
+        break;
+      default:
+        console.error("Unknown message action:", data.action);
+    }
+  } else {
+    console.error("Expected data.action, got none. Data:", data);
   }
 }
 
 function handleStartTimersResponse(data) {
-  if (data.success) {
-    console.log(data.message);
-    startTimers();
-  } else {
-    console.error(data.message);
-  }
+  //if (data.success) {
+  console.log(`[HANDLE STARTTIMERS RESPONSE] ${data}`);
+  startTimers();
+  //} else {
+  //console.error(`[HANDLE STARTTIMERS RESPONSE] Checking data: ${data}`);
+  //}
 }
 
 function handlePauseTimersResponse(data) {
-  if (data.success) {
-    console.log(data.message);
-    pauseTimers();
-  } else {
-    console.error(data.message);
-  }
+  //if (data.success) {
+  console.log(`[HANDLE PAUSETIMERS RESPONSE] ${data}`);
+  pauseTimers();
+  // } else {
+  //   console.error(`[HANDLE PAUSETIMERS RESPONSE] Checking data: ${data}`);
+  // }
 }
 
 // Function to handle reconnection logic and retry any pending data
@@ -912,12 +1023,12 @@ function handleReconnect() {
   const pendingQuest = localStorage.getItem("pendingQuest");
   if (pendingQuest) {
     console.log("Found pending quest, attempting to resubmit...");
-    completeQuest();
+    //await completeQuest();
   }
 }
 
 function handlePong(data) {
-  console.log(data.message);
+  //console.log(data.message);
 }
 
 ////////////////////////////////
@@ -927,9 +1038,8 @@ function handlePong(data) {
 document.addEventListener("DOMContentLoaded", () => {
   initialiseTimers();
   setupEventListeners();
+  connectWebsocket();
   updateUI();
-  //startHeartbeat();
-  //connectWebsocket();
 });
 
 function initialiseTimers() {
@@ -942,7 +1052,7 @@ function initialiseTimers() {
 function setupEventListeners() {
   document
     .getElementById("start-activity-btn")
-    .addEventListener("click", createActivityTimer);
+    .addEventListener("click", createActivity);
   document
     .getElementById("show-quests-btn")
     .addEventListener("click", openModal);
@@ -950,7 +1060,7 @@ function setupEventListeners() {
     .getElementById("close-modal-btn")
     .addEventListener("click", closeModal);
   document.getElementById("quest-modal").addEventListener("click", (e) => {
-    if (e.target === modal) closeModal();
+    if (e.target === window.modal) closeModal();
   });
   document
     .getElementById("choose-quest-btn")
@@ -959,19 +1069,46 @@ function setupEventListeners() {
     .getElementById("stop-activity-btn")
     .addEventListener("click", onActivitySubmitted);
   window.questTimer.on("completed", onQuestCompleted);
+
+  // Capture global errors
+  window.onerror = function (message, source, lineno, colno, error) {
+    console.error("Global error captured:", {
+      message,
+      source,
+      lineno,
+      colno,
+      error,
+    });
+    submitBugReport({ message, source, lineno, colno, error });
+  };
+
+  // Capture unhandled promise rejections
+  window.onunhandledrejection = function (event) {
+    console.error("Unhandled promise rejection:", event.reason);
+    submitBugReport({
+      message: "Unhandled promise rejection",
+      error: event.reason,
+    });
+  };
+
+  // WebSocket error handling
+  //  window.ws.onerror = function (error) {
+  //    console.error("WebSocket error occurred:", error);
+  //    submitBugReport({ message: "WebSocket error", error });
+  //};
 }
 
 function updateUI() {
   // Update the UI with current timer status, or any other necessary state
-  console.log("When does THIS happen");
-  document.getElementById("activity-timer").textContent =
-    window.activityTimer.elapsedTime;
+  //document.getElementById("activity-timer").textContent =
+  //  window.activityTimer.elapsedTime;
   //document.getElementById(window.activityTimer.displayElement).textContent = window.activityTimer.elapsedTime;
-  window.activityTimer.updateDisplay();
-  document.getElementById("quest-timer").textContent =
-    window.questTimer.remainingTime;
+  //window.activityTimer.updateDisplay();
+  //document.getElementById("quest-timer").textContent =
+  //  window.questTimer.remainingTime;
   //document.getElementById(window.questTimer.displayElement).textContent = window.questTimer.remainingTime;
-  window.questTimer.updateDisplay();
+  //window.questTimer.updateDisplay();
+  window.modal = document.getElementById("quest-modal");
   fetchActivities();
   fetchQuests();
   fetchInfo();
@@ -979,78 +1116,40 @@ function updateUI() {
 
 function connectWebsocket() {
   // Initialise WebSocket
-  console.log(`profileId: ${window.profile_id}`);
-  window.ws = new ProfileWebSocket(window.profile_id);
-  window.ws.connect();
+
+  const gameplayContainer = document.getElementById("gameplay-container");
+  const profileId = gameplayContainer?.dataset.profileId;
+  console.log(`profileId: ${profileId}`);
+
+  if (profileId) {
+    window.ws = new ProfileWebSocket(profileId);
+    window.ws.connect();
+  } else {
+    console.error("Profile ID not found. WebSocket not initialised.");
+  }
+  //window.ws = new ProfileWebSocket(window.profile_id);
+  //window.ws.connect();
 }
-
-function startHeartbeat(maxFailures = 3) {
-  let failureCount = 0;
-  let heartbeatInterval;
-  async function sendHeartbeat() {
-    try {
-      console.log("Sending heartbeat");
-      const response = await fetch("/heartbeat/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          activity: window.activitySelected,
-          quest: window.questSelected,
-        }),
-      });
-      const data = await response.json();
-
-      handleHeartbeatResponse(data);
-
-      failureCount = 0;
-    } catch (e) {
-      console.error("Heartbeat failed:", e);
-      failureCount++;
-      if (failureCount >= maxFailures) {
-        console.error("Max heartbeat failures reached. Stopping heartbeat");
-        stopHeartbeat();
-      }
-    }
-  }
-
-  function handleHeartbeatResponse(data) {
-    if (data.success) {
-      console.log(
-        `[HEARTBEAT RESPONSE] Server timer status: ${data.activity_timer_status}/${data.quest_timer_status}`
-      );
-      if (data.status === "quest_completed") {
-        window.questTimer.onComplete();
-      }
-    } else {
-      console.error(data.message);
-    }
-  }
-
-  function stopHeartbeat() {
-    clearInterval(heartbeatInterval);
-    console.warn("Client heartbeat stopped");
-  }
-
-  heartbeatInterval = setInterval(sendHeartbeat, 5000);
-}
-
-
-
 
 window.addEventListener("offline", () => {
   console.log("User is now offline.");
 });
+
+let isQuestRetrying = false;
 
 window.addEventListener("online", async () => {
   console.log("User is back online. Attempting to submit pending reports...");
   const connection = await checkInternetConnection();
   if (connection) {
     await submitPendingReports();
+    if (localStorage.getItem("pendingQuest") && !isQuestRetrying) {
+      isQuestRetrying = true;
+      console.log("Retrying quest completion...");
+      await completeQuest();
+      isQuestRetrying = false;
+    }
   }
 });
-
 
 async function checkInternetConnection() {
   if (!navigator.onLine) {
@@ -1059,72 +1158,61 @@ async function checkInternetConnection() {
   }
 
   try {
-    const response = await fetch("ping.json", { cache: 'no-store' });
+    const response = await fetch("/static/js/ping.json", { cache: "no-store" });
 
     if (response.ok) {
       console.log("Internet connection verified.");
       return true;
     } else {
-      console.error("Failed to fetch the resource. Response status:", response.status);
+      console.error(
+        "Failed to fetch the resource. Response status:",
+        response.status
+      );
       return false;
     }
   } catch (e) {
-    console.error("Error during connectivity check:", error);
+    console.error("Error during connectivity check:", e);
     return false;
   }
 }
 
-// Capture global errors
-window.onerror = function (message, source, lineno, colno, error) {
-    console.error("Global error captured:", { message, source, lineno, colno, error });
-    submitBugReport({ message, source, lineno, colno, error });
-};
-
-// Capture unhandled promise rejections
-window.onunhandledrejection = function (event) {
-    console.error("Unhandled promise rejection:", event.reason);
-    submitBugReport({ message: "Unhandled promise rejection", error: event.reason });
-};
-
-// WebSocket error handling
-window.ws.onerror = function (error) {
-    console.error("WebSocket error occurred:", error);
-    submitBugReport({ message: "WebSocket error", error });
-};
-
-
 function saveBugReportLocally(errorDetails) {
-    const reports = JSON.parse(localStorage.getItem("bugReports")) || [];
-    reports.push({
-        timestamp: new Date().toISOString(),
-        error: errorDetails,
-    });
-    localStorage.setItem("bugReports", JSON.stringify(reports));
+  const reports = JSON.parse(localStorage.getItem("bugReports")) || [];
+  reports.push({
+    timestamp: new Date().toISOString(),
+    error: errorDetails,
+  });
+  localStorage.setItem("bugReports", JSON.stringify(reports));
 }
 
 async function submitPendingReports() {
   try {
     const reports = JSON.parse(localStorage.getItem("bugReports")) || [];
     for (const report of reports) {
-      await submitBugReport(report));
+      await submitBugReport(report);
     }
   } catch (e) {
     console.error("There was a problem submitting pending reports:", e);
   }
 }
 
-
 async function submitBugReport(errorDetails) {
-  const connectionOk = await checkInternetConnection();
-  if (!connectionOk) {
+  try {
+    const connectionOk = await checkInternetConnection();
+    if (!connectionOk) {
+      saveBugReportLocally(errorDetails);
+      return;
+    }
+  } catch (e) {
+    console.error("Error while checking connection:", e);
     saveBugReportLocally(errorDetails);
     return;
   }
   try {
-    const response = await fetch("/submit-bug-report", {
+    const response = await fetch("/submit_bug_report/", {
       method: "POST",
       headers: {
-          "Content-Type": "application/json",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         timestamp: new Date().toISOString(),
@@ -1132,39 +1220,25 @@ async function submitBugReport(errorDetails) {
         url: window.location.href,
         error: errorDetails,
       }),
-    })
+    });
     await checkResponse(response);
     const data = await response.json();
-    handleSubmitBugReportResponse(data);
+    handleSubmitBugReportResponse(data, errorDetails);
   } catch (e) {
     console.error("There was a problem submitting bug report:", e);
     saveBugReportLocally(errorDetails);
   }
 }
 
-
-function handleSubmitBugReportResponse(data) {
+function handleSubmitBugReportResponse(data, submittedReport) {
   if (data.success) {
     console.log("Pending bug report submitted successfully.");
     // Remove submitted report from local storage
-    const remainingReports = JSON.parse(localStorage.getItem("bugReports")).filter(
-      (r) => r.timestamp !== report.timestamp       // Where is report supposed to come from???
-    );
+    const remainingReports = JSON.parse(
+      localStorage.getItem("bugReports")
+    ).filter((r) => r.timestamp !== submittedReport.timestamp);
     localStorage.setItem("bugReports", JSON.stringify(remainingReports));
   } else {
     console.error("Error submitting report:", data.message);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
- 

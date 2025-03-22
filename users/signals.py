@@ -55,5 +55,6 @@ def update_login_streak(sender, request, user, **kwargs):
         logger.debug(f"[UPDATE LOGIN STREAK] Profile {profile.id} missed a day. Resetting login streak.")
 
     profile.last_login = now()
+    profile.total_logins += 1
     profile.save()
     logger.debug(f"[UPDATE LOGIN STREAK] Updated login streak for profile {profile.id}: {profile.login_streak}")

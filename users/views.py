@@ -21,10 +21,25 @@ logger = logging.getLogger("django")
 
 # Index view
 def index_view(request):
+    """
+    Render the homepage (index) view.
+
+    :param request: The HTTP request object.
+    :type request: django.http.HttpRequest
+    :return: An HTTP response rendering the index template.
+    :rtype: django.http.HttpResponse
+    """
     return render(request, 'index.html')
 
 def get_client_ip(request):
-    """ Helper function to get the user's IP address """
+    """
+    Retrieve the IP address of the client making the request.
+
+    :param request: The HTTP request object.
+    :type request: django.http.HttpRequest
+    :return: The IP address of the client.
+    :rtype: str
+    """
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]
@@ -34,11 +49,28 @@ def get_client_ip(request):
 
 # Login view
 class LoginView(FormView):
+    """
+    Handle user login using an email-based authentication form.
+
+    Attributes:
+        template_name (str): The path to the login template.
+        form_class (Form): The form class used for email authentication.
+        success_url (str): The URL to redirect to upon successful login.
+    """
     template_name = 'users/login.html'
     form_class = EmailAuthenticationForm
     success_url = reverse_lazy('game')
 
     def form_valid(self, form):
+        """
+        Process a valid login form, logging in the user and redirecting based on onboarding progress.
+
+        :param form: The valid login form instance.
+        :type form: EmailAuthenticationForm
+        :return: An HTTP response redirecting to the appropriate onboarding step or game.
+        :rtype: django.http.HttpResponseRedirect
+        :raises ValueError: If the user's onboarding step is invalid.
+        """
         user = form.get_user()
         logger.info(f"Successful login for user: {user.email} (ID: {user.id})")
         login(self.request, user)
@@ -61,11 +93,27 @@ class LoginView(FormView):
                     raise ValueError("Onboarding step number incorrect")
                 
     def form_invalid(self, form):
+        """
+        Handle an invalid login form submission.
+
+        :param form: The invalid login form instance.
+        :type form: EmailAuthenticationForm
+        :return: An HTTP response rendering the login form with error messages.
+        :rtype: django.http.HttpResponse
+        """
         logger.warning(f"Failed login attempt for email: {self.request.POST.get('email', 'UNKNOWN')}")
         messages.error(self.request, 'Invalid credentials')
         return self.render_to_response(self.get_context_data(form=form))
     
     def get(self, request, *args, **kwargs):
+        """
+        Handle GET requests to display the login form or redirect authenticated users.
+
+        :param request: The HTTP request object.
+        :type request: django.http.HttpRequest
+        :return: An HTTP response rendering the login form or redirecting authenticated users.
+        :rtype: django.http.HttpResponse or django.http.HttpResponseRedirect
+        """
         if request.user.is_authenticated:
             logger.info(f"User {request.user.email} already logged in, redirecting to game")
             return redirect('game')
@@ -74,6 +122,14 @@ class LoginView(FormView):
 
 # Logout view
 def logout_view(request):
+    """
+    Log out the current user and redirect to the homepage (index view).
+
+    :param request: The HTTP request object.
+    :type request: django.http.HttpRequest
+    :return: An HTTP response redirecting to the homepage.
+    :rtype: django.http.HttpResponseRedirect
+    """
     logout(request)
     logger.info(f"User {request.user.id} logged out.")
     return redirect('index')
@@ -81,12 +137,30 @@ def logout_view(request):
 
 # Register view
 class RegisterView(CreateView):
+    """
+    Handle user registration by creating a new `CustomUser` instance
+    and redirecting to the profile creation page.
+
+    Attributes:
+        model (Model): The user model to create an instance of.
+        form_class (Form): The form class used to handle user registration.
+        template_name (str): The path to the registration template.
+        success_url (str): The URL to redirect to upon successful registration.
+    """
     model = get_user_model()
     form_class = UserRegisterForm
     template_name = 'users/register.html'
     success_url = reverse_lazy('create_profile')
 
     def form_valid(self, form) -> HttpResponse:
+        """
+        Process a valid registration form, create the user, log them in, and send a welcome email.
+
+        :param form: The valid registration form instance.
+        :type form: UserRegisterForm
+        :return: A redirect to the profile creation page.
+        :rtype: django.http.HttpResponseRedirect
+        """
         user = form.save()
         logger.info(f"User registered successfully: {user.email} (ID: {user.id})")
 
@@ -106,6 +180,15 @@ class RegisterView(CreateView):
 @transaction.atomic
 @login_required
 def create_profile_view(request):
+    """
+    Handle the creation and setup of the user's profile, including setting a name
+    and saving the first onboarding step.
+
+    :param request: The HTTP request object.
+    :type request: django.http.HttpRequest
+    :return: An HTTP response rendering the profile creation form or redirecting to link_character.
+    :rtype: django.http.HttpResponse or django.http.HttpResponseRedirect
+    """
     profile = Profile.objects.get(user=request.user)
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
@@ -135,6 +218,14 @@ def create_profile_view(request):
 @transaction.atomic
 @login_required
 def link_character_view(request):
+    """
+    Handle the linking of an active character to the user's profile and updating the onboarding step.
+
+    :param request: The HTTP request object.
+    :type request: django.http.HttpRequest
+    :return: An HTTP response rendering the link character page or redirecting to the profile creation page.
+    :rtype: django.http.HttpResponse or django.http.HttpResponseRedirect
+    """
     profile = request.user.profile
     if request.method == "POST":
         profile.onboarding_step = 3
@@ -160,6 +251,14 @@ def link_character_view(request):
 # Profile view
 @login_required
 def profile_view(request):
+    """
+    Display the user's profile page with details such as total time spent on activities.
+
+    :param request: The HTTP request object.
+    :type request: django.http.HttpRequest
+    :return: An HTTP response rendering the profile page.
+    :rtype: django.http.HttpResponse
+    """
     profile = request.user.profile
     total_minutes = round(profile.total_time / 60)
 
@@ -172,6 +271,14 @@ def profile_view(request):
 @transaction.atomic
 @login_required
 def edit_profile_view(request):
+    """
+    Allow the user to edit and update their profile information.
+
+    :param request: The HTTP request object.
+    :type request: django.http.HttpRequest
+    :return: An HTTP response rendering the edit profile form or redirecting to the profile page.
+    :rtype: django.http.HttpResponse or django.http.HttpResponseRedirect
+    """
     profile = Profile.objects.get(user=request.user)
 
     logger.info(f"User {request.user.username} (ID: {request.user.id}) is editing their profile.")
@@ -192,6 +299,16 @@ def edit_profile_view(request):
 @transaction.atomic
 @login_required
 def download_user_data(request):
+    """
+    Generate and provide a downloadable JSON file containing the user's data, 
+    including profile, character, and activity details.
+
+    :param request: The HTTP request object.
+    :type request: django.http.HttpRequest
+    :return: A JSON file response containing the user's data or an error response if character data is missing.
+    :rtype: django.http.HttpResponse or django.http.JsonResponse
+    :raises character.DoesNotExist: If no character is found for the user.
+    """
     user = request.user
     profile = user.profile
     try:
@@ -241,6 +358,15 @@ def download_user_data(request):
 @login_required
 @transaction.atomic
 def delete_account(request):
+    """
+    Initiates the account deletion process by marking the user for deletion in 14 days,
+    sending a notification email, and logging the user out.
+
+    :param request: The HTTP request object.
+    :type request: django.http.HttpRequest
+    :return: An HTTP response redirecting to the index page or rendering the delete account confirmation page.
+    :rtype: django.http.HttpResponseRedirect or django.http.HttpResponse
+    """
     if request.method == "POST":
         user = request.user
 
