@@ -26,18 +26,20 @@ Author:
 
 """
 
-from django.utils.timezone import now
+from asgiref.sync import sync_to_async, async_to_sync
+from channels.db import database_sync_to_async
+from channels.layers import get_channel_layer
 from django.db import transaction, connection, IntegrityError
 from django.utils.html import escape
-from channels.db import database_sync_to_async
+from django.utils.timezone import now
+
 from .models import QuestCompletion, Quest, ServerMessage
 from .serializers import QuestSerializer, QuestTimerSerializer, ActivitySerializer, ActivityTimerSerializer
+
 from character.serializers import CharacterSerializer
 from users.serializers import ProfileSerializer
-from channels.layers import get_channel_layer
-import asyncio
-from asgiref.sync import sync_to_async, async_to_sync
-import logging, json
+
+import logging, json, asyncio
 
 logger = logging.getLogger("django")  # Get the logger for this module
 
@@ -104,7 +106,8 @@ def start_server_timers(act_timer, quest_timer):
         try:
             act_timer.start()
             quest_timer.start()
-            logger.info("[START SERVER TIMERS] Timers successfully started")
+            result_text = "[START SERVER TIMERS] Timers successfully started"
+            logger.info(result_text)
             return True, result_text
         except Exception as e:
             error_text = f"[START SERVER TIMERS] Error starting timers: {e}"
@@ -149,8 +152,8 @@ def pause_server_timers(act_timer, quest_timer):
         
         return True, "Success"
     except Exception as e:
-        result_text = f"[PAUSE SERVER TIMERS] Error pausing timers: {e}", exc_info=True
-        logger.error(result_text)
+        result_text = f"[PAUSE SERVER TIMERS] Error pausing timers: {e}"
+        logger.error(result_text, exc_info=True)
         return False, result_text
 
 
@@ -169,7 +172,7 @@ async def control_timers(profile, act_timer, quest_timer, mode):
     :return: None.
     """
     profile_id = profile.id
-    logger.info(f"[CONTROL TIMERS] Performing "{mode}" on timers for profile {profile_id}")
+    logger.info(f"[CONTROL TIMERS] Performing '{mode}' on timers for profile {profile_id}")
 
     if mode == "start":
         server_success, result_text = await database_sync_to_async(start_server_timers)(act_timer, quest_timer)
@@ -239,7 +242,7 @@ def process_initiation(profile, character, action):
     ready = True
 
     if ready:
-        start_success = start_server_timers(act_timer, quest_timer)
+        start_success, result_text = start_server_timers(act_timer, quest_timer)
         if not start_success:
             logger.warning(f"[PROCESS INITIATION] Failed to start timers for profile {profile_id}")
             async_to_sync(send_group_message)(f"profile_{profile_id}", {
@@ -290,11 +293,10 @@ def process_completion(profile, character, action):
     if action == "complete_quest":
         ready = server_quest_ready(quest_timer)
         logger.info(f"[PROCESS COMPLETION] Ready is: {ready}")
-
     else: ready = True
 
     if ready:
-        pause_success = pause_server_timers(act_timer, quest_timer)
+        pause_success, result_text = pause_server_timers(act_timer, quest_timer)
         if not pause_success:
             logger.warning(f"[PROCESS COMPLETION] Failed to pause timers for profile {profile_id}")
             async_to_sync(send_group_message)(f"profile_{profile_id}", {

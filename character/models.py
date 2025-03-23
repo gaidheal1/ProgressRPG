@@ -1,15 +1,17 @@
-from django.db import models, transaction, IntegrityError
 from datetime import datetime
-from random import random
+from django.db import models, transaction, IntegrityError
 from django.utils.timezone import now, timedelta
+from random import random
 import json, math, logging
 
 from users.models import Person, Profile
+
 from gameplay.models import Buff, AppliedBuff, QuestCompletion, ServerMessage
 from gameplay.utils import send_group_message
 from gameplay.serializers import QuestResultSerializer
 
 logger = logging.getLogger("django")
+
 
 class CharacterRelationship(models.Model):
     characters = models.ManyToManyField('Character', through='CharacterRelationshipMembership')

@@ -1,8 +1,9 @@
 from django import forms
-from .models import CustomUser
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import authenticate
-from .models import Profile
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+import logging 
+
+from .models import CustomUser, Profile
 
 
 class UserRegisterForm(UserCreationForm):

@@ -1,23 +1,26 @@
-from django.http import HttpResponse, JsonResponse
-from django.urls import reverse_lazy
-from django.db import transaction
+
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.mail import send_mail
+from django.db import transaction
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
-from django.views.generic.edit import CreateView, FormView
+from django.urls import reverse_lazy
 from django.utils.timezone import now, timedelta
+from django.views.generic.edit import CreateView, FormView
 import json, logging
-from gameplay.serializers import ActivitySerializer
 
 from .forms import UserRegisterForm, ProfileForm, EmailAuthenticationForm
 from .models import Profile
 from .utils import send_signup_email
+
 from character.models import PlayerCharacterLink
+from gameplay.serializers import ActivitySerializer
 
 logger = logging.getLogger("django")
+
 
 # Index view
 def index_view(request):

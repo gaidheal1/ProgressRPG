@@ -1,8 +1,5 @@
 from django.urls import re_path
 import django
-#django.setup()
-#from .consumers import TimerConsumer  
-
 
 websocket_urlpatterns = []
 

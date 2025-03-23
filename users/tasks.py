@@ -1,14 +1,17 @@
 # users/tasks.py
+
 from celery import shared_task
-from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth import get_user_model
-from .models import Profile
+from django.utils import timezone
 import logging
+
+from .models import Profile
 
 User = get_user_model()
 
 logger = logging.getLogger("django")
+
 
 @shared_task
 def perform_account_deletion():

@@ -23,12 +23,13 @@ Author:
 """
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.utils.timezone import now, timedelta
 from django.db import models, transaction
 from django.db.models import F, ExpressionWrapper, fields
+from django.utils.timezone import now, timedelta
 import logging
 
 logger = logging.getLogger("django")
+
 
 class CustomUserManager(BaseUserManager):
     """

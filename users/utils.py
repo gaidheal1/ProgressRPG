@@ -20,15 +20,18 @@ Author:
     Duncan Appleby
 
 """
-from character.models import Character, PlayerCharacterLink
-from gameplay.models import QuestTimer, Quest
-from django.core.mail import send_mail
+
 from django.conf import settings
+from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.timezone import now, timedelta
 import logging
 
+from character.models import Character, PlayerCharacterLink
+from gameplay.models import QuestTimer, Quest
+
 logger = logging.getLogger("django")
+
 
 def assign_character_to_profile(profile):
     """

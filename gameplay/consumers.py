@@ -1,18 +1,17 @@
-from django.apps import apps
-from django.utils.timezone import now
-from django.db import transaction
 from asgiref.sync import sync_to_async
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from channels.exceptions import StopConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.apps import apps
+from django.db import transaction
+from django.utils.timezone import now
+import json, logging
 
 from .models import ServerMessage
 from .utils import process_completion, process_initiation, control_timers
 
-import json, logging
-
-
 logger = logging.getLogger("django")
+
 
 class TimerConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
@@ -68,7 +67,7 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
         if hasattr(self, "profile") and hasattr(self, "character"):
             logger.info(f"Pausing timers for profile {self.profile.id}; websocket disconnected")
             if self.activity_timer.status not in ["completed", "empty", "paused"] or self.quest_timer.status not in ["completed", "empty", "paused"]:
-                await control_timers(self.profile, self.activity_timer, self.quest_timer)
+                await control_timers(self.profile, self.activity_timer, self.quest_timer, "pause")
 
         # if close_code != 1000:
         #     logger.warning(f"Unexpected disconnect: {close_code}")
@@ -150,9 +149,9 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
         action = message.get("action")
 
         if action == "start_timers":
-            await control_timers(self.profile, self.activity_timer, self.quest_timer)
+            await control_timers(self.profile, self.activity_timer, self.quest_timer, "start")
         elif action == "pause_timers":
-            await control_timers(self.profile, self.activity_timer, self.quest_timer)
+            await control_timers(self.profile, self.activity_timer, self.quest_timer, "pause")
         elif action in ["create_activity", "choose_quest"]:
             success = await database_sync_to_async(process_initiation)(self.profile, self.character, action)
             if not success:
