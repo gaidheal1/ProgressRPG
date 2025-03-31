@@ -206,7 +206,7 @@ def fetch_info(request):
         logger.debug(f"[FETCH INFO] Timers status: {profile.activity_timer.status}/{character.quest_timer.status}")
 
         qt = character.quest_timer
-        if qt.time_finished() and qt.status != "complete":
+        if qt.time_finished() and qt.status != "completed":
             try:
                 logger.info(f"[FETCH INFO] Quest timer expired for character {character.id}, marking quest as complete")
                 qt.elapsed_time = qt.duration
@@ -244,6 +244,7 @@ def fetch_info(request):
 
             logger.debug(f"[FETCH INFO] Response generated successfully for profile {profile.id}")
             return JsonResponse(response)
+
         except ValidationError as e:
             # Handle serializer validation errors.
             logger.error(f"[FETCH INFO] Serializer validation error: {str(e)}", exc_info=True)
@@ -366,6 +367,16 @@ def submit_activity(request):
         logger.debug(f"[SUBMIT ACTIVITY] Activity timer: status {profile.activity_timer.status}, elapsed time {profile.activity_timer.elapsed_time}")
 
         try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError as e:
+            logger.error(f"[SUBMIT ACTIVITY] JSON decode error for user {profile.id}: {e}")
+            return JsonResponse({"error": "Invalid JSON format"}, status=400)
+        
+        logger.debug(f"[SUBMIT ACTIVITY] Request body: {data}")
+        logger.debug(f"[SUBMIT ACTIVITY] Body activity: {data["name"]}")
+        profile.activity_timer.activity.update_name(data["name"])
+            
+        try:
             profile.add_activity(profile.activity_timer.elapsed_time)
             xp_reward = profile.activity_timer.complete()
             profile.activity_timer.refresh_from_db()
@@ -440,7 +451,7 @@ def choose_quest(request):
     profile = request.user.profile
 
     try:
-        logger.info(f"[CHOOSE QUEST] User {request.user.profile.id} initiated quest selection")
+        logger.info(f"[CHOOSE QUEST] User {request.user.profile.id} initiated quest selection.")
 
         try:
             data = json.loads(request.body)
@@ -455,13 +466,13 @@ def choose_quest(request):
         except ObjectDoesNotExist as e:
             logger.warning(f"[CHOOSE QUEST] Quest ID {quest_id} not found for user {profile.id}: {e}")
             return JsonResponse({"success": False, "message": "Error: quest not found"}, status=404)
-                
         if not quest:
             logger.warning(f"[CHOOSE QUEST] Quest ID {quest_id} not found for user {profile.id}")
             return JsonResponse({"success": False, "message": "Error: quest not found"})
         
         character = PlayerCharacterLink.get_character(profile)
         duration = data.get('duration')
+        logger.debug(f"[CHOOSE QUEST] Profile {profile.id} selected duration {duration}")
 
         try:
             character.quest_timer.change_quest(quest, duration)  # status should now be 'waiting'
@@ -480,7 +491,10 @@ def choose_quest(request):
                 "message": f"Quest {quest.name} selected",
             }
             logger.debug(f"[CHOOSE QUEST] Response generated successfully for user {profile.id}")
+            qt = character.quest_timer
+            logger.debug(f"[CHOOSE QUEST] Quest timer status/duration/elapsed/remaining: {qt.status}/{qt.duration}/{qt.get_elapsed_time()}/{qt.get_remaining_time()}")
             return JsonResponse(response)
+        
         except ValidationError as e:
             logger.error(f"[CHOOSE QUEST] Validation error while serializing quest timer for user {profile.id}: {e}")
             return JsonResponse({"error": "Invalid data encountered during serialization."}, status=400)
@@ -526,8 +540,12 @@ def complete_quest(request):
         logger.debug(f"[COMPLETE QUEST] Timers status before: {profile.activity_timer.status}/{character.quest_timer.status}")
 
         try:
-            character.complete_quest()
+            completion_data = character.complete_quest()
+            if completion_data is None:
+                raise ValueError("Quest completion failed: No completion data returned.")
             logger.info(f"[COMPLETE QUEST] Quest completed for character {character.id}, timers refreshed.")
+        except ValueError as e:
+            logger.error(f"Quest completion error: {e}")
         except IntegrityError as e:
             logger.error(f"[COMPLETE QUEST] IntegrityError while completing quest for character {character.id}: {str(e)}", exc_info=True)
             return JsonResponse({"error": "Database integrity issue occurred while completing the quest."}, status=500)
@@ -561,8 +579,9 @@ def complete_quest(request):
                 "character": characterdata,
                 "activity_timer_status": profile.activity_timer.status,
                 "quest_timer_status": character.quest_timer.status,
+                "completion_data": completion_data,
             }
-            logger.debug(f"[COMPLETE QUEST] Response generated for profile {profile.id}: {response}")
+            #logger.debug(f"[COMPLETE QUEST] Response generated for profile {profile.id}: {response}")
             return JsonResponse(response)
         except ValidationError as e:
             logger.error(f"[COMPLETE QUEST] Validation error while serializing response for profile {profile.id}: {str(e)}", exc_info=True)

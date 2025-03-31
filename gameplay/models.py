@@ -531,7 +531,7 @@ class ActivityTimer(Timer):
     def __str__(self):
         return f"ActivityTimer for {self.profile.name}: status {self.status}"
 
-    def new_activity(self, activity):
+    def new_activity(self, activity: Activity):
         """
         Assign a new activity to the timer.
 
@@ -610,9 +610,9 @@ class QuestTimer(Timer):
         #traceback.print_stack()
         super().save(*args, **kwargs)
 
-    def change_quest(self, quest, duration=5):
+    def change_quest(self, quest: Quest, duration: int):
         """
-        Change the associated quest and reset the timer.
+        Reset the timer and change the associated quest.
 
         :param quest: The new quest to associate with the timer.
         :type quest: Quest
@@ -620,13 +620,10 @@ class QuestTimer(Timer):
         :type duration: int
         """
         self.reset()
-        #print(QuestTimer.objects.filter(pk=self.pk).values())
         self.quest = quest
         self.duration = duration
         self.set_waiting()
-        #print("QuestTimer after change_quest, just before save", self)
         self.save()
-        #print(QuestTimer.objects.filter(pk=self.pk).values())
 
     def complete(self):
         """
@@ -678,10 +675,11 @@ class QuestTimer(Timer):
         :return: True if the timer has completed, False otherwise.
         :rtype: bool
         """
+        #logger.debug(f"[QUESTTIMER.TIME FINISHED] Duration: {self.duration}, Remaining time: {self.get_remaining_time()}")
         return self.get_remaining_time() <= 0
 
     def __str__(self):
-        return f"QuestTimer for {self.character.name}: status {self.status}" #quest {self.quest.name}, 
+        return f"QuestTimer for {self.character.name}"
     
 
 class ServerMessage(models.Model):

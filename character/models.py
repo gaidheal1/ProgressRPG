@@ -6,8 +6,7 @@ import json, math, logging
 
 from users.models import Person, Profile
 
-from gameplay.models import Buff, AppliedBuff, QuestCompletion, ServerMessage
-from gameplay.utils import send_group_message
+from gameplay.models import Buff, AppliedBuff, QuestCompletion
 from gameplay.serializers import QuestResultSerializer
 
 logger = logging.getLogger("django")
@@ -187,17 +186,18 @@ class Character(Person, LifeCycleMixin):
         return QuestCompletion.objects.filter(character=self, quest=quest)
 
     @transaction.atomic
-    def complete_quest(self, trigger_ws_update=False):
+    def complete_quest(self):
+        logger.info(f"[CHAR.COMPLETE_QUEST] Starting quest completion for {self}")
+        
         quest = self.quest_timer.quest
-        logger.info(f"[CHAR.COMPLETE_QUEST] for {self}")
         logger.debug(f"{self.quest_timer}")
         
         if quest is None:
-            logger.error("[CHAR.COMPLETE_QUEST] Quest is None")
-            return
+            logger.error(f"[CHAR.COMPLETE_QUEST] Quest is None for character {self.id}")
+            return None
 
-        with transaction.atomic():
-            try:
+        try:
+            with transaction.atomic():
                 completion, created = QuestCompletion.objects.get_or_create(
                     character=self,
                     quest=quest,
@@ -205,20 +205,32 @@ class Character(Person, LifeCycleMixin):
                 if not created:
                     completion.times_completed += 1
                 completion.save()
-            except IntegrityError as e:
+                logger.debug(f"[CHAR.COMPLETE_QUEST] Quest completion updated: {completion} (Created: {created})")
+        except IntegrityError as e:
                 logger.error(f"[CHAR.COMPLETE_QUEST] IntegrityError: failed to create or retrieve quest completion for character {self.id}, quest {quest.id}: {e}")
+                return None
+        except Exception as e:
+            logger.exception(f"[CHAR.COMPLETE_QUEST] Unexpected error while completing quest {quest.id} for character {self.id}: {e}")
+            return None
 
         rewards = None
-        if hasattr(quest, 'results'):
-            results = quest.results
-            #print("quest reward:", results)
-            results.apply(self)
-            rewards= QuestResultSerializer(results).data
+        try:
+            if hasattr(quest, 'results'):
+                results = quest.results
+                results.apply(self)
+                rewards= QuestResultSerializer(results).data
+        except Exception as e:
+            logger.exception(f"[CHAR.COMPLETE_QUEST] Error applying rewards for quest {quest.id}: {e}")
 
-        xp_reward = self.quest_timer.complete()
-        self.add_xp(xp_reward)
-        self.total_quests += 1
-        self.save()
+        try:
+            xp_reward = self.quest_timer.complete()
+            self.add_xp(xp_reward)
+            self.total_quests += 1
+            self.save()
+            logger.debug(f"[CHAR.COMPLETE_QUEST] XP awarded: {xp_reward}, Total quests completed: {self.total_quests}")
+        except Exception as e:
+            logger.exception(f"[CHAR.COMPLETE_QUEST] Error updating XP or quest count for character {self.id}: {e}")
+            return None
 
         completion_data = {
             "quest_id": quest.id,
@@ -226,17 +238,9 @@ class Character(Person, LifeCycleMixin):
             "total_quests": self.total_quests,
             "rewards": rewards,
         }
-        profile = PlayerCharacterLink().get_profile(self)
-
-        message = ServerMessage.objects.create(
-            profile=profile,
-            type="event",
-            action="quest_complete",
-            data=completion_data,
-        )
-
-        if trigger_ws_update:
-            send_group_message(f"profile_{profile.id}", message)
+        
+        logger.info(f"[CHAR.COMPLETE_QUEST] Quest completion successful: {completion_data}")
+        return completion_data
 
             
 class PlayerCharacterLink(models.Model):

@@ -32,7 +32,7 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
             
             self.profile_group = f"profile_{self.profile.id}"
             await self.channel_layer.group_add(self.profile_group, self.channel_name)
-            logger.info(f"[CONNECT] Consumer {self.channel_name} joined group: {self.profile_group}")
+            #logger.debug(f"[CONNECT] Consumer {self.channel_name} joined group: {self.profile_group}")
 
             #logger.info(f"Consumer subscribed to: {self.profile_group}")
             #logger.info(f"Sending message to: profile_{profile.id}")
@@ -41,11 +41,6 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
 
             self.activity_timer = await self.get_activity_timer()
             self.quest_timer = await self.get_quest_timer()
-
-            # logger.debug(f"Starting timers for profile {self.profile.id}")
-            # if hasattr(self, "profile") and hasattr(self, "character"):
-            #     from .utils import start_timers
-            #     start_timers(self.profile, self.activity_timer, self.quest_timer)
 
             await self.send_json({
                 "type": "console.log", 
@@ -90,32 +85,35 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
         
 
     async def receive_json(self, event, **kwargs):
-        type = event.get("type")
-        logger.info(f"[RECEIVE JSON] Message received: {event}, type: {type}")
+        message_type = event.get("type")
+        logger.info(f"[RECEIVE JSON] Message received: {event}, type: {message_type}")
 
-        if type:
-            logger.debug(f"[RECEIVE JSON] Processing type: {type}")
-            if type == "client_request":
-                logger.info(f"[RECEIVE JSON] Sending to handle_client_request")
+        await database_sync_to_async(self.quest_timer.refresh_from_db)()
+        if message_type:
+            logger.debug(f"[RECEIVE JSON] Processing type: {message_type}")
+            if message_type == "client_request":
+                #logger.debug(f"[RECEIVE JSON] Sending to handle_client_request")
                 await self.handle_client_request(event)
-            elif type == "ping":
+            elif message_type == "ping":
                 await self.send_json({"type": "pong", "action": "pong", "message": "pong"})
-                if self.quest_timer.status != "complete":
+                if self.quest_timer.status != "completed":
+                    logger.debug(f"[RECEIVE JSON] Quest status: {self.quest_timer.status}")
                     time_finished = await database_sync_to_async(self.quest_timer.time_finished)()
                     if time_finished:
-                        #await database_sync_to_async(process_complete_quest)(self.profile, self.character, self.activity_timer, self.quest_timer)
-                        pass
-            else: logger.warning(f"[RECEIVE JSON] Unknown type received: {type}")
+                        logger.debug(f"[RECEIVE JSON] Quest timer is finished? {time_finished}")
+                        await database_sync_to_async(process_completion)(self.profile, self.character, "complete_quest")
+                        #pass
+            else: logger.warning(f"[RECEIVE JSON] Unknown type received: {message_type}")
         else:
             logger.warning(f"[RECEIVE JSON] Received data without type: {event}")
 
     async def action(self, event):
         logger.info(f"[HANDLE ACTION] Handling action: {event}")
-        type = event.get("type")
-        logger.debug(f"[HANDLE ACTION] Received type {type} with action {event.get("action")}")
+        message_type = event.get("type")
+        #logger.debug(f"[HANDLE ACTION] Received type {message_type} with action {event.get("action")}")
         
         if self.channel_name:  # If WebSocket is open
-            logger.debug(f"[HANDLE ACTION] Sending action: {event}")
+            #logger.debug(f"[HANDLE ACTION] Sending action: {event}")
             await self.send_json(event)
         else:
             # Store the action for later if WebSocket is closed
@@ -153,13 +151,21 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
         elif action == "pause_timers":
             await control_timers(self.profile, self.activity_timer, self.quest_timer, "pause")
         elif action in ["create_activity", "choose_quest"]:
+            #qt = self.quest_timer
+            #logger.debug(f"[HANDLE CLIENT REQUEST] Quest timer status/dur/elapsed/remaining: {qt.status}/{qt.duration}/{qt.get_elapsed_time()}/{qt.get_remaining_time()}")
             success = await database_sync_to_async(process_initiation)(self.profile, self.character, action)
             if not success:
-                logger.error(f"[HANDLE CLIENT REQUEST] Failed to initiate {action}.")
+                logger.warning(f"[HANDLE CLIENT REQUEST] Failed to initiate {action}.")
         elif action in ["complete_quest", "submit_activity"]:
+            if action == "complete_quest" and self.quest_timer.status not in ["active", "waiting", "paused"]:
+                logger.warning(f"[HANDLE CLIENT REQUEST] Cannot complete quest: Invalid status {self.quest_timer.status}")
+                return
+            
             success = await database_sync_to_async(process_completion)(self.profile, self.character, action)
+            logger.debug(f"[HANDLE CLIENT REQUEST] {action} result: {success}")
             if not success:
-                logger.error(f"[HANDLE CLIENT REQUEST] Failed to complete {action}.")
+                logger.warning(f"[HANDLE CLIENT REQUEST] Failed to complete {action}, result: {success}")
+            
         else:
             logger.warning(f"[HANDLE CLIENT REQUEST] Unknown action: {action}")
 
@@ -209,18 +215,20 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
 
 
     async def server_message(self, event):
-        data = event.get("data", {})
-        logger.info(f"[SERVER MESSAGE] Sending message: {data}")
+        logger.info(f"[SERVER MESSAGE] Preparing to send message: {event}")
+
+        message_type = event.get("type")
+        if message_type == "server_message":
+            data = event.get("data")
+        else:
+            data = event
         
-        if isinstance(data, ServerMessage) or isinstance(data, dict):
-            if isinstance(data, ServerMessage):
-                data = data.to_dict()
-            else:
-                logger.warning(f"[SERVER MESSAGE] Data is not a ServerMessage")
+        if isinstance(data, dict):
             await self.send_json(data)
+            logger.info(f"[SERVER MESSAGE] Sent message: {data}")
 
         else:
-            # Handle if data is neither a dict nor a ServerMessage
+            # Handle if data is not a dict
             logger.error(f"[SERVER MESSAGE] Unexpected data type: {type(data)} - {data}")
             await self.send_json({"error": "Invalid data type", "message": f"Received data of type {type(data)}"})
 

@@ -71,6 +71,7 @@ class ActivityAdmin(admin.ModelAdmin):
     list_display = ['profile', 'name', 'duration', 'created_at']
     list_filter = [
         'created_at',
+        'duration',
         ]
     fields = [
         'profile',
@@ -142,10 +143,10 @@ class ServerMessageAdmin(admin.ModelAdmin):
         'action',
         #'data',
         'message', 
+        'is_delivered',
         'created_at',
     ]
     readonly_fields = ['created_at']
-
 
 
 

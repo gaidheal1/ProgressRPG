@@ -8,12 +8,11 @@ communication between the server and users.
 
 Functions:
     - check_quest_eligibility(character, profile): Checks which quests a character is eligible for based on their profile and quest history.
-    - assign_character_to_profile(profile): Assigns a character to a given profile and initializes quests.
-    - send_signup_email(user): Sends a welcome email to a newly registered user.
     - start_server_timers(act_timer, quest_timer): Asynchronously starts the server-side activity and quest timers.
     - pause_server_timers(act_timer, quest_timer): Asynchronously pauses the server-side activity and quest timers.
-    - control_timers(profile_id, act_timer, quest_timer): Asynchronously starts or pauses both server and client timers, with WebSocket feedback.
-    - process_complete_quest(profile_id, character, act_timer, quest_timer): Completes a quest for a character, handling timers and WebSocket updates.
+    - control_timers(profile, act_timer, quest_timer, mode): Asynchronously starts or pauses both server and client timers, with WebSocket feedback.
+    - process_initiation(profile, character, action): Create activity or choose quest, handling timers and WebSocket updates.
+    - process_completion(profile, character, action): Submits activity or completes quest, handling timers and WebSocket updates.
     - send_group_message(group_name, message): Sends a message to a WebSocket group.
 
 Usage:
@@ -33,22 +32,27 @@ from django.db import transaction, connection, IntegrityError
 from django.utils.html import escape
 from django.utils.timezone import now
 
-from .models import QuestCompletion, Quest, ServerMessage
+from .models import QuestCompletion, Quest, ServerMessage, ActivityTimer, QuestTimer
 from .serializers import QuestSerializer, QuestTimerSerializer, ActivitySerializer, ActivityTimerSerializer
 
+from character.models import Character
 from character.serializers import CharacterSerializer
+
+from users.models import Profile
 from users.serializers import ProfileSerializer
 
 import logging, json, asyncio
 
 logger = logging.getLogger("django")  # Get the logger for this module
 
-def check_quest_eligibility(character, profile):
+def check_quest_eligibility(character: Character, profile: Profile) -> list:
     """
     Checks the eligibility of quests for a specific character and profile.
 
     :param character: The character instance to evaluate quests for.
+    :type character: Character
     :param profile: The profile instance associated with the character.
+    :type profile: Profile
     :return: A list of eligible quests for the given character and profile.
     """
     logger.info(f"[CHECK QUEST ELIGIBILITY] Checking eligibility for character {character.id} and profile {profile.id}")
@@ -56,25 +60,26 @@ def check_quest_eligibility(character, profile):
     quests_done = {}
     for completion in char_quests:
         quests_done[completion.quest] = completion.times_completed
-        logger.debug(f"[CHECK QUEST ELIGIBILITY] Quest {completion.quest} completed {completion.times_completed} times")
+        #logger.debug(f"[CHECK QUEST ELIGIBILITY] Quest {completion.quest} completed {completion.times_completed} times")
     all_quests = Quest.objects.all()
 
     eligible_quests = []
     for quest in all_quests:
-        logger.debug(f"[CHECK QUEST ELIGIBILITY] Evaluating quest: {quest}")
+        #logger.debug(f"[CHECK QUEST ELIGIBILITY] Evaluating quest: {quest}")
 
         # Test for eligibility
         if quest.checkEligible(character, profile) and \
             quest.not_repeating(character) and \
             quest.requirements_met(quests_done):
-                logger.debug(f"[CHECK QUEST ELIGIBILITY] Quest eligible: {quest}")
+                #logger.debug(f"[CHECK QUEST ELIGIBILITY] Quest eligible: {quest}")
                 eligible_quests.append(quest)
         else:
-            logger.debug(f"[CHECK QUEST ELIGIBILITY] Quest not eligible: {quest}")
+            #logger.debug(f"[CHECK QUEST ELIGIBILITY] Quest not eligible: {quest}")
+            pass
     return eligible_quests
 
 
-def start_server_timers(act_timer, quest_timer):
+def start_server_timers(act_timer: ActivityTimer, quest_timer: QuestTimer):
     """
     Attempts to start server-side activity and quest timers.
 
@@ -86,8 +91,10 @@ def start_server_timers(act_timer, quest_timer):
         and the second value is a string containing additional information or error details.
     """
     logger.info("[START SERVER TIMERS] Attempting to start server timers")
-    logger.info(f"[START SERVER TIMERS] Timers status: activity={act_timer.status}, quest={quest_timer.status}")
- 
+    logger.debug(f"[START SERVER TIMERS] Timers status: activity={act_timer.status}, quest={quest_timer.status}")
+    qt = quest_timer
+    logger.debug(f"[START SERVER TIMERS] Quest timer status/duration/elapsed/remaining: {qt.status}/{qt.duration}/{qt.get_elapsed_time()}/{qt.get_remaining_time()}")
+
     # if act_timer.status != "empty" and act_timer.activity is None:
     #     logger.error(f"[START SERVER TIMERS] Timer status is {act_timer.status} but activity empty ({act_timer.activity})")
     #     await sync_to_async(act_timer.reset)()
@@ -119,7 +126,7 @@ def start_server_timers(act_timer, quest_timer):
         return False, result_text
 
 
-def pause_server_timers(act_timer, quest_timer):
+def pause_server_timers(act_timer: ActivityTimer, quest_timer: QuestTimer):
     """
     Pauses server-side activity and quest timers.
 
@@ -131,24 +138,25 @@ def pause_server_timers(act_timer, quest_timer):
         and the second value is a string containing additional information or error details.
     """
     logger.info("[PAUSE SERVER TIMERS] Pausing server timers")
-    logger.info(f"[PAUSE SERVER TIMERS] Timers status before: {act_timer.status}/{quest_timer.status}")
-    
+    logger.debug(f"[PAUSE SERVER TIMERS] Timers status before: {act_timer.status}/{quest_timer.status}")
+    qt = quest_timer
+    logger.debug(f"[PAUSE SERVER TIMERS] Quest timer status/duration/elapsed/remaining: {qt.status}/{qt.duration}/{qt.get_elapsed_time()}/{qt.get_remaining_time()}")
     try:
         if act_timer.status not in ["completed", "empty"]:
             act_timer.pause()
-            logger.info("[PAUSE SERVER TIMERS] Activity timer successfully paused")
+            logger.debug("[PAUSE SERVER TIMERS] Activity timer successfully paused")
         else:
             result_text = f"[PAUSE SERVER TIMERS] Activity timer NOT paused, status: {act_timer.status}"
-            logger.info(result_text)
+            logger.debug(result_text)
 
         if quest_timer.status not in ["completed", "empty"]:
             quest_timer.pause()
-            logger.info("[PAUSE SERVER TIMERS] Quest timer successfully paused")
+            logger.debug("[PAUSE SERVER TIMERS] Quest timer successfully paused")
         else:
-            logger.info(f"[PAUSE SERVER TIMERS] Quest timer NOT paused, status: {act_timer.status}")
+            logger.debug(f"[PAUSE SERVER TIMERS] Quest timer NOT paused, status: {act_timer.status}")
         
-        logger.info("[PAUSE SERVER TIMERS] Timers paused (or status is complete/empty)")
-        logger.info(f"[PAUSE SERVER TIMERS] Timers status after: {act_timer.status}/{quest_timer.status}")
+        #logger.debug("[PAUSE SERVER TIMERS] Timers paused (or status is complete/empty)")
+        logger.debug(f"[PAUSE SERVER TIMERS] Timers status after pausing: {act_timer.status}/{quest_timer.status}")
         
         return True, "Success"
     except Exception as e:
@@ -157,7 +165,7 @@ def pause_server_timers(act_timer, quest_timer):
         return False, result_text
 
 
-async def control_timers(profile, act_timer, quest_timer, mode):
+async def control_timers(profile: Profile, act_timer: ActivityTimer, quest_timer: QuestTimer, mode: str) -> bool:
     """
     Starts or pauses timers for a specific profile by controlling server-side timers.
 
@@ -169,11 +177,12 @@ async def control_timers(profile, act_timer, quest_timer, mode):
     :type quest_timer: QuestTimer
     :param mode: Should be "start" or "pause".
     :type mode: str
-    :return: None.
+    :return: True if success, otherwise False.
     """
     profile_id = profile.id
     logger.info(f"[CONTROL TIMERS] Performing '{mode}' on timers for profile {profile_id}")
-
+    qt = quest_timer
+    logger.debug(f"[CONTROL TIMERS] Quest timer status/duration/elapsed/remaining: {qt.status}/{qt.duration}/{qt.get_elapsed_time()}/{qt.get_remaining_time()}")
     if mode == "start":
         server_success, result_text = await database_sync_to_async(start_server_timers)(act_timer, quest_timer)
         action = "start_timers"
@@ -185,21 +194,24 @@ async def control_timers(profile, act_timer, quest_timer, mode):
         success_message = "Timers successfully paused"
         failure_message = "Pausing timers failed"
     else:
-        logger.warning(f"[CONTROL TIMERS] Invalid mode: {mode}")
+        result_text = f"[CONTROL TIMERS] Invalid mode: {mode}"
+        logger.warning(result_text)
 
     if server_success:
         logger.info(f"[CONTROL TIMERS] {success_message} for profile {profile_id}")
         await send_group_message(f"profile_{profile_id}", {"type": "action", "action": action, "success": True})
+        return True
     else:
         logger.warning(f"[CONTROL TIMERS] {failure_message} for profile {profile_id}")
         await send_group_message(f"profile_{profile_id}", {
-            "type": "server_message",
+            "type": "response",
             "action": "console.log",
             "message": result_text,
         })
+        return False
 
 
-def server_quest_ready(quest_timer):
+def server_quest_ready(quest_timer: QuestTimer) -> bool:
     """
     Checks if server quest timer is (nearly) complete.
     :param quest_timer: Quest timer
@@ -214,7 +226,7 @@ def server_quest_ready(quest_timer):
             return True
 
 
-def process_initiation(profile, character, action):
+def process_initiation(profile: Profile, character: Character, action: str) -> bool:
     """
     Processes the initiation of an activity or quest, starting timers if possible.
 
@@ -222,53 +234,40 @@ def process_initiation(profile, character, action):
     :type profile: Profile
     :param character: The character instance completing the quest.
     :type character: Character
-    :param act_timer: The activity timer instance.
-    :type act_timer: ActivityTimer
-    :param quest_timer: The quest timer instance.
-    :type quest_timer: QuestTimer
     :param action: The action being performed (e.g., "create_activity" or "choose_quest").
     :type action: str
     :return: True if the quest is successfully completed, False otherwise.
     :rtype: bool
     """
+    profile.refresh_from_db()
     profile_id = profile.id
     act_timer = profile.activity_timer
+    character.refresh_from_db()
     quest_timer = character.quest_timer
     logger.info(f"[PROCESS INITIATION] Initiating {action} for profile {profile_id}, character {character.id}")
-    logger.info(f"[PROCESS INITIATION] Timers status: {act_timer.status}/{quest_timer.status}")
-    #if action == "quest_complete":
-    #    ready = server_quest_ready(quest_timer)
-    #else: ready = True
-    ready = True
+    #logger.debug(f"[PROCESS INITIATION] Timers status: {act_timer.status}/{quest_timer.status}")
+    qt = quest_timer
+    #logger.debug(f"[PROCESS INITIATION] Quest timer after refresh status/duration/elapsed/remaining: {qt.status}/{qt.duration}/{qt.get_elapsed_time()}/{qt.get_remaining_time()}")
 
-    if ready:
-        start_success, result_text = start_server_timers(act_timer, quest_timer)
-        if not start_success:
-            logger.warning(f"[PROCESS INITIATION] Failed to start timers for profile {profile_id}")
-            async_to_sync(send_group_message)(f"profile_{profile_id}", {
-                "type": "error",
-                "action": "warn",
-                "message": "Starting timers failed"
-            })
-            return False
-        else: # Success
-            act_timer.refresh_from_db()
-            quest_timer.refresh_from_db()
-            async_to_sync(send_group_message)(f"profile_{profile_id}", {
-                "type": "action",
-                "action": "create_activity" if action == "create_activity" else "choose_quest",
-            })
-            return True
-    
-    # else:
-    #     logger.warning(f"[PROCESS INITIATION] Quest not ready for completion")
-    #     serialized_timer = QuestTimerSerializer(quest_timer).data
-    #     async_to_sync(send_group_message)(f"profile_{profile_id}", {"type": "action", "action": "correct_timer", "data": serialized_timer})
-    #     return False
+    start_success, result_text = start_server_timers(act_timer, quest_timer)
+    if not start_success:
+        logger.info(f"[PROCESS INITIATION] Failed to start timers for profile {profile_id}. Result: {result_text}")
+        async_to_sync(send_group_message)(f"profile_{profile_id}", {
+            "type": "response",
+            "action": "console.log",
+            "message": result_text
+        })
+        return False
+    else: # Success
+        #act_timer.refresh_from_db()
+        #quest_timer.refresh_from_db()
+        async_to_sync(send_group_message)(f"profile_{profile_id}", {
+            "type": "action",
+            "action": "create_activity" if action == "create_activity" else "choose_quest",
+        })
+        return True
 
-    return
-
-def process_completion(profile, character, action):
+def process_completion(profile: Profile, character: Character, action: str) -> bool:
     """
     Processes the completion of an activity or quest, pausing timers.
 
@@ -276,15 +275,13 @@ def process_completion(profile, character, action):
     :type profile: Profile
     :param character: The character instance completing the quest.
     :type character: Character
-    :param act_timer: The activity timer instance.
-    :type act_timer: ActivityTimer
-    :param quest_timer: The quest timer instance.
-    :type quest_timer: QuestTimer
     :param action: The action being performed (e.g., "quest_complete" or "submit_activity").
     :type action: str
     :return: True if the quest is successfully completed, False otherwise.
     :rtype: bool
     """
+    profile.refresh_from_db()
+    character.refresh_from_db()
     profile_id = profile.id
     act_timer = profile.activity_timer
     quest_timer = character.quest_timer
@@ -313,15 +310,15 @@ def process_completion(profile, character, action):
                 "action": "quest_complete" if action == "complete_quest" else "submit_activity",
             })
             return True
-    
+
     else: # Quest timer not near enough to completion
         logger.warning(f"[PROCESS COMPLETION] Quest not ready for completion")
         serialized_timer = QuestTimerSerializer(quest_timer).data
-        async_to_sync(send_group_message)(f"profile_{profile_id}", {"type": "action", "action": "correct_timer", "data": serialized_timer})
+        async_to_sync(send_group_message)(f"profile_{profile_id}", {"success": True, "type": "action", "action": "correct_quest_timer", "data": serialized_timer})
         return False
 
 
-async def send_group_message(group_name, message):
+async def send_group_message(group_name: str, message: dict) -> bool:
     # """
     # Sends a message to a WebSocket group.
 
@@ -331,23 +328,24 @@ async def send_group_message(group_name, message):
     # :type message: dict
     # :return: True if the message is successfully sent, False otherwise.
     # """
-    logger.info(f"[SEND GROUP MESSAGE] Sending message to group {group_name}. Message type: {message.get('type')}, action: {message.get('action')}, message: {message.get('message')}\ndata: {message.get('data')}\n")
-
+    logger.info(f"[SEND GROUP MESSAGE] Sending message to group {group_name}. Message: {message}")
+    #logger.debug(f"[SEND GROUP MESSAGE] Sending message to group {group_name}. Message type: {message.get('type')}, action: {message.get('action')}, message: {message.get('message')}\ndata: {message.get('data')}\n")
+    #logger.debug(f"[SEND GROUP MESSAGE] Type of message argument: {type(message)}")
     if message.get("type") in ["event", "notification", "response"]:
-        logger.info("[SEND GROUP MESSAGE] Wrapping message in 'server message' type")
+        logger.debug("[SEND GROUP MESSAGE] Wrapping message in 'server message' type")
         message = {
-            "type": "server.message",
+            "type": "server_message",
             "data": message
         }
     elif message.get("type") == "action":
-        logger.info(f"[SEND GROUP MESSAGE] Action type. Message instance type: {type(message)}")
+        logger.debug(f"[SEND GROUP MESSAGE] Action type. Message instance type: {type(message)}")
 
     channel_layer = get_channel_layer()
-    logger.info(f"[SEND GROUP MESSAGE] Channel layer: {channel_layer}")
+    #logger.info(f"[SEND GROUP MESSAGE] Channel layer: {channel_layer}")
     if channel_layer is not None:
         try:
-            sent = await channel_layer.group_send("profile_1", message)
-            logger.info(f"[SEND GROUP MESSAGE] Data sent to group 'profile_1': {message}. Sent status: {sent}")
+            await channel_layer.group_send("profile_1", message)
+            logger.debug(f"[SEND GROUP MESSAGE] Data sent to group 'profile_1': {message}")
             return True
         except ConnectionError as e:
             logger.error(f"[SEND GROUP MESSAGE] Connection error sending data to group '{group_name}': {e}")
