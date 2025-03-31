@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from .base import *
 
 LOGGING = {
-    'version': 2,
+    'version': 1,
     'disable_existing_loggers': False,
 
     'formatters' : {
