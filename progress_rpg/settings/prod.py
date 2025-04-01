@@ -61,6 +61,7 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
 print("DEBUG:", DEBUG)
 
+REGISTRATION_ENABLED = False
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/

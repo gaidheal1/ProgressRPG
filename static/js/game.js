@@ -1095,9 +1095,9 @@ function handlePong(data) {
   //console.log(data.message);
 }
 
-////////////////////////////////
-/////// INITIALISE APP   //////
-//////////////////////////////
+////////////////////////////////////////////////////////////////
+/////// INITIALISE APP   //////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 document.addEventListener("DOMContentLoaded", () => {
   initialiseTimers();
@@ -1167,7 +1167,10 @@ function connectWebsocket() {
 
   const gameplayContainer = document.getElementById("gameplay-container");
   const profileId = gameplayContainer?.dataset.profileId;
-  console.log(`profileId: ${profileId}`);
+  window.DEBUG = gameplayContainer?.dataset.debug;
+  window.DEBUG = window.DEBUG.toLowerCase() === "true" ? true : false;
+  //console.log(`profileId: ${profileId}`);
+  console.log(`debug: ${window.DEBUG}`);
 
   if (profileId) {
     window.ws = new ProfileWebSocket(profileId);
@@ -1293,5 +1296,33 @@ function handleSubmitBugReportResponse(data, submittedReport) {
     localStorage.setItem("bugReports", JSON.stringify(remainingReports));
   } else {
     console.error("Error submitting report:", data.message);
+  }
+}
+
+function logMessage(level, message, ...optionalParams) {
+  if (window.DEBUG) {
+    // Dev mode: Log to the console
+    switch (level) {
+      case "error":
+        console.error(message, ...optionalParams);
+        break;
+      case "warn":
+        console.warn(message, ...optionalParams);
+        break;
+      case "info":
+        console.info(message, ...optionalParams);
+        break;
+      default:
+        console.log(message, ...optionalParams);
+    }
+  } else {
+    // Prod mode: Send logs to a server (or ignore non-errors)
+    if (level === "error" || level === "warn") {
+      fetch("/log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ level, message, details: optionalParams }),
+      });
+    }
   }
 }

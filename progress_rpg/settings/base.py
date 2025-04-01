@@ -29,7 +29,7 @@ load_dotenv(dotenv_path)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', os.getenv('DJANGO_SETTINGS_MODULE', 'progress_rpg.settings.dev'))
 
-REGISTRATION_ENABLED = True
+
 SECRET_KEY_FALLBACKS=['django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$qj&(5ri-$']
 
 # Quick-start development settings - unsuitable for production

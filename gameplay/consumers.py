@@ -102,7 +102,7 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
                     if time_finished:
                         logger.debug(f"[RECEIVE JSON] Quest timer is finished? {time_finished}")
                         await database_sync_to_async(process_completion)(self.profile, self.character, "complete_quest")
-                        #pass
+
             else: logger.warning(f"[RECEIVE JSON] Unknown type received: {message_type}")
         else:
             logger.warning(f"[RECEIVE JSON] Received data without type: {event}")

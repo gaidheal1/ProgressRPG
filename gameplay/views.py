@@ -1,5 +1,6 @@
 from asgiref.sync import async_to_sync, sync_to_async
 from channels.layers import get_channel_layer
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, connection, IntegrityError, OperationalError, DatabaseError
@@ -39,7 +40,7 @@ def game_view(request):
     """
     try:
         logger.info(f"[GAME VIEW] Accessed by user {request.user.profile.id}")
-        return render(request, 'gameplay/game.html', {"profile": request.user.profile})
+        return render(request, 'gameplay/game.html', {"profile": request.user.profile, "debug": settings.DEBUG})
     except AttributeError as e:  # For user profile issues
         logger.error(f"[GAME VIEW] User attribute error: {str(e)}", exc_info=True)
         return JsonResponse({"error": "User information is unavailable."}, status=500)
@@ -543,7 +544,7 @@ def complete_quest(request):
             completion_data = character.complete_quest()
             if completion_data is None:
                 raise ValueError("Quest completion failed: No completion data returned.")
-            logger.info(f"[COMPLETE QUEST] Quest completed for character {character.id}, timers refreshed.")
+            logger.debug(f"[COMPLETE QUEST] Quest completed for character {character.id}, timers refreshed.")
         except ValueError as e:
             logger.error(f"Quest completion error: {e}")
         except IntegrityError as e:

@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils.timezone import now, timedelta
@@ -155,6 +155,28 @@ class RegisterView(CreateView):
     template_name = 'users/register.html'
     success_url = reverse_lazy('create_profile')
 
+    def get(self, request, *args, **kwargs):
+        """
+        Handle GET requests to display the registration form or redirect authenticated users.
+
+        :param request: The HTTP request object.
+        :type request: django.http.HttpRequest
+        :return: An HTTP response rendering the registration form or redirecting authenticated users.
+        :rtype: django.http.HttpResponse or django.http.HttpResponseRedirect
+        """
+        if not self.is_registration_enabled():
+            return redirect('registration_disabled')
+        return super().get(request, *args, **kwargs)
+    
+    def is_registration_enabled(self) -> bool:
+        """
+        Check if user registration is enabled.
+
+        :return: True if registration is enabled, False otherwise.
+        :rtype: bool
+        """
+        return getattr(settings, 'REGISTRATION_ENABLED', True)
+    
     def form_valid(self, form) -> HttpResponse:
         """
         Process a valid registration form, create the user, log them in, and send a welcome email.
@@ -164,6 +186,7 @@ class RegisterView(CreateView):
         :return: A redirect to the profile creation page.
         :rtype: django.http.HttpResponseRedirect
         """
+        
         user = form.save()
         logger.info(f"User registered successfully: {user.email} (ID: {user.id})")
 
@@ -171,14 +194,30 @@ class RegisterView(CreateView):
         if user is not None:
             login(self.request, user)
             logger.info(f"User {user.email} authenticated and logged in successfully.")
-
             send_signup_email(user)
-
         else:
             logger.warning(f"Authentication failed for user {user.username}.")
 
         return redirect(self.success_url)
     
+    def form_invalid(self, form) -> HttpResponse:
+        """
+        Handle the case when the registration form is invalid, logging the error and re-rendering the form.
+        """
+        logger.error(f"Invalid registration form submitted: {form.errors}")
+        return self.render_to_response(self.get_context_data(form=form))
+
+def registration_disabled_view(request):
+    """
+    Render a page indicating that registration is disabled.
+
+    :param request: The HTTP request object.
+    :type request: django.http.HttpRequest
+    :return: An HTTP response rendering the registration disabled template.
+    :rtype: django.http.HttpResponse
+    """
+    return render(request, 'users/registration_disabled.html')
+
 # Create profile view
 @transaction.atomic
 @login_required
