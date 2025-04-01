@@ -82,7 +82,7 @@ LOGGING = {
 dotenv_path = os.path.join(BASE_DIR, '.env')
 load_dotenv(dotenv_path)
 
-REGISTRATION_ENABLED = False
+REGISTRATION_ENABLED = True
 SECRET_KEY_FALLBACKS=['django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$qj&(5ri-$']
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
@@ -126,7 +126,7 @@ DATABASES = {
         'PASSWORD': DB_PASSWORD,
         'HOST': DB_HOST,
         'PORT': DB_PORT,
-        'CONN_MAX_AGE': 600,
+        'CONN_MAX_AGE': 60,
     }
 }
 
