@@ -2,8 +2,11 @@
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from gameplay.models import QuestTimer
+
 from .models import Character
+
+from gameplay.models import QuestTimer
+
 
 
 @receiver(post_save, sender=Character)

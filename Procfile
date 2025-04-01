@@ -1,3 +1,4 @@
-# release: python manage.py test
-web: gunicorn progress_rpg.wsgi:application --bind 0.0.0.0:$PORT
-worker: celery -A progress_rpg worker --loglevel=info
+release: python manage.py migrate
+web: daphne -b 0.0.0.0 -p $PORT progress_rpg.asgi:application 
+worker: python manage.py runworker default
+# celery: celery -A progress_rpg worker --loglevel=info

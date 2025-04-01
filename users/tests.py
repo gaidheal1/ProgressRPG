@@ -1,12 +1,13 @@
-from django.test import TestCase, Client
+
 from django.contrib.auth import get_user_model
+from django.test import TestCase, Client
 from django.urls import reverse
 from unittest import skip
+
 from .models import Profile
+
 from character.models import Character, PlayerCharacterLink
 
-
-# Create your tests here.
 
 
 class UserCreationTest(TestCase):

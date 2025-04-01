@@ -1,15 +1,59 @@
+"""
+User Management Models
+
+This module contains the models and custom manager for handling user-related data in the application.
+It includes a custom user model for email-based authentication, an abstract base model for shared
+attributes, and a profile model for tracking gameplay-specific details.
+
+Classes:
+    - CustomUserManager: A custom manager to handle the creation of users and superusers.
+    - CustomUser: A custom user model extending Django's AbstractUser with email-based login.
+    - Person: An abstract base model for characters or profiles, tracking levels, XP, and buffs.
+    - Profile: A concrete model for user profiles, extending the Person model to add gameplay-specific
+      attributes like activities, streaks, and buffs.
+
+Usage:
+These models are central to managing user authentication and gameplay profiles in the application.
+CustomUser enables email-based login, while Profile tracks user-specific gameplay progress, subscriptions, 
+and linked characters.
+
+Author:
+    Duncan Appleby
+
+"""
+
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.utils.timezone import now, timedelta
 from django.db import models, transaction
 from django.db.models import F, ExpressionWrapper, fields
+from django.utils.timezone import now, timedelta
 import logging
 
 logger = logging.getLogger("django")
 
+
 class CustomUserManager(BaseUserManager):
+    """
+    Custom manager for `CustomUser` model to handle user creation.
+
+    Methods:
+        create_user: Creates and returns a regular user with an email and password.
+        create_superuser: Creates and returns a superuser with elevated permissions.
+    """
+
     @transaction.atomic
     def create_user(self, email, password=None, **extra_fields):
-        """Create and return a regular user with an email and password."""
+        """
+        Create and return a regular user with an email and password.
+
+        :param email: The email address of the user.
+        :type email: str
+        :param password: The password for the user (optional).
+        :type password: str, optional
+        :param extra_fields: Additional fields for the user.
+        :type extra_fields: dict
+        :return: The created user instance.
+        :rtype: CustomUser
+        """
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
@@ -21,12 +65,33 @@ class CustomUserManager(BaseUserManager):
 
     @transaction.atomic
     def create_superuser(self, email, password=None, **extra_fields):
-        """Create and return a superuser with an email, username, and password."""
+        """
+        Create and return a superuser with elevated permissions.
+
+        :param email: The email address of the superuser.
+        :type email: str
+        :param password: The password for the superuser.
+        :type password: str
+        :param extra_fields: Additional fields for the superuser.
+        :type extra_fields: dict
+        :return: The created superuser instance.
+        :rtype: CustomUser
+        """
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(email, password, **extra_fields)
 
 class CustomUser(AbstractUser):
+    """
+    Custom user model extending Django's AbstractUser.
+
+    Attributes:
+        email (str): The unique email address for the user (used as the username field).
+        date_of_birth (date): The user's date of birth.
+        created_at (datetime): The timestamp when the user was created.
+        pending_delete (bool): Indicates if the user is pending deletion.
+        delete_at (datetime): The timestamp when the user is scheduled for deletion.
+    """
     username = None
     email = models.EmailField(unique=True)
     date_of_birth = models.DateField(blank=True, null=True)
@@ -42,6 +107,17 @@ class CustomUser(AbstractUser):
         return self.email
 
 class Person(models.Model):
+    """
+    An abstract base model representing a generic person with levels, XP, and buffs.
+
+    Attributes:
+        name (str): The name of the person.
+        xp (int): The current experience points of the person.
+        xp_next_level (int): The XP required for the next level.
+        xp_modifier (float): A multiplier for XP calculations.
+        level (int): The current level of the person.
+        created_at (datetime): The timestamp when the record was created.
+    """
     name = models.CharField(max_length=100, blank=True, null=True)
     xp = models.PositiveIntegerField(default=0)
     xp_next_level = models.PositiveIntegerField(default=0)
@@ -54,7 +130,12 @@ class Person(models.Model):
 
     @transaction.atomic
     def add_xp(self, amount):
-        """Add XP and handle level-up logic."""
+        """
+        Add experience points (XP) to the person and handle level-up logic.
+
+        :param amount: The amount of XP to add.
+        :type amount: int
+        """
         self.xp += amount
         while self.xp >= self.get_xp_for_next_level():
             self.level_up()
@@ -62,16 +143,31 @@ class Person(models.Model):
         self.save()
         
     def level_up(self):
-        """Increase level and reset XP."""
+        """
+        Increase the level of the person and reset XP accordingly.
+        """
         self.xp -= self.get_xp_for_next_level()
         self.level += 1
 
     def get_xp_for_next_level(self):
+        """
+        Calculate the XP required to reach the next level.
+
+        :return: The XP threshold for the next level.
+        :rtype: int
+        """
         return 100 * (self.level + 1) if self.level >= 1 else 100
     
     def apply_buffs(self, base_value, attribute):
         """
-        Apply active buffs to a given attribute (eg 'xp')
+        Apply active buffs to a given attribute (e.g., 'xp').
+
+        :param base_value: The initial value before applying buffs.
+        :type base_value: int or float
+        :param attribute: The attribute to which buffs are applied.
+        :type attribute: str
+        :return: The modified value after applying buffs.
+        :rtype: int
         """
         total_value = base_value
         for buff in self.buffs.filter(attribute=attribute):
@@ -86,6 +182,23 @@ class Person(models.Model):
 
 
 class Profile(Person):
+    """
+    Represents a user's gameplay profile, extending the abstract Person model.
+    Tracks user-specific gameplay data such as total activities, buffs, and characters.
+
+    Attributes:
+        user (CustomUser): The user associated with this profile.
+        bio (str): A brief biography or description for the profile.
+        total_time (int): Total time spent on activities, in seconds.
+        total_activities (int): Total number of activities logged.
+        is_premium (bool): Indicates if the user has a premium subscription.
+        last_login (datetime): The timestamp of the user's last login.
+        login_streak (int): The current login streak in consecutive days.
+        login_streak_max (int): The longest login streak achieved.
+        total_logins (int): Total number of logins recorded.
+        buffs (ManyToManyField): Active buffs currently applied to this profile.
+        onboarding_step (int): Current step in the onboarding process.
+    """
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     bio = models.TextField(max_length=1000, blank=True)
     total_time = models.IntegerField(default=0)
@@ -94,6 +207,7 @@ class Profile(Person):
     last_login = models.DateTimeField(default=now)
     login_streak = models.PositiveIntegerField(default=1)
     login_streak_max = models.PositiveIntegerField(default=1)
+    total_logins = models.PositiveIntegerField(default=0)
     buffs = models.ManyToManyField('gameplay.AppliedBuff', related_name='profiles', blank=True)
 
     ONBOARDING_STEPS = [
@@ -107,7 +221,12 @@ class Profile(Person):
 
     @property
     def current_character(self):
-        """Returns the player's active character based on link records."""
+        """
+        Retrieve the active character associated with this profile.
+
+        :return: The active character if one exists, otherwise None.
+        :rtype: Character or None
+        """
         from character.models import PlayerCharacterLink
         active_link = PlayerCharacterLink.objects.filter(profile=self, is_active=True).first()
         return active_link.character if active_link else None
@@ -116,12 +235,25 @@ class Profile(Person):
         return self.name if self.name else "Unnamed profile"
 
     def add_activity(self, time, num = 1):
+        """
+        Update the total time and number of activities for this profile.
+
+        :param time: The amount of time to add, in seconds.
+        :type time: int
+        :param num: The number of activities to increment by (default is 1).
+        :type num: int
+        """
         self.total_time += time
         self.total_activities += num
         self.save()
 
     def change_character(self, new_character):
-        """Handles switching player's character and updating"""
+        """
+        Switch the profile's active character to a new character.
+
+        :param new_character: The character to associate with this profile.
+        :type new_character: Character
+        """
         from character.models import PlayerCharacterLink
         old_link = PlayerCharacterLink.objects.filter(profile=self, is_active=True).first()
         if old_link:

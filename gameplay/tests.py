@@ -1,14 +1,17 @@
 # gameplay/tests.py
 
+from datetime import datetime
+from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.utils.timezone import now, timedelta
+from time import sleep
+from unittest import skip
+
 from .models import Quest, QuestRequirement, Activity, Skill, Project, QuestCompletion, QuestResults, Buff, AppliedBuff, ActivityTimer, QuestTimer, DailyStats, GameWorld
 from character.models import Character
-from django.contrib.auth import get_user_model
-from datetime import datetime
-from time import sleep
-from django.utils.timezone import now, timedelta
-from unittest import skip
+
+
 # Create your tests here.
 
 class TestQuestCreate(TestCase):

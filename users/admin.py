@@ -19,9 +19,16 @@ class CustomUserAdmin(UserAdmin):
     ]
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ("Personal Info", {"fields": ("date_of_birth",)}),
-        ('Permissions', {'fields': ('is_staff', 'is_superuser', 'is_active', 'groups', 'user_permissions')}),
-        ('Important dates', {'fields': ('last_login', 'created_at')}),
+        ("Personal Info", {
+            "fields": ("date_of_birth",)
+        }),
+        ('Permissions', {
+            'classes': ('collapse',),
+            'fields': ('is_staff', 'is_superuser', 'is_active', 'groups', 'user_permissions')
+        }),
+        ('Important dates', {
+            'fields': ('last_login', 'created_at')
+        }),
     )
     add_fieldsets = (
         (None, {
@@ -45,18 +52,25 @@ class PlayerAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         'last_login',
-        ]
-    fields = [
-        'user',
-        'name',
-        ('last_login', 'login_streak', 'login_streak_max'),
-        'bio',
-        ('xp', 'xp_next_level', 'xp_modifier'),
-        'level',
-        ('total_time', 'total_activities'),
-        ('onboarding_step',
-        'is_premium'),
     ]
+    
+    fieldsets = (
+        (None, {'fields': ('user', 'name')}),
+        ("Login", {
+            "fields": ('last_login', 'login_streak', 'login_streak_max', 'total_logins'),
+        }),
+        ('Levels/xp', {
+            #'classes': ('collapse',),
+            'fields': ('xp', 'xp_next_level', 'xp_modifier', 'level',),
+        }),
+        ('Metrics', {
+            'fields': ('total_time', 'total_activities'),
+        }),
+        ('Other', {
+            'fields': ('onboarding_step', 'is_premium'),
+        }),
+    )
+
     readonly_fields = [
         'last_login',
     ]

@@ -1,16 +1,17 @@
 # user.signals
-
+from datetime import timedelta
+from django.contrib.auth import get_user_model
+from django.contrib.auth.signals import user_logged_in
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.timezone import now
-from django.contrib.auth import get_user_model
-from django.contrib.auth.signals import user_logged_in
-from datetime import timedelta
-from .models import Profile
-from gameplay.models import ActivityTimer
-from character.models import Character
-from .utils import assign_character_to_profile
 import logging
+
+from .models import Profile
+from .utils import assign_character_to_profile
+
+from character.models import Character
+from gameplay.models import ActivityTimer
 
 logger = logging.getLogger("django")
 
@@ -55,5 +56,6 @@ def update_login_streak(sender, request, user, **kwargs):
         logger.debug(f"[UPDATE LOGIN STREAK] Profile {profile.id} missed a day. Resetting login streak.")
 
     profile.last_login = now()
+    profile.total_logins += 1
     profile.save()
     logger.debug(f"[UPDATE LOGIN STREAK] Updated login streak for profile {profile.id}: {profile.login_streak}")

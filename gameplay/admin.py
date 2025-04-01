@@ -3,7 +3,8 @@ from django.shortcuts import render
 from django.contrib import admin
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
-from .models import Quest, QuestRequirement, QuestCompletion, Activity, ActivityTimer, QuestTimer, QuestResults
+
+from .models import Quest, QuestRequirement, QuestCompletion, Activity, ActivityTimer, QuestTimer, QuestResults, ServerMessage
 
 # Register your models here.
     
@@ -70,6 +71,7 @@ class ActivityAdmin(admin.ModelAdmin):
     list_display = ['profile', 'name', 'duration', 'created_at']
     list_filter = [
         'created_at',
+        'duration',
         ]
     fields = [
         'profile',
@@ -85,24 +87,9 @@ class ActivityAdmin(admin.ModelAdmin):
     
 @admin.register(ActivityTimer)
 class ActivityTimerAdmin(admin.ModelAdmin):
-    list_display = ['profile', 'activity', 'start_time', 'elapsed_time', 'status']
-    actions = ['stop_timers', 'delete_timers']
-
-    def stop_timers(self, request, queryset):
-        for timer in queryset:
-            timer.pause()
-        self.message_user(request, "Selected timers have been stopped.")
-    stop_timers.short_description = "Stop selected timers"
-
-    def delete_timers(self, request, queryset):
-        queryset.delete()
-        self.message_user(request, "Selected timers have been deleted.")
-    delete_timers.short_description = "Delete selected timers"
-
-@admin.register(QuestTimer)
-class QuestTimerAdmin(admin.ModelAdmin):
-    list_display = ['character', 'start_time', 'elapsed_time', 'status']
-    fields = ['character', 'quest', 'start_time', 'elapsed_time', 'status']
+    list_display = ['profile', 'activity', 'elapsed_time', 'status']
+    list_filter = ['status',]
+    actions = ['pause_timers', 'reset_timers']
 
     def pause_timers(self, request, queryset):
         for timer in queryset:
@@ -115,6 +102,53 @@ class QuestTimerAdmin(admin.ModelAdmin):
             timer.reset()
         self.message_user(request, "Selected timers have been reset.")
     reset_timers.short_description = "Reset selected timers"
+
+@admin.register(QuestTimer)
+class QuestTimerAdmin(admin.ModelAdmin):
+    list_display = ['character', 'elapsed_time', 'status']
+    list_filter = ['status',]
+    fields = [
+        'character', 
+        'quest', 
+        'start_time', 
+        'elapsed_time',
+        'duration',
+        'status',
+    ]
+    actions = ['pause_timers', 'reset_timers']
+
+    def pause_timers(self, request, queryset):
+        for timer in queryset:
+            timer.pause()
+        self.message_user(request, "Selected timers have been paused.")
+    pause_timers.short_description = "Pause selected timers"
+
+    def reset_timers(self, request, queryset):
+        for timer in queryset:
+            timer.reset()
+        self.message_user(request, "Selected timers have been reset.")
+    reset_timers.short_description = "Reset selected timers"
+
+
+@admin.register(ServerMessage)
+class ServerMessageAdmin(admin.ModelAdmin):
+    list_display = ['profile', 'message', 'created_at']
+    list_filter = [
+        'profile',
+        'created_at',
+    ]
+    fields = [
+        'profile', 
+        'type',
+        'action',
+        #'data',
+        'message', 
+        'is_delivered',
+        'created_at',
+    ]
+    readonly_fields = ['created_at']
+
+
 
 # class CustomAdminSite(admin.AdminSite):
 #     #change_list_template = "admin/combined_timers.html"

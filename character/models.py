@@ -1,12 +1,16 @@
-from django.db import models, transaction
-from users.models import Person, Profile
-from gameplay.models import Buff, AppliedBuff, QuestCompletion
 from datetime import datetime
-import json, math, logging
-from random import random
+from django.db import models, transaction, IntegrityError
 from django.utils.timezone import now, timedelta
+from random import random
+import json, math, logging
+
+from users.models import Person, Profile
+
+from gameplay.models import Buff, AppliedBuff, QuestCompletion
+from gameplay.serializers import QuestResultSerializer
 
 logger = logging.getLogger("django")
+
 
 class CharacterRelationship(models.Model):
     characters = models.ManyToManyField('Character', through='CharacterRelationshipMembership')
@@ -183,30 +187,62 @@ class Character(Person, LifeCycleMixin):
 
     @transaction.atomic
     def complete_quest(self):
+        logger.info(f"[CHAR.COMPLETE_QUEST] Starting quest completion for {self}")
+        
         quest = self.quest_timer.quest
-        logger.info(f"[COMPLETE_QUEST] for {self}")
         logger.debug(f"{self.quest_timer}")
+        
         if quest is None:
-            print("Quest is None in Character.complete_quest!")
-        with transaction.atomic():
-            completion, created = QuestCompletion.objects.get_or_create(
-                character=self,
-                quest=quest,
-            )
-            if not created:
-                completion.times_completed += 1
-            completion.save()
-        if hasattr(quest, 'results'):
-            results = quest.results
-            #print("quest reward:", results)
-            results.apply(self)
+            logger.error(f"[CHAR.COMPLETE_QUEST] Quest is None for character {self.id}")
+            return None
 
-        xp_reward = self.quest_timer.complete()
-        self.add_xp(xp_reward)
-        self.total_quests += 1
-        self.save()
+        try:
+            with transaction.atomic():
+                completion, created = QuestCompletion.objects.get_or_create(
+                    character=self,
+                    quest=quest,
+                )
+                if not created:
+                    completion.times_completed += 1
+                completion.save()
+                logger.debug(f"[CHAR.COMPLETE_QUEST] Quest completion updated: {completion} (Created: {created})")
+        except IntegrityError as e:
+                logger.error(f"[CHAR.COMPLETE_QUEST] IntegrityError: failed to create or retrieve quest completion for character {self.id}, quest {quest.id}: {e}")
+                return None
+        except Exception as e:
+            logger.exception(f"[CHAR.COMPLETE_QUEST] Unexpected error while completing quest {quest.id} for character {self.id}: {e}")
+            return None
 
+        rewards = None
+        try:
+            if hasattr(quest, 'results'):
+                results = quest.results
+                results.apply(self)
+                rewards= QuestResultSerializer(results).data
+        except Exception as e:
+            logger.exception(f"[CHAR.COMPLETE_QUEST] Error applying rewards for quest {quest.id}: {e}")
 
+        try:
+            xp_reward = self.quest_timer.complete()
+            self.add_xp(xp_reward)
+            self.total_quests += 1
+            self.save()
+            logger.debug(f"[CHAR.COMPLETE_QUEST] XP awarded: {xp_reward}, Total quests completed: {self.total_quests}")
+        except Exception as e:
+            logger.exception(f"[CHAR.COMPLETE_QUEST] Error updating XP or quest count for character {self.id}: {e}")
+            return None
+
+        completion_data = {
+            "quest_id": quest.id,
+            "xp_reward": xp_reward,
+            "total_quests": self.total_quests,
+            "rewards": rewards,
+        }
+        
+        logger.info(f"[CHAR.COMPLETE_QUEST] Quest completion successful: {completion_data}")
+        return completion_data
+
+            
 class PlayerCharacterLink(models.Model):
     profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name='character_link')
     character = models.ForeignKey('Character', on_delete=models.CASCADE, related_name='profile_link')
@@ -214,16 +250,21 @@ class PlayerCharacterLink(models.Model):
     date_unlinked = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
-    def get_character(self, profile):
+    @classmethod
+    def get_character(cls, profile):
         link = PlayerCharacterLink.objects.filter(profile=profile, is_active=True).first()
         return link.character if link else None
+
+    @classmethod
+    def get_profile(cls, character):
+        link = PlayerCharacterLink.objects.filter(character=character, is_active=True).first()
+        return link.profile if link else None
     
     def unlink(self):
         """Marks link as inactive and records unlink date"""
         self.date_unlinked = now().date()
         self.is_active = False
         self.save()
-
 
 
 

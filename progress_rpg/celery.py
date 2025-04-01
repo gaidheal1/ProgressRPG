@@ -3,7 +3,8 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'progress_rpg.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", os.getenv("DJANGO_SETTINGS_MODULE", "progress_rpg.settings.dev"))
+
 
 app = Celery('progress_rpg')
 

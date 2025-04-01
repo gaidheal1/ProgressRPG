@@ -1,0 +1,50 @@
+# User error codes
+
+## 1. Authentication and Authorization (AUTH)
+Handle issues related to logging in, permissions, and user sessions:
+
+- AUTH001: Invalid login credentials.
+- AUTH002: Session expired or invalid token.
+- AUTH003: Account locked due to multiple failed attempts.
+- AUTH004: Insufficient permissions for the requested action.
+
+## 2. Database Errors (DB)
+Include problems with fetching, updating, or deleting data:
+
+- DB001: Failed to connect to the database.
+- DB002: Query timeout or exceeded time limits.
+- DB003: Data inconsistency (e.g., missing or corrupted data).
+- DB004: Failure to update user settings or profiles.
+
+## 3. Network and API Errors (NETWORK or API)
+Address connectivity issues and failures from external services:
+
+- NETWORK001: Unable to reach the server (e.g., due to downtime or bad connection).
+- NETWORK002: Request timeout.
+
+- API001: External API service unavailable.
+- API002: Invalid response from third-party services.
+
+## 4. User Input Validation (INPUT)
+Ensure user input meets the expected criteria:
+
+- INPUT001: Missing required fields (e.g., empty form submission).
+- INPUT002: Invalid format (e.g., email, date, or phone number).
+- INPUT003: Input exceeds allowed limits (e.g., too many characters).
+- INPUT004: Unsupported file type during upload.
+
+## 5. User Interface (UI)
+Highlight errors tied to front-end interactions:
+
+- UI001: Failed to load page components.
+- UI002: Action unavailable (e.g., disabled button due to backend issues).
+- UI003: Display inconsistency (e.g., incorrect data shown).
+- UI004: File upload progress stalled or failed.
+
+## 6. System and Infrastructure (SYS)
+For server-side or application-wide problems:
+
+- SYS001: Server overload (e.g., too many concurrent users).
+- SYS002: Maintenance mode activated.
+- SYS003: Unexpected application crash.
+- SYS004: Internal system error (generic fallback).
