@@ -38,15 +38,15 @@ SECRET_KEY_FALLBACKS=['django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$
 
 
 
-# CSRF_TRUSTED_ORIGINS = [
-#     'https://progress-rpg-dev-6581f3bc144e.herokuapp.com/',
-#     'http://127.0.0.1:8000',
-#     'http://localhost:8000',
-#     'http://localhost:5173',
-#     'http://192.168.0.4:8000',
-#     'http://192.168.0.1:8000',
-# ]
-CSRF_TRUSTED_ORIGINS = ["*"]
+CSRF_TRUSTED_ORIGINS = [
+    'https://progress-rpg-dev-6581f3bc144e.herokuapp.com/',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+    'http://localhost:5173',
+    'http://192.168.0.4:8000',
+    'http://192.168.0.1:8000',
+]
+#CSRF_TRUSTED_ORIGINS = ["*"]
 
 
 # Application definition
@@ -171,7 +171,8 @@ DEFAULT_FROM_EMAIL = 'admin@progressrpg.com'
 ADMINS = [('Admin', 'admin@progressrpg.com')]  # The emails to receive error notifications
 
 # Session settings
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
 SESSION_COOKIE_NAME = 'sessionid'
 SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
 SESSION_SAVE_EVERY_REQUEST = True
