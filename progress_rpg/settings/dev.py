@@ -108,11 +108,15 @@ print("DEBUG:", DEBUG)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').replace('\r', '').split(',')
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://127.0.0.1,http://localhost:8000').split(',')
+#ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').replace('\r', '').split(',')
+ALLOWED_HOSTS = ["*"]
+#CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://127.0.0.1,http://localhost:8000').split(',')
+CORS_ALLOWED_ORIGINS = ["*"]
+CORS_ALLOWED_HEADER = ["*"]
+CORS_ALLOWED_METHODS = ["*"]
 
-#print("ALLOWED HOSTS:", ALLOWED_HOSTS)
-#print("CORS:", CORS_ALLOWED_ORIGINS)
+print("ALLOWED HOSTS:", ALLOWED_HOSTS)
+print("CORS:", CORS_ALLOWED_ORIGINS)
 
 
 # Database
