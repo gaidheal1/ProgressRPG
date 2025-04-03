@@ -8,13 +8,15 @@ Author: Duncan Appleby
 
 # gameplay.models
 
+#from django_stubs_ext.db.models import Related
 from django.db import models, transaction
-from users.models import Person, Profile
+from django.db.models import ForeignKey, QuerySet
 from django.utils.timezone import now, timedelta
-from datetime import datetime
-import json, math, logging
-import traceback
-from random import random
+from typing import Optional, Iterable, Dict, Any, cast, List, TYPE_CHECKING
+import json, logging
+
+if TYPE_CHECKING:
+    from character.models import Character
 
 logger = logging.getLogger("django")
 
@@ -46,14 +48,14 @@ class Quest(models.Model):
     intro_text = models.TextField(max_length=2000, blank = True)
     outro_text = models.TextField(max_length=2000, blank = True)
     DURATION_CHOICES = [(300 * i) for i in range(1, 7)]
-    def default_duration_choices():
+    def default_duration_choices(self) -> List[int]:
         return [(300 * i) for i in range(1, 7)]
-    duration_choices = models.JSONField(default=default_duration_choices)
+    duration_choices: Any = models.JSONField(default=default_duration_choices)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
-    stages = models.JSONField(default=list)
+    stages: Any = models.JSONField(default=list)
 
     class Category(models.TextChoices):
         NONE = 'NONE', 'No category'
@@ -62,12 +64,15 @@ class Quest(models.Model):
         EVENT = 'EVENT', 'Event'
 
     category = models.CharField(max_length=20, default=Category.NONE)
+    results: Optional["QuestResults"] = None
 
     # Eligibility criteria
     is_premium = models.BooleanField(default=True)
     levelMin = models.IntegerField(default=0)
     levelMax = models.IntegerField(default=0)
     canRepeat = models.BooleanField(default=False)
+    quest_requirements: QuerySet["QuestRequirement"]
+    quest_completions: QuerySet["QuestCompletion"]
 
     class Frequency(models.TextChoices):
         NONE = 'NONE', 'No limit'
@@ -84,15 +89,19 @@ class Quest(models.Model):
     def __str__(self):
         return self.name
     
-    def apply_results(self, character):
+    def list_requirements(self) -> Iterable["QuestRequirement"]:
+        return self.quest_requirements.all()
+        
+    def apply_results(self, character: "Character"):
         """
         Apply the results and rewards of the quest to the specified character.
 
         :param character: The character to whom the quest rewards will be applied.
         :type character: Character
         """
-        self.results.apply(character)
-        character.save()  # Ensure all changes are persisted
+        if self.results:
+            self.results.apply(character)
+            character.save()  # Ensure all changes are persisted
 
     def requirements_met(self, completed_quests):
         """
@@ -104,13 +113,14 @@ class Quest(models.Model):
         :rtype: bool
         """
         #print("you have arrived in requirements_met")
-        for requirement in self.quest_requirements.all():
-            completed_count = completed_quests.get(requirement.prerequisite, 0)
-            if completed_count < requirement.times_required:
-                return False
-        return True
+        if hasattr(self, 'quest_requirements'):
+            for requirement in self.list_requirements():
+                completed_count = completed_quests.get(requirement.prerequisite, 0)
+                if completed_count < requirement.times_required:
+                    return False
+            return True
     
-    def not_repeating(self, character):
+    def not_repeating(self, character: "Character"):
         """
         Verify whether the quest can be repeated for the given character.
 
@@ -120,16 +130,17 @@ class Quest(models.Model):
         :rtype: bool
         """
         #print("you have arrived in not_repeating")
-        completions = self.quest_completions.all()
-        # Check repeating
-        if self.canRepeat == False:
-            for completion in completions:
-                if completion.character == character:
-                    if completion.times_completed >= 1:
-                        return False
-        return True
+        if hasattr(self, 'quest_completions'):
+            completions = self.quest_completions.all()
+            # Check repeating
+            if self.canRepeat == False:
+                for completion in completions:
+                    if completion.character == character:
+                        if completion.times_completed >= 1:
+                            return False
+            return True
 
-    def frequency_eligible(self, character):
+    def frequency_eligible(self, character: "Character"):
         """
         Check if the quest is eligible to be undertaken based on its frequency.
 
@@ -172,7 +183,7 @@ class Quest(models.Model):
                                 return False
         return True
     
-    def checkEligible(self, character, profile):
+    def checkEligible(self, character: "Character", profile):
         """
         Determine if the quest is eligible for the given character and profile.
 
@@ -219,7 +230,7 @@ class QuestResults(models.Model):
     def __str__(self):
         return f"Quest results for Quest '{self.quest.id}': {json.dumps(self.dynamic_rewards, indent=2)}"
 
-    def calculate_xp_reward(self, character, duration):
+    def calculate_xp_reward(self, character: "Character", duration: int):
         """
         Calculates the experience points awarded based on quest duration.
 
@@ -241,7 +252,7 @@ class QuestResults(models.Model):
         return max(1, round(final_xp))
 
     @transaction.atomic
-    def apply(self, character):
+    def apply(self, character: "Character"):
         """
         Apply the rewards associated with this quest to the given character, including
         coins, dynamic rewards, and buffs.
@@ -252,12 +263,16 @@ class QuestResults(models.Model):
         #character.add_coins(self.coin_reward)
         character.coins += self.coin_reward
 
-        for key, value in self.dynamic_rewards.items():
-            if hasattr(character, f"apply_{key}"):
-                method = getattr(character, f"apply_{key}")
-                method(value)
-            elif hasattr(character, key):
-                setattr(character, key, getattr(character, key) + value if isinstance(value, (int, float)) else value)
+        if self.dynamic_rewards:
+            rewards = cast(Dict[str, Any], self.dynamic_rewards or {})
+            for key, value in rewards.items():
+                if hasattr(character, f"apply_{key}"):
+                    method = getattr(character, f"apply_{key}")
+                    method(value)
+                elif hasattr(character, key):
+                    setattr(character, key, getattr(character, key) + value if isinstance(value, (int, float)) else value)
+        else:
+            logger.info(f"[QUESTRESULTS.APPLY] No dynamic rewards found for quest {self.quest.name}.")
 
         #print("self.buffs:", self.buffs)
         for buff_name in self.buffs:
@@ -346,7 +361,7 @@ class Activity(models.Model):
     class Meta:
         ordering = ['-created_at'] # Most recent activities first
 
-    def update_name(self, new_name):
+    def update_name(self, new_name: str):
         """
         Update the name of the activity.
 
@@ -356,7 +371,7 @@ class Activity(models.Model):
         self.name = new_name
         self.save(update_fields=['name'])
 
-    def add_time(self, num):
+    def add_time(self, num: int):
         """
         Add additional time to the activity's duration.
 
@@ -376,7 +391,7 @@ class Activity(models.Model):
         self.duration = num
         self.save(update_fields=['duration'])
 
-    def calculate_xp_reward(self):
+    def calculate_xp_reward(self) -> int:
         """
         Calculate the experience points (XP) reward for the activity.
 
@@ -500,13 +515,14 @@ class Timer(models.Model):
             self.status = 'waiting'
             self.save()
 
-    def complete(self):
+    def complete(self) -> int:
         """
         Mark the timer as 'completed' and update its elapsed time.
         """
         if self.status != 'completed':
             self.update_time()
             self.status = 'completed'
+        return 0
             
     def reset(self):
         """
@@ -605,10 +621,10 @@ class QuestTimer(Timer):
     quest = models.ForeignKey('Quest', on_delete=models.SET_NULL, related_name='quest_timer', null=True, blank=True)
     duration = models.IntegerField(default=0)
 
-    def save(self, *args, **kwargs):
-        #print(f"QuestTimer saved. {self}")
-        #traceback.print_stack()
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     #print(f"QuestTimer saved. {self}")
+    #     #traceback.print_stack()
+    #     super().save(*args, **kwargs)
 
     def change_quest(self, quest: Quest, duration: int):
         """
@@ -788,12 +804,12 @@ class Buff(models.Model):
 
 class AppliedBuff(Buff):
     applied_at = models.DateTimeField(auto_now_add=True)
-    # How do you include setup method as part of creation? Signal?
+    ends_at = models.DateTimeField(null=True, blank=True)
 
-    def setup(self):
-        end_time = now() + timedelta(seconds=self.duration)
-        ends_at = models.DateTimeField(end_time)
-        self.save()
+    def save(self, *args, **kwargs):
+        if not self.ends_at:
+            self.ends_at = now() + timedelta(seconds=self.duration)
+        super().save(*args, **kwargs)
 
     def is_active(self):
         """Check if buff is still active."""

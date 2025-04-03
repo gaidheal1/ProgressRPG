@@ -134,7 +134,7 @@ DATABASES = {
     }
 }
 
-REDIS_HOST = ('redis://localhost:6379')
+REDIS_HOST = 'redis://localhost:6379'
 
 CHANNEL_LAYERS = {
     "default": {

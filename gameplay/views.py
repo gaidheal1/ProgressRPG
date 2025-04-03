@@ -2,8 +2,9 @@ from asgiref.sync import async_to_sync, sync_to_async
 from channels.layers import get_channel_layer
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction, connection, IntegrityError, OperationalError, DatabaseError
+from django.db import IntegrityError, OperationalError, DatabaseError
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
@@ -112,25 +113,37 @@ def fetch_quests(request):
         return JsonResponse({"error": "Invalid method"}, status=405)
 
     profile = request.user.profile
-    logger.info(f"[FETCH QUESTS] Request received from user {profile.id}")
-    character = PlayerCharacterLink.get_character(profile)
+    try:
+        character = PlayerCharacterLink.get_character(profile)
+    except ValueError as e:
+        return JsonResponse({"Error: {str(e)}"})
 
+    logger.info(f"[FETCH QUESTS] Request received from user {profile.id}")
     try:
         logger.info(f"[FETCH QUESTS] Checking eligible quests for character {character.id}, {profile.id}")
-        eligible_quests = check_quest_eligibility(character, profile)
+        
+        cache_key = f"eligible_quests_{profile.id}"
+        quests = cache.get(cache_key)
+
+        if not quests:
+            eligible_quests = check_quest_eligibility(character, profile)
+            quests = QuestSerializer(eligible_quests, many=True).data
+            
+            cache.set(cache_key, quests, timeout=60*15)
+            
         
         for quest in eligible_quests:
             quest.save()
             logger.debug(f"[FETCH QUESTS] Quest {quest.id} - {quest.name} saved for character {character.id}")
 
-        serializer = QuestSerializer(eligible_quests, many=True).data
         
-        response = {
+        data = {
             "success": True,
-            "quests": serializer,
+            "quests": quests,
             "message": "Eligible quests fetched"
         }
-        return JsonResponse(response)
+        response = JsonResponse(data)
+        return response
 
     except ObjectDoesNotExist as e:
         # Raised when `character` or related objects are not found in the database.
@@ -198,7 +211,10 @@ def fetch_info(request):
         return JsonResponse({"error": "Invalid method"}, status=405)
     
     profile = request.user.profile
-    character = PlayerCharacterLink.get_character(profile)
+    try:
+        character = PlayerCharacterLink.get_character(profile)
+    except ValueError as e:
+        return JsonResponse({"Error: {str(e)}"})
 
     async_to_sync(test_redis_connection)()
 
@@ -361,7 +377,7 @@ def submit_activity(request):
         return JsonResponse({"error": "Invalid method"}, status=405)
     
     profile = request.user.profile
-    character = PlayerCharacterLink.get_character(profile)
+    #character = PlayerCharacterLink.get_character(profile)
 
     try:
         logger.info(f"[SUBMIT ACTIVITY] Profile {profile.id} submitting activity")
@@ -471,7 +487,10 @@ def choose_quest(request):
             logger.warning(f"[CHOOSE QUEST] Quest ID {quest_id} not found for user {profile.id}")
             return JsonResponse({"success": False, "message": "Error: quest not found"})
         
-        character = PlayerCharacterLink.get_character(profile)
+        try:
+            character = PlayerCharacterLink.get_character(profile)
+        except ValueError as e:
+            return JsonResponse({"Error: {str(e)}"})
         duration = data.get('duration')
         logger.debug(f"[CHOOSE QUEST] Profile {profile.id} selected duration {duration}")
 
@@ -530,7 +549,10 @@ def complete_quest(request):
         return JsonResponse({"error": "Invalid method"}, status=405)
     
     profile = request.user.profile
-    character = PlayerCharacterLink.get_character(profile)
+    try:
+        character = PlayerCharacterLink.get_character(profile)
+    except ValueError as e:
+        return JsonResponse({"Error: {str(e)}"})
     
     try:
         logger.info(f"[COMPLETE QUEST] Profile {profile.id} initiating quest completion")
@@ -556,6 +578,12 @@ def complete_quest(request):
         except Exception as e:
             logger.error(f"[COMPLETE QUEST] General error while completing quest for character {character.id}: {str(e)}", exc_info=True)
             return JsonResponse({"error": "An unexpected error occurred while completing the quest."}, status=500)
+
+        cache_key = f"eligible_quests_{profile.id}"
+        quests_cache = cache.get(cache_key)
+        if quests_cache:
+            cache.delete(cache_key)
+            logger.debug(f"[COMPLETE QUEST] Cache cleared for eligible quests of profile {profile.id}")
 
         try:
             eligible_quests = check_quest_eligibility(character, profile)

@@ -132,15 +132,6 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
             is_delivered=False
         )
 
-    async def server_message(self, event):
-        """
-        Handle messages sent by the server to the WebSocket group.
-        """
-        logger.info(f"[SERVER MESSAGE] Relaying group message. Event: {event}")
-
-        message = event['data']
-        await self.send_json(message)
-
 
     async def handle_client_request(self, message):
         logger.info(f"[HANDLE CLIENT REQUEST] Handling client request: {message}")

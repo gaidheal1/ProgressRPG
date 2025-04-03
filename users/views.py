@@ -94,6 +94,9 @@ class LoginView(FormView):
                 case _: 
                     logger.error(f"Invalid onboarding step for user {user.id}: {user.profile.onboarding_step}")
                     raise ValueError("Onboarding step number incorrect")
+                    return redirect('index')
+        else:
+            return redirect('game')
                 
     def form_invalid(self, form):
         """
@@ -196,7 +199,7 @@ class RegisterView(CreateView):
             logger.info(f"User {user.email} authenticated and logged in successfully.")
             send_signup_email(user)
         else:
-            logger.warning(f"Authentication failed for user {user.username}.")
+            logger.warning(f"Authentication failed for user {user}.")
 
         return redirect(self.success_url)
     
