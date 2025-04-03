@@ -99,7 +99,8 @@ CACHES = {
         "BACKEND": 'django_redis.cache.RedisCache',
         "LOCATION": REDIS_HOST,
         "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SSL": True,
         }
 
     }
