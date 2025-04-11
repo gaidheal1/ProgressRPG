@@ -475,10 +475,10 @@ function validateInput(input) {
 // api/activityApi.js
 async function createActivity() {
   const activityInput = document.getElementById("activity-input");
-  if (!validateInput(activityInput.value)) {
-    alert("Invalid input. Please use only letters, numbers, and spaces.");
-    return;
-  }
+  // if (!validateInput(activityInput.value)) {
+  //   alert("Invalid input. Please use only letters, numbers, and spaces.");
+  //   return;
+  // }
   try {
     const response = await fetch("/create_activity/", {
       method: "POST",

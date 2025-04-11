@@ -71,6 +71,10 @@ def fetch_activities(request):
     try:
         activities = Activity.objects.filter(profile=profile, created_at__date=timezone.now().date())
         serializer = ActivitySerializer(activities, many=True).data
+
+        # Remove current activity
+        if profile.activity_timer.status not in ["empty", "completed"]:
+            serializer.pop(0)
         
         response = {
             "success": True,
@@ -122,15 +126,17 @@ def fetch_quests(request):
     try:
         logger.info(f"[FETCH QUESTS] Checking eligible quests for character {character.id}, {profile.id}")
         
-        cache_key = f"eligible_quests_{profile.id}"
-        quests = cache.get(cache_key)
+        #cache_key = f"eligible_quests_{profile.id}"
+        #quests = cache.get(cache_key)
 
-        if not quests:
-            eligible_quests = check_quest_eligibility(character, profile)
-            quests = QuestSerializer(eligible_quests, many=True).data
+        #if not quests:
+            # eligible_quests = check_quest_eligibility(character, profile)
+            # quests = QuestSerializer(eligible_quests, many=True).data
             
-            cache.set(cache_key, quests, timeout=60*15)
+            # cache.set(cache_key, quests, timeout=60*15)
             
+        eligible_quests = check_quest_eligibility(character, profile)
+        quests = QuestSerializer(eligible_quests, many=True).data
         
         for quest in eligible_quests:
             quest.save()
@@ -216,7 +222,7 @@ def fetch_info(request):
     except ValueError as e:
         return JsonResponse({"Error: {str(e)}"})
 
-    async_to_sync(test_redis_connection)()
+    #async_to_sync(test_redis_connection)()
 
     try:
         logger.info(f"[FETCH INFO] Fetching data for profile {profile.id}, character {character.id}")
@@ -579,11 +585,11 @@ def complete_quest(request):
             logger.error(f"[COMPLETE QUEST] General error while completing quest for character {character.id}: {str(e)}", exc_info=True)
             return JsonResponse({"error": "An unexpected error occurred while completing the quest."}, status=500)
 
-        cache_key = f"eligible_quests_{profile.id}"
-        quests_cache = cache.get(cache_key)
-        if quests_cache:
-            cache.delete(cache_key)
-            logger.debug(f"[COMPLETE QUEST] Cache cleared for eligible quests of profile {profile.id}")
+        # cache_key = f"eligible_quests_{profile.id}"
+        # quests_cache = cache.get(cache_key)
+        # if quests_cache:
+        #     cache.delete(cache_key)
+        #     logger.debug(f"[COMPLETE QUEST] Cache cleared for eligible quests of profile {profile.id}")
 
         try:
             eligible_quests = check_quest_eligibility(character, profile)
