@@ -1,10 +1,9 @@
-from asgiref.sync import sync_to_async
+#from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
-from channels.exceptions import StopConsumer
+#from channels.exceptions import StopConsumer
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from django.apps import apps
 from django.db import transaction
-from django.utils.timezone import now
+#from django.utils.timezone import now
 import json, logging
 
 from .models import ServerMessage

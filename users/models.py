@@ -22,7 +22,7 @@ Author:
 
 """
 
-from django.contrib.auth.models import AbstractUser, BaseUserManager, UserManager
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models, transaction
 from django.utils.timezone import now
 from typing import TYPE_CHECKING, Optional

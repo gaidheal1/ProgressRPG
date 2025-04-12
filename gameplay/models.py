@@ -10,7 +10,8 @@ Author: Duncan Appleby
 
 #from django_stubs_ext.db.models import Related
 from django.db import models, transaction
-from django.db.models import ForeignKey, QuerySet
+#from django.db.models import ForeignKey
+from django.db.models import QuerySet
 from django.utils.timezone import now, timedelta
 from typing import Optional, Iterable, Dict, Any, cast, List, TYPE_CHECKING
 import json, logging

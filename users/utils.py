@@ -22,6 +22,7 @@ Author:
 """
 
 from django.conf import settings
+from django.contrib.sessions.models import Session
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.timezone import now, timedelta
@@ -93,3 +94,35 @@ def send_signup_email(user):
         fail_silently=False,  # Set to False to raise errors if email fails
         html_message=message
     )
+
+    
+def kick_old_sessions(user, current_session_key=None):
+    """
+    Deletes all active sessions for a user except the current one.
+    """
+    logger.info(f"[KICK OLD SESSIONS] User {user.id} logged in. Checking for old sessions.")
+
+    try:
+        
+        try:
+            sessions = Session.objects.filter(expire_date__gte=now())
+            logger.debug(f"[KICK OLD SESSIONS] Filtered sessions: {sessions}")
+        except Exception as e:
+            logger.error(f"[KICK OLD SESSIONS] Error filtering sessions: {e}")
+            return
+
+        for session in sessions:
+            try:
+                data = session.get_decoded()
+                #logger.debug(f"[KICK OLD SESSIONS] Session key: {session.session_key}, data: {data}")
+                #logger.debug(f"[KICK OLD SESSIONS] Session userid: {data.get('_auth_user_id')}")
+
+                if data.get('_auth_user_id') == str(user.id):
+                    if session.session_key != current_session_key:
+                        #logger.debug(f"[KICK OLD SESSIONS] Killing other sessions for user {user.id}. Session key: {session.session_key}")
+                        session.delete()
+            except Exception as e:
+                logger.error(f"[KICK OLD SESSIONS] Error processing session {session.session_key}: {e}")
+
+    except Exception as e:
+        logger.error(f"[KICK OLD SESSIONS] Unexpected error: {e}")

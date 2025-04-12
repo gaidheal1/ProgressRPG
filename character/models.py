@@ -1,9 +1,9 @@
-from datetime import datetime
+#from datetime import datetime
 from django.db import models, transaction, IntegrityError
-from django.utils.timezone import now, timedelta
+from django.utils.timezone import now
 from random import random
 from typing import TYPE_CHECKING, Optional
-import json, math, logging
+import logging
 
 from users.models import Person, Profile
 

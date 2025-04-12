@@ -10,7 +10,7 @@ import logging
 from .models import Profile
 from .utils import assign_character_to_profile
 
-from character.models import Character
+#from character.models import Character
 from gameplay.models import ActivityTimer
 
 logger = logging.getLogger("django")
@@ -59,3 +59,4 @@ def update_login_streak(sender, request, user, **kwargs):
     profile.total_logins += 1
     profile.save()
     logger.debug(f"[UPDATE LOGIN STREAK] Updated login streak for profile {profile.id}: {profile.login_streak}")
+

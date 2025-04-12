@@ -1,12 +1,12 @@
 # users/tasks.py
 
 from celery import shared_task
-from datetime import timedelta
+#from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 import logging
 
-from .models import Profile
+#from .models import Profile
 
 User = get_user_model()
 

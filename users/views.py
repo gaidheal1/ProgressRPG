@@ -2,10 +2,11 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
+from django.contrib.sessions.models import Session
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
-from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
+from django.http import HttpResponse, JsonResponse #, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils.timezone import now, timedelta
@@ -14,7 +15,7 @@ import json, logging
 
 from .forms import UserRegisterForm, ProfileForm, EmailAuthenticationForm
 from .models import Profile
-from .utils import send_signup_email
+from .utils import kick_old_sessions, send_signup_email
 
 from character.models import PlayerCharacterLink
 from gameplay.serializers import ActivitySerializer
@@ -74,10 +75,14 @@ class LoginView(FormView):
         :rtype: django.http.HttpResponseRedirect
         :raises ValueError: If the user's onboarding step is invalid.
         """
-        user = form.get_user()
-        logger.info(f"Successful login for user: {user.email} (ID: {user.id})")
-        login(self.request, user)
 
+        user = form.get_user()
+        logger.info(f"[LOGIN VIEW] Successful login for user: {user.email} (ID: {user.id})")
+        login(self.request, user)
+        self.request.session.save()
+
+        kick_old_sessions(user, self.request.session.session_key)
+        
         # If the user has initiated account deletion, cancel it
         if user.pending_delete and user.delete_at > now():
             user.pending_delete = False
@@ -136,8 +141,8 @@ def logout_view(request):
     :return: An HTTP response redirecting to the homepage.
     :rtype: django.http.HttpResponseRedirect
     """
+    logger.info(f"[LOGOUT VIEW] User {request.user.id} logged out.")
     logout(request)
-    logger.info(f"User {request.user.id} logged out.")
     return redirect('index')
 
 
@@ -433,7 +438,7 @@ def delete_account(request):
         request.session.flush()
         logout(request)
 
-        logger.info(f"User {user.username} (ID: {user.id}) logged out and scheduled for soft delete.")
+        logger.info(f"[DELETE ACCOUNT] User {user.id} logged out and scheduled for soft delete.")
 
         return redirect("index")
     else: 

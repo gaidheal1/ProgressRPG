@@ -25,23 +25,26 @@ Author:
 
 """
 
-from asgiref.sync import sync_to_async, async_to_sync
+from asgiref.sync import async_to_sync
+#from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from channels.layers import get_channel_layer
-from django.db import transaction, connection, IntegrityError
-from django.utils.html import escape
-from django.utils.timezone import now
+#from django.db import transaction, connection, IntegrityError
+#from django.utils.html import escape
+#from django.utils.timezone import now
 
-from .models import QuestCompletion, Quest, ServerMessage, ActivityTimer, QuestTimer
-from .serializers import QuestSerializer, QuestTimerSerializer, ActivitySerializer, ActivityTimerSerializer
+from .models import QuestCompletion, Quest, ActivityTimer, QuestTimer
+#from .models import ServerMessage
+from .serializers import QuestTimerSerializer
+#from .serializers import QuestSerializer, ActivitySerializer, ActivityTimerSerializer
 
 from character.models import Character
-from character.serializers import CharacterSerializer
+#from character.serializers import CharacterSerializer
 
 from users.models import Profile
-from users.serializers import ProfileSerializer
+#from users.serializers import ProfileSerializer
 
-import logging, json, asyncio
+import logging
 
 logger = logging.getLogger("django")  # Get the logger for this module
 

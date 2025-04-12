@@ -1,27 +1,29 @@
-from asgiref.sync import async_to_sync, sync_to_async
+from asgiref.sync import async_to_sync
+#from asgiref.sync import sync_to_async
 from channels.layers import get_channel_layer
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.core.cache import cache
+#from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, OperationalError, DatabaseError
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.html import escape
-from django.utils.timezone import now
+#from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.serializers import ValidationError
 import json, logging
 
-from .models import Quest, Activity, QuestCompletion, ActivityTimer, QuestTimer
+from .models import Quest, Activity
+#from .models import QuestCompletion, ActivityTimer, QuestTimer
 from .serializers import ActivitySerializer, QuestSerializer, ActivityTimerSerializer, QuestTimerSerializer
 from .utils import check_quest_eligibility, send_group_message
 
 from character.models import PlayerCharacterLink
 from character.serializers import CharacterSerializer
 
-from users.models import Profile
+#from users.models import Profile
 from users.serializers import ProfileSerializer
 
 logger = logging.getLogger("django")

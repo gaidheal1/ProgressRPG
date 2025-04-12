@@ -171,8 +171,8 @@ DEFAULT_FROM_EMAIL = 'admin@progressrpg.com'
 ADMINS = [('Admin', 'admin@progressrpg.com')]  # The emails to receive error notifications
 
 # Session settings
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+#SESSION_CACHE_ALIAS = 'default'
 SESSION_COOKIE_NAME = 'sessionid'
 SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
 SESSION_SAVE_EVERY_REQUEST = True
