@@ -47,13 +47,16 @@ def update_login_streak(sender, request, user, **kwargs):
 
     if profile.last_login.date() == today:
         logger.debug(f"[UPDATE LOGIN STREAK] Profile {profile.id} already logged in today. No update needed.")
-        return
     elif profile.last_login.date() == today - timedelta(days=1):
         profile.login_streak += 1  # Continue the streak
         logger.debug(f"[UPDATE LOGIN STREAK] Profile {profile.id} logged in two days in a row.")
     else:
         profile.login_streak = 1  # Reset streak
         logger.debug(f"[UPDATE LOGIN STREAK] Profile {profile.id} missed a day. Resetting login streak.")
+
+    if profile.login_streak_max < profile.login_streak:
+        profile.login_streak_max = profile.login_streak
+        logger.debug(f"[UPDATE LOGIN STREAK] Profile {profile.id} has a new max login streak: {profile.login_streak_max}")
 
     profile.last_login = now()
     profile.total_logins += 1
