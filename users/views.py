@@ -2,7 +2,7 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.sessions.models import Session
+#from django.contrib.sessions.models import Session
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
@@ -227,7 +227,6 @@ def registration_disabled_view(request):
     return render(request, 'users/registration_disabled.html')
 
 # Create profile view
-@transaction.atomic
 @login_required
 def create_profile_view(request):
     """
@@ -265,7 +264,7 @@ def create_profile_view(request):
         form = ProfileForm(instance=profile)
     return render(request, 'users/create_profile.html', {'form': form})
 
-@transaction.atomic
+
 @login_required
 def link_character_view(request):
     """
@@ -283,7 +282,7 @@ def link_character_view(request):
 
         logger.info(f"User {request.user.username} (ID: {request.user.id}) updated onboarding_step to 3.")
 
-        return redirect('subscribe')
+        return redirect('products')
     else:
         link = PlayerCharacterLink.objects.filter(profile=profile, is_active=True).first()
         

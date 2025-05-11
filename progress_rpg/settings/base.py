@@ -98,6 +98,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'string_if_invalid': '[INVALID: %s]',
         },
     },
 ]
@@ -184,8 +185,11 @@ SESSION_COOKIE_HTTPONLY = True
 LOGIN_REDIRECT_URL = '/'  # Or wherever you want to go after login
 LOGIN_URL = '/login/'  # Customize the login URL
 
+# Stripe live key
+#STRIPE_PUBLIC_KEY = "pk_live_51QNRgsGHaENuGVuPFTA8jI4hvecwBSZnwt5T33gqSNYgDKegjIrsKjsvu1327UEU2xhAq0Ii6vovxuY4rVI1E9Yu008ZluJrv5"
+
+# Stripe test key
 STRIPE_PUBLIC_KEY = "pk_test_51QNRgsGHaENuGVuPh70KmxNTGK3iQPJgjGO2gVcdE0dlRDG7LOZfY3zQxvEdR2hmXDKaEILIRKEnJdn69arGwKCi00bSZWzrzW"
-STRIPE_SECRET_KEY = "nope"
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'

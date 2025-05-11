@@ -1,0 +1,25 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Subscribe{% endblock %}
+
+{% block content %}
+    <div>
+        <h1>Subscribe</h1>
+        
+        <p>Join for for free or subscribe</p>
+        <p>Premium subscription: annually £55 with 14-day free trial :D</p>
+        <p><a href="https://buy.stripe.com/test_14k4gr8LZgWf5WwfYY">Click here to subscribe</a></p>
+        <p>Email: {{ user.email }}</p>
+        <!-- {% with payment_link="test_14k4gr8LZgWf5WwfYY" email=user.email|urlencode %}
+        <a href="https://buy.stripe.com/{{ payment_link }}?prefilled_email={{ email }}">
+            Buy now - prefilled version
+        </a>
+        {% endwith %} -->
+        
+        <p>Please use the same email you signed up when checking out!</p>
+
+    </div>
+    
+
+{% endblock %}
+

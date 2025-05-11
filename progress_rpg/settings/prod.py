@@ -60,6 +60,7 @@ EMAIL_PORT = os.environ.get('EMAIL_PORT')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
 print("DEBUG:", DEBUG)
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_API_SECRET_KEY_TEST')
 
 REGISTRATION_ENABLED = False
 

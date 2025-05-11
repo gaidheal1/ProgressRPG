@@ -100,7 +100,7 @@ EMAIL_PORT = os.getenv('EMAIL_PORT')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
 print("DEBUG:", DEBUG)
-
+STRIPE_SECRET_KEY = os.getenv('STRIPE_API_SECRET_KEY_TEST')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/

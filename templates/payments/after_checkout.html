@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+
+{% block title %}After checkout{% endblock %}
+
+{% block content %}
+<div>
+    {% if success %}
+    <h1>Welcome to Premium!</h1>
+    <p>Your account has been upgraded. Enjoy your new perks!</p>
+    {% elif error %}
+    <h1>Oops!</h1>
+    <p>{{ error }}</p>
+    {% else %}
+    <h1>Checking your session...</h1>
+    {% endif %}
+    
+</div>
+{% endblock %}
+

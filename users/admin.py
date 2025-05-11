@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+
 from .models import CustomUser, Profile
-from character.models import PlayerCharacterLink, Character
+
+from character.models import PlayerCharacterLink
+#from character.models import Character
 
 # Register your models here.
 
@@ -19,8 +22,8 @@ class CustomUserAdmin(UserAdmin):
     ]
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ("Personal Info", {
-            "fields": ("date_of_birth",)
+        ('Personal Info', {
+            'fields': ('date_of_birth','stripe_customer_id')
         }),
         ('Permissions', {
             'classes': ('collapse',),
@@ -29,6 +32,9 @@ class CustomUserAdmin(UserAdmin):
         ('Important dates', {
             'fields': ('last_login', 'created_at')
         }),
+        # ('Customer', {
+        #     'fields': ('stripe_customer_id',)
+        # }),
     )
     add_fieldsets = (
         (None, {

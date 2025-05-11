@@ -105,6 +105,7 @@ class CustomUser(AbstractUser):
     objects = CustomUserManager()
     pending_delete = models.BooleanField(default=False)
     delete_at=models.DateTimeField(null=True, blank=True)
+    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
 
     EMAIL_FIELD = 'email'
     USERNAME_FIELD = 'email'
@@ -268,3 +269,19 @@ class Profile(Person):
 
         PlayerCharacterLink.objects.create(profile=self, character=new_character)
         self.save()
+
+    def make_premium(self):
+        """
+        Upgrade the profile to premium status.
+        """
+        self.is_premium = True
+        self.save()
+        logger.info(f"[MAKE PREMIUM] Profile {self.id} upgraded to premium.")
+
+    def remove_premium(self):
+        """
+        Downgrade the profile from premium status.
+        """
+        self.is_premium = False
+        self.save()
+        logger.info(f"[REMOVE PREMIUM] Profile {self.id} downgraded from premium.")
