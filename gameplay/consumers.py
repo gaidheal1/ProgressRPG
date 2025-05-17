@@ -85,7 +85,10 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive_json(self, event, **kwargs):
         message_type = event.get("type")
-        logger.info(f"[RECEIVE JSON] Message received: {event}, type: {message_type}")
+        if message_type == "ping":
+            logger.debug(f"[RECEIVE JSON] Message received: {event}, type: {message_type}")
+        else:
+            logger.info(f"[RECEIVE JSON] Message received: {event}, type: {message_type}")
 
         await database_sync_to_async(self.quest_timer.refresh_from_db)()
         if message_type:

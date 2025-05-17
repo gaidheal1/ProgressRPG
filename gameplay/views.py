@@ -266,7 +266,7 @@ def fetch_info(request):
                 "activity_timer": act_timer,
                 "quest_timer": quest_timer,
             }
-
+            
             logger.debug(f"[FETCH INFO] Response generated successfully for profile {profile.id}")
             return JsonResponse(response)
 

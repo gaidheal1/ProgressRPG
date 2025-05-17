@@ -6,7 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.timezone import now
 
-from .models import Activity, Quest, QuestResults
+from .models import Activity, Quest, QuestResults, ServerMessage
 from character.models import Character
 from users.models import Profile
 from events.models import Event, EventContribution
@@ -80,3 +80,18 @@ def create_quest_results(sender, instance, created, **kwargs):
             logger.error(f"[CREATE QUEST RESULTS] IntegrityError while creating quest results for quest {instance.id}: {e}", exc_info=True)
         except Exception as e:
             logger.error(f"[CREATE QUEST RESULTS] Unexpected error while creating quest results for quest {instance.id}: {e}", exc_info=True)
+
+
+@receiver(post_save, sender=ServerMessage)
+def server_message_created(sender, instance, created, **kwargs):
+    if created:
+        from asgiref.sync import async_to_sync
+        from channels.layers import get_channel_layer
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"profile_{instance.profile.id}",
+            {
+                "type": "send_pending_messages"
+            }
+        )

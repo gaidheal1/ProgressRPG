@@ -10,10 +10,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sass:watch": "chokidar 'static/scss/**/*.scss' -c 'sass static/scss:static/css'"
   },
   "devDependencies": {
+    "chokidar-cli": "^3.0.0",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "sass": "^1.89.0",
     "vite": "^6.2.0"
   }
 }

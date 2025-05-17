@@ -1,52 +1,35 @@
 @use '../base/typography' as t;
 
-/* Timer frame */
 .timer-frame {
 	box-sizing: border-box;
 
-	/* Auto layout */
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
 	align-items: center;
-	padding: 4px 12px;
-	gap: 10px;
-
-	//margin: 0 auto;
-	//width: 66px;
-	//height: 32px;
+	padding: 0.25rem 0.75rem;
+	gap: 0.5rem;
 
 	border: 1px solid #007A33;
-	border-radius: 8px;
+	border-radius: 0.5rem;
 
-	/* Inside auto layout */
 	flex: none;
 	order: 1;
 	flex-grow: 0;
 }
 
-
-/* Timer text */
 .timer-text {
-	//width: 42px;
-	//height: 24px;
-
-	/* M3/title/medium */
-	
-	
 	font-weight: 500;
 	font-size: t.$text-20-font-size;
-	line-height: 24px;
-	/* identical to box height, or 150% */
+	line-height: 1.5rem;
+	
 	display: flex;
 	align-items: center;
 	text-align: center;
-	letter-spacing: 0.15px;
+	//letter-spacing: 0.15px;
 
 	color: #000000;
 
-
-	/* Inside auto layout */
 	flex: none;
 	order: 0;
 	flex-grow: 0;

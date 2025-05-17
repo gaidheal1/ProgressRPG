@@ -84,6 +84,8 @@
         <!-- Page-specific content goes here -->
         {% endblock %}
     </main>
+    
+    <div id="toast-container"></div>
 
     <footer>
         {% if user.is_staff %}
@@ -91,8 +93,6 @@
         {% endif %}
         <p>&copy; 2025 Progress RPG</p>
     </footer>
-    
-    <div id="toast-container"></div>
 
     <script src="{% static 'js/base.js' %}"></script>
     <!--<script type="module" src="/src/main.jsx"></script> -->

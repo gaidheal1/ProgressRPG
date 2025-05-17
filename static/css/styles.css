@@ -1,4 +1,3 @@
-@charset "UTF-8";
 /* _reset.scss */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -20,16 +19,46 @@ a:hover {
   color: #e7fff1;
 }
 
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  background: #fff;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 260px;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 1;
+}
+
+@media (max-width: 450px) {
+  body {
+    max-width: 450px;
+  }
+}
+main {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Button */
 .button-frame {
-  /* Auto layout */
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 8px;
   gap: 10px;
   width: 100%;
-  /* Inside auto layout */
   flex: none;
   align-self: stretch;
   flex-grow: 0;
@@ -40,46 +69,46 @@ a:hover {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 8px;
   padding: 4px 8px;
   height: 40px;
+  gap: 8px;
   background: #006128;
   border-radius: 100px;
-  /* Inside auto layout */
-  flex: none;
-  flex-grow: 0;
+  color: #FFFFFF;
   font-weight: 500;
-  /* identical to box height, or 143% */
   text-align: center;
   letter-spacing: 0.1px;
-  /* M3/sys/light/on-primary */
-  color: #FFFFFF;
+  flex: none;
+  flex-grow: 0;
 }
 .button-filled:hover {
-  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.267), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
   background: #00682b;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.267), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
 }
 
 .form {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 0.5rem;
   flex: none;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
 }
 .form-group label {
-  display: block;
-  margin-bottom: 5px;
+  font-weight: 500;
 }
 .form-group input, .form-group textarea {
   width: 100%;
-  padding: 8px;
+  padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  font-size: 1rem;
 }
 .form-group .error {
   color: red;
@@ -97,61 +126,44 @@ h1, h2, h3 {
   font-weight: bold;
 }
 
-/* Timer frame */
 .timer-frame {
   box-sizing: border-box;
-  /* Auto layout */
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 4px 12px;
-  gap: 10px;
+  padding: 0.25rem 0.75rem;
+  gap: 0.5rem;
   border: 1px solid #007A33;
-  border-radius: 8px;
-  /* Inside auto layout */
+  border-radius: 0.5rem;
   flex: none;
   order: 1;
   flex-grow: 0;
 }
 
-/* Timer text */
 .timer-text {
-  /* M3/title/medium */
   font-weight: 500;
   font-size: 20px;
-  line-height: 24px;
-  /* identical to box height, or 150% */
+  line-height: 1.5rem;
   display: flex;
   align-items: center;
   text-align: center;
-  letter-spacing: 0.15px;
   color: #000000;
-  /* Inside auto layout */
   flex: none;
   order: 0;
   flex-grow: 0;
 }
 
-/* Text field
-
-
-Use a text field when someone needs to enter text into a UI, such as filling in contact or payment information.
-
-🛠 Additional options
-Support text - you can toggle supporting text between hide and show.
-*/
 .input-div {
   /* Auto layout */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  padding: 0px;
   isolation: isolate;
-  height: 56px;
-  border-radius: 4px 4px 0px 0px;
-  /* Inside auto layout */
+  height: 3.5rem;
+  padding: 0;
+  border-radius: 0.25rem 0.25rem 0 0;
   flex: none;
   order: 0;
   flex-grow: 0;
@@ -159,24 +171,24 @@ Support text - you can toggle supporting text between hide and show.
 @media (max-width: 576px) {
   .input-div {
     width: 100%;
+    max-width: none;
   }
 }
 @media (min-width: 577px) {
   .input-div {
-    width: 300px;
+    width: 80%;
+    max-width: 25rem;
   }
 }
 
 .field-div {
-  /* Auto layout */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 0px;
-  gap: 10px;
+  padding: 0;
+  gap: 0.5rem;
   background: #E8FFF1;
-  border-radius: 4px 4px 0px 0px;
-  /* Inside auto layout */
+  border-radius: 0.25rem 0.25rem 0 0;
   flex: none;
   order: 0;
   align-self: stretch;
@@ -210,24 +222,12 @@ footer button > a {
 
 /* Top infobar */
 #info-bar {
-  /* Auto layout */
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   background: #E8FFF1;
   border-radius: 0px 0px 8px 8px;
   max-width: 100%;
-  flex: none;
-  order: 0;
-  align-self: stretch;
-  flex-grow: 0;
-}
-
-@media (max-width: 576px) {
-  #info-bar {
-    flex-direction: column;
-    gap: 4px;
-  }
 }
 @media (min-width: 577px) {
   #info-bar {
@@ -235,34 +235,28 @@ footer button > a {
     gap: 8px;
   }
 }
+
 /* info box (one each for player and character) */
 /* should be column for mobile, row for desktop */
 .info-box {
-  /* Auto layout */
   display: flex;
-  flex-direction: row;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  align-self: stretch;
+  height: 100%;
   padding: 8px 16px;
   gap: 8px;
-  /* Inside auto layout */
-  flex: none;
-  align-self: stretch;
-  flex-grow: 1;
   border: 1px solid rgba(0, 0, 0, 0.45);
   border-radius: 8px;
-}
-
-@media (max-width: 576px) {
-  #info-box {
-    max-width: 100%;
-  }
+  flex: 1 1 100%;
 }
 @media (min-width: 577px) {
-  #info-box {
-    max-width: 50%;
+  .info-box {
+    flex: 1 1 50%;
   }
 }
+
 #player-info {
   order: 0;
 }
@@ -274,87 +268,65 @@ footer button > a {
 .info-block {
   display: flex;
   flex-direction: column;
-  align-self: stretch;
-  padding: 0px;
   gap: 4px;
-  /* Inside auto layout */
-  flex: none;
+  flex: 1 1 45%;
 }
-
-.left {
+.info-block.left {
   justify-content: flex-start;
   order: 0;
 }
-
-.right {
+.info-block.right {
   justify-content: flex-end;
   order: 1;
 }
 
 .info-line {
   display: flex;
+  flex-wrap: wrap;
   flex-direction: row;
   align-items: center;
-  padding: 0px;
   gap: 10px;
-  /* Inside auto layout */
-  flex: none;
-  flex-grow: 1;
 }
 
-/* name display */
-.name-disp {
-  /* or 133% */
+.name-disp,
+.level-disp {
   display: flex;
   align-items: center;
-  letter-spacing: 0.4px;
   color: #000000;
-  /* Inside auto layout */
-  flex: none;
-  order: 0;
-  flex-grow: 0;
-}
-
-/* Level disp */
-.level-disp {
+  letter-spacing: 0.4px;
   font-weight: 400;
   font-size: 12px;
-  line-height: 16px;
-  /* or 133% */
-  display: flex;
-  align-items: center;
+  white-space: normal;
+  word-break: break-word;
   text-align: right;
-  letter-spacing: 0.4px;
-  color: #000000;
-  /* Inside auto layout */
-  flex: none;
-  order: 1;
-  flex-grow: 0;
 }
 
-/* List section */
+.name-disp {
+  order: 0;
+}
+
+.level-disp {
+  order: 1;
+}
+
 .list-section {
-  /* Auto layout */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 4px 0px;
-  gap: 10px;
+  padding: 0.25rem 0;
+  gap: 0.5rem;
   width: 100%;
-  /* Inside auto layout */
   flex: none;
   order: 3;
   align-self: stretch;
   flex-grow: 0;
 }
 
-/* List section header */
 .list-section-header {
   width: 100%;
   display: flex;
   align-items: center;
   color: #000000;
-  /* Inside auto layout */
   flex: none;
   order: 0;
   flex-grow: 0;
@@ -366,31 +338,26 @@ ul {
   margin: 0;
 }
 
-/* List  */
 .list {
-  /* Auto layout */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 0px;
-  gap: 4px;
+  padding: 0;
+  gap: 0.25rem;
   width: 100%;
-  /* Inside auto layout */
   flex: none;
   order: 1;
   align-self: stretch;
   flex-grow: 0;
 }
 .list li {
-  /* Auto layout */
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0px;
-  gap: 10px;
+  padding: 0;
+  gap: 0.5rem;
   width: 100%;
-  /* Inside auto layout */
   flex: none;
   order: 0;
   flex-grow: 0;
@@ -410,60 +377,69 @@ ul.selectable li.selected {
 .modal {
   display: none;
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.7);
   z-index: 1000;
 }
-
-/* Modal Content */
-.modal-content {
+.modal .modal-content {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background: white;
-  border-radius: 10px;
+  border-radius: 0.5rem;
   overflow: hidden;
   display: flex;
   flex-direction: row;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.3);
   width: 70vw;
   height: 70vh;
+}
+@media (max-width: 768px) {
+  .modal .modal-content {
+    flex-direction: column;
+    width: 90vw;
+    height: 90vh;
+    min-width: 320px;
+  }
 }
 
 /* Close Button */
 .close-btn {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 20px;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 1rem;
   background: none;
   border: none;
   cursor: pointer;
 }
 
-/* Quest Pane */
-.quest-pane {
+/* Panes */
+.quest-pane,
+.details-pane {
   flex: 1;
-  padding: 20px;
-  border-right: 1px solid #ddd;
+  padding: 1rem;
   overflow-y: auto;
+}
+
+.quest-pane {
+  border-right: 1px solid #ddd;
 }
 
 /* Tabs */
 .quest-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 0.5rem;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 0.5rem;
 }
 
 .tab {
-  padding: 8px 16px;
+  padding: 0.5rem 1rem;
   border: 1px solid #ddd;
   background: #f9f9f9;
   cursor: pointer;
@@ -485,41 +461,25 @@ ul.selectable li.selected {
   margin: 0;
 }
 .quest-list li {
-  padding: 10px;
+  padding: 0.5rem;
   border-bottom: 1px solid #ddd;
   cursor: pointer;
 }
-
 .quest-list li:hover {
   background: #eee;
 }
-
 .quest-list li.selected {
   background: #ddd;
 }
 
-/* Details Pane */
-.details-pane {
-  flex: 1;
-  gap: 10px;
-  padding: 20px;
-  overflow-y: auto;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
-  .modal-content {
-    flex-direction: column;
-    width: 90vw;
-    height: 90vh;
-    min-width: 320px;
-  }
   .quest-pane {
     border-right: none;
     border-bottom: 1px solid #ddd;
   }
   .quest-tabs {
-    gap: 5px;
+    gap: 0.25rem;
   }
 }
 header {
@@ -679,20 +639,17 @@ header nav .right-links {
 
 /* Content */
 #gameplay-container {
-  /* Auto layout */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 0px;
+  align-items: stretch;
   gap: 8px;
+  padding: 0px;
   width: 100%;
-  /* Inside auto layout */
+  align-self: stretch;
   flex: none;
   order: 1;
-  align-self: stretch;
   flex-grow: 0;
 }
-
 @media (max-width: 576px) {
   #gameplay-container {
     max-width: 550px;
@@ -703,23 +660,21 @@ header nav .right-links {
     max-width: 1400px;
   }
 }
+
 /* Game content */
 #game-content {
-  /* Auto layout */
   display: flex;
   justify-content: center;
   align-items: flex-start;
   align-content: flex-start;
-  padding: 0px;
   gap: 8px;
+  padding: 0px;
   width: 100%;
-  /* Inside auto layout */
+  align-self: stretch;
   flex: none;
   order: 1;
-  align-self: stretch;
   flex-grow: 0;
 }
-
 @media (max-width: 576px) {
   #game-content {
     flex-direction: column;
@@ -730,20 +685,63 @@ header nav .right-links {
     flex-direction: row;
   }
 }
+
 .game-section {
-  /* Auto layout */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 8px 16px;
   gap: 8px;
+  padding: 8px 16px;
   background: #E8FFF1;
   border: 1px solid rgba(0, 0, 0, 0.45);
   border-radius: 8px;
-  /* Inside auto layout */
-  flex: 1;
-  flex-grow: 1;
+  flex: 1 1 auto;
   align-self: stretch;
+}
+
+#toast-container {
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  pointer-events: none; /* So it doesn't block clicks */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toast {
+  background: #333;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: fadeInUp 0.3s ease forwards, fadeOut 0.3s ease 3s forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+* {
+  max-width: 100%;
+}
+
+.hidden {
+  display: none;
 }
 
 .home-content {
@@ -1123,48 +1121,6 @@ They have the most visual impact after the FAB, and should be used for important
   flex: none;
   order: 0;
   flex-grow: 0;
-}
-
-* {
-  max-width: 100%;
-}
-
-html {
-  display: flex;
-  width: 100vw;
-}
-
-.hidden {
-  display: none; /* Completely removes the button from layout */
-}
-
-body {
-  /* Auto layout */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0px;
-  position: relative;
-  width: 100%;
-  min-width: 260px;
-  background: #FFFFFF;
-  /* Inside auto layout */
-  flex: none;
-  order: 0;
-  align-self: stretch;
-  flex-grow: 1;
-}
-
-@media (max-width: 450px) {
-  body {
-    max-width: 450px;
-  }
-}
-main {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: center;
 }
 
 /*# sourceMappingURL=styles.css.map */

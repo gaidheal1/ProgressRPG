@@ -3,65 +3,39 @@
 /* Top infobar */
 
 #info-bar {
-	/* Auto layout */
 	display: flex;
 	flex-direction: column;
-	align-items: flex-start;
+	align-items: stretch;
 	background: #E8FFF1;
 	border-radius: 0px 0px 8px 8px;
 	max-width: 100%;
-	flex: none;
-	order: 0;
-	align-self: stretch;
-	flex-grow: 0;
-
-}
-
-@include respond-to(small) {
-	#info-bar {
-		flex-direction: column;
-		gap: 4px;
-	}
-}
-
-@include respond-to(big) {
-	#info-bar {
+	
+	@include respond-to(big) {
 		flex-direction: row;
 		gap: 8px;
 	}
 }
 
+
 /* info box (one each for player and character) */
 /* should be column for mobile, row for desktop */
 
 .info-box {
-	/* Auto layout */
 	display: flex;
-	flex-direction: row;
+	flex-wrap: wrap;
 	justify-content: space-between;
 	align-items: center;
+	align-self: stretch;
+	height: 100%;
+	//width: 100%;
 	padding: 8px 16px;
 	gap: 8px;
-	//max-width: 100%;
-	/* Inside auto layout */
-	flex: none;
-	align-self: stretch;
-	flex-grow: 1;
-
 	border: 1px solid rgba(0, 0, 0, 0.45);
 	border-radius: 8px;
-
-}
-
-@include respond-to(small) {
-	#info-box {
-		max-width: 100%;
-	}
-}
-
-@include respond-to(big) {
-	#info-box {
-		max-width: 50%;
+	flex: 1 1 100%;
+	
+	@include respond-to(big) {
+		flex: 1 1 50%;
 	}
 }
 
@@ -76,73 +50,49 @@
 .info-block {
 	display: flex;
 	flex-direction: column;
-	align-self: stretch;
-	padding: 0px;
 	gap: 4px;
-
-	/* Inside auto layout */
-	flex: none;
-
+	flex: 1 1 45%;
+	
+	&.left {
+		justify-content: flex-start;
+		order: 0;
+	}
+	
+	&.right {
+		justify-content: flex-end;
+		order: 1;
+	}
 }
 
-.left {
-	justify-content: flex-start;
-	order: 0;
-}
-
-.right {
-	justify-content: flex-end;
-	order: 1;
-}
 
 
 .info-line {
 	display: flex;
+	flex-wrap: wrap;
 	flex-direction: row;
 	align-items: center;
-	padding: 0px;
 	gap: 10px;
-
-	/* Inside auto layout */
-	flex: none;
-	flex-grow: 1;
 }
 
-/* name display */
 
-.name-disp {
-
-	/* or 133% */
+.name-disp,
+.level-disp {
 	display: flex;
 	align-items: center;
-	letter-spacing: 0.4px;
-
 	color: #000000;
-
-
-	/* Inside auto layout */
-	flex: none;
-	order: 0;
-	flex-grow: 0;
-}
-
-/* Level disp */
-
-.level-disp {
+	letter-spacing: 0.4px;
 	font-weight: 400;
 	font-size: 12px;
-	line-height: 16px;
-	/* or 133% */
-	display: flex;
-	align-items: center;
+
+	white-space: normal;
+	word-break: break-word;
 	text-align: right;
-	letter-spacing: 0.4px;
+}
 
-	color: #000000;
+.name-disp {
+	order: 0;
+}
 
-
-	/* Inside auto layout */
-	flex: none;
+.level-disp {
 	order: 1;
-	flex-grow: 0;
 }
