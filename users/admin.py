@@ -76,7 +76,6 @@ class PlayerAdmin(admin.ModelAdmin):
     ]
     search_fields = [
         'name',
-        'get_character__name',
         ]
 
     @admin.display(description='Character')

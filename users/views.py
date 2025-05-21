@@ -295,7 +295,7 @@ def link_character_view(request):
 
         logger.debug(f"User {request.user.username} (ID: {request.user.id}) linked character '{character.name}' (ID: {character.id}).")
 
-    return render(request, 'users/link_character.html', {'random_name': character.name})
+    return render(request, 'users/link_character.html', {'char_name': character.name})
 
 
 # Profile view

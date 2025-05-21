@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from django.utils.timezone import now
 
 from .models import Activity, Quest, QuestResults, ServerMessage
+from .utils import send_group_message
 from character.models import Character
 from users.models import Profile
 from events.models import Event, EventContribution
@@ -84,12 +85,13 @@ def create_quest_results(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=ServerMessage)
 def server_message_created(sender, instance, created, **kwargs):
+    """Triggers consumer to run message send method when a new server message is created."""
     if created:
         from asgiref.sync import async_to_sync
         from channels.layers import get_channel_layer
 
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
+        async_to_sync(send_group_message)(
             f"profile_{instance.profile.id}",
             {
                 "type": "send_pending_messages"

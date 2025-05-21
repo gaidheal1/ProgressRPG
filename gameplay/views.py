@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.serializers import ValidationError
 import json, logging
 
-from .models import Quest, Activity
+from .models import Quest, Activity, ServerMessage
 #from .models import QuestCompletion, ActivityTimer, QuestTimer
 from .serializers import ActivitySerializer, QuestSerializer, ActivityTimerSerializer, QuestTimerSerializer
 from .utils import check_quest_eligibility, send_group_message
@@ -385,8 +385,7 @@ def submit_activity(request):
         return JsonResponse({"error": "Invalid method"}, status=405)
     
     profile = request.user.profile
-    #character = PlayerCharacterLink.get_character(profile)
-
+    
     try:
         logger.info(f"[SUBMIT ACTIVITY] Profile {profile.id} submitting activity")
         logger.debug(f"[SUBMIT ACTIVITY] Activity timer: status {profile.activity_timer.status}, elapsed time {profile.activity_timer.elapsed_time}")
@@ -423,6 +422,15 @@ def submit_activity(request):
         except ValidationError as e:
             logger.error(f"[SUBMIT ACTIVITY] Validation error while serializing activities for profile {profile.id}: {e}")
             return JsonResponse({"error": "Invalid data encountered during serialization."}, status=400)
+
+        message_text = f"Activity submitted. You got {xp_reward} XP!"
+        ServerMessage.objects.create(
+            profile=profile, 
+            type="notification",
+            action="notification",
+            data={},
+            message=message_text,
+        )
 
         try:
             profile_serializer = ProfileSerializer(profile).data

@@ -78,7 +78,7 @@ class ActivityAdmin(admin.ModelAdmin):
     ]
     readonly_fields = ['created_at', 'last_updated']
     date_hierarchy = 'created_at'
-    search_fields = ['profile__name']
+    #search_fields = ['profile__name']
     show_full_result_count = False
     
 @admin.register(ActivityTimer)
