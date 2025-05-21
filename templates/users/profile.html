@@ -6,7 +6,7 @@
 <div>
     <div>
         <h2>Profile</h2>
-        <p>Welcome, {{ profile.name }}!</p>
+        <p>Welcome, {{ profile.name|default:"(no name)" }}!</p>
         <p><strong>Bio:</strong> {{ profile.bio }}</p>
         <div>
             <a href="{% url 'edit_profile' %}">Edit Profile</a>
@@ -19,6 +19,7 @@
             <li>Total time tracked: {{ total_minutes }} minutes</li>
             <li>Total activities tracked: {{ profile.total_activities }}</li>
             <li>Current login streak: {{ profile.login_streak }} days</li>
+            <li>Biggest login streak achieved: {{ profile.login_streak_max }} days</li>
         </ul>
     </div>
 

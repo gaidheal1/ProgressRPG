@@ -1,58 +1,37 @@
-/* Text field
-
-
-Use a text field when someone needs to enter text into a UI, such as filling in contact or payment information.
-
-🛠 Additional options
-Support text - you can toggle supporting text between hide and show.
-*/
-
 @use '../utilities/mixins' as *;
 
 .input-div {
-	/* Auto layout */
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
 	justify-content: center;
-	padding: 0px;
 	isolation: isolate;
-
-	height: 56px;
-
-	border-radius: 4px 4px 0px 0px;
-
-	/* Inside auto layout */
-	flex: none;
-	order: 0;
-	flex-grow: 0;
+	
+	height: 3.5rem;
+	padding: 0;
+	//border-radius: 0.25rem 0.25rem 0 0;
 
 	@include respond-to(small) {
 		width: 100%;
+		max-width: none;
 	}
 
 	@include respond-to(big) {
-		width: 300px;
+		width: 80%;
+		max-width: 25rem;
 	}
 }
 
 .field-div {
-
-	/* Auto layout */
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	padding: 0px;
-	gap: 10px;
-
+	padding: 0.25rem;
+	gap: 0.5rem;
 
 	background: #E8FFF1;
-	border-radius: 4px 4px 0px 0px;
-
-	/* Inside auto layout */
-	flex: none;
-	order: 0;
+	border-radius: 0.5rem;
 	align-self: stretch;
-	flex-grow: 1;
+	height: 2rem;
 	z-index: 0;
 }

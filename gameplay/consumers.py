@@ -1,10 +1,9 @@
-from asgiref.sync import sync_to_async
+#from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
-from channels.exceptions import StopConsumer
+#from channels.exceptions import StopConsumer
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from django.apps import apps
 from django.db import transaction
-from django.utils.timezone import now
+#from django.utils.timezone import now
 import json, logging
 
 from .models import ServerMessage
@@ -37,7 +36,7 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
             #logger.info(f"Consumer subscribed to: {self.profile_group}")
             #logger.info(f"Sending message to: profile_{profile.id}")
             
-            await self.send_pending_messages()
+            await self._send_pending_messages()
 
             self.activity_timer = await self.get_activity_timer()
             self.quest_timer = await self.get_quest_timer()
@@ -86,7 +85,10 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive_json(self, event, **kwargs):
         message_type = event.get("type")
-        logger.info(f"[RECEIVE JSON] Message received: {event}, type: {message_type}")
+        if message_type == "ping":
+            logger.debug(f"[RECEIVE JSON] Message received: {event}, type: {message_type}")
+        else:
+            logger.info(f"[RECEIVE JSON] Message received: {event}, type: {message_type}")
 
         await database_sync_to_async(self.quest_timer.refresh_from_db)()
         if message_type:
@@ -131,15 +133,6 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
             message=event.get("message", ""),
             is_delivered=False
         )
-
-    async def server_message(self, event):
-        """
-        Handle messages sent by the server to the WebSocket group.
-        """
-        logger.info(f"[SERVER MESSAGE] Relaying group message. Event: {event}")
-
-        message = event['data']
-        await self.send_json(message)
 
 
     async def handle_client_request(self, message):
@@ -238,8 +231,15 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
         logger.error(f"[ERROR] Sending error message from event: {event}")
         await self.send_json(event)
         
+    async def send_pending_messages(self, event):
+        """
+        Send pending messages to the client.
+        """
+        logger.info(f"[SEND PENDING MESSAGES (event handler)] Sending pending messages to profile {self.profile.id}.")
+        await self._send_pending_messages()
 
-    async def send_pending_messages(self):
+
+    async def _send_pending_messages(self):
         """
         Fetch and send all pending messages for the connected profile.
         Marks successfully sent messages as delivered.

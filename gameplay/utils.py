@@ -25,23 +25,26 @@ Author:
 
 """
 
-from asgiref.sync import sync_to_async, async_to_sync
+from asgiref.sync import async_to_sync
+#from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from channels.layers import get_channel_layer
-from django.db import transaction, connection, IntegrityError
-from django.utils.html import escape
-from django.utils.timezone import now
+#from django.db import transaction, connection, IntegrityError
+#from django.utils.html import escape
+#from django.utils.timezone import now
 
-from .models import QuestCompletion, Quest, ServerMessage, ActivityTimer, QuestTimer
-from .serializers import QuestSerializer, QuestTimerSerializer, ActivitySerializer, ActivityTimerSerializer
+from .models import QuestCompletion, Quest, ActivityTimer, QuestTimer
+#from .models import ServerMessage
+from .serializers import QuestTimerSerializer
+#from .serializers import QuestSerializer, ActivitySerializer, ActivityTimerSerializer
 
 from character.models import Character
-from character.serializers import CharacterSerializer
+#from character.serializers import CharacterSerializer
 
 from users.models import Profile
-from users.serializers import ProfileSerializer
+#from users.serializers import ProfileSerializer
 
-import logging, json, asyncio
+import logging
 
 logger = logging.getLogger("django")  # Get the logger for this module
 
@@ -319,15 +322,6 @@ def process_completion(profile: Profile, character: Character, action: str) -> b
 
 
 async def send_group_message(group_name: str, message: dict) -> bool:
-    # """
-    # Sends a message to a WebSocket group.
-
-    # :param group_name: The name of the WebSocket group to send the message to.
-    # :type group_name: str
-    # :param message: The message to send, as a dictionary.
-    # :type message: dict
-    # :return: True if the message is successfully sent, False otherwise.
-    # """
     logger.info(f"[SEND GROUP MESSAGE] Sending message to group {group_name}. Message: {message}")
     #logger.debug(f"[SEND GROUP MESSAGE] Sending message to group {group_name}. Message type: {message.get('type')}, action: {message.get('action')}, message: {message.get('message')}\ndata: {message.get('data')}\n")
     #logger.debug(f"[SEND GROUP MESSAGE] Type of message argument: {type(message)}")
@@ -344,7 +338,7 @@ async def send_group_message(group_name: str, message: dict) -> bool:
     #logger.info(f"[SEND GROUP MESSAGE] Channel layer: {channel_layer}")
     if channel_layer is not None:
         try:
-            await channel_layer.group_send("profile_1", message)
+            await channel_layer.group_send(group_name, message)
             logger.debug(f"[SEND GROUP MESSAGE] Data sent to group 'profile_1': {message}")
             return True
         except ConnectionError as e:
@@ -357,5 +351,4 @@ async def send_group_message(group_name: str, message: dict) -> bool:
     else:
         logger.warning(f"[GROUP SEND MESSAGE] No channel layer available for group '{group_name}'")
         return False
-
 

@@ -8,12 +8,13 @@
 
 @use 'utilities/mixins';
 
-
+// Components
 @use 'components/button';
 @use 'components/form';
 @use 'components/timer';
 @use 'components/input';
 
+// Layout
 @use 'layout/footer';
 @use 'layout/infobar';
 @use 'layout/lists';
@@ -21,63 +22,11 @@
 @use 'layout/navbar';
 @use 'layout/nav-drawer';
 @use 'layout/two-columns';
+@use 'layout/gameplay';
+@use 'layout/toast';
+@use 'layout/utilities';
 
+// Pages
 @use 'pages/index';
 @use 'pages/game';
-
-
-
-
-* {
-	max-width: 100%;
-}
-
-html {
-	display: flex;
-	width: 100vw;
-}
-.hidden {
-    display: none; /* Completely removes the button from layout */
-}
-
-body {
-	/* Auto layout */
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	padding: 0px;
-
-	position: relative;
-	width: 100%;
-	min-width: 260px;
-	
-	//height: 800px;
-
-	background: #FFFFFF;
-
-	/* Inside auto layout */
-	flex: none;
-	order: 0;
-	align-self: stretch;
-	flex-grow: 1;
-
-}
-
-@media (max-width: 450px) {
-	body {
-		max-width: 450px;
-	}
-}
-
-
-main {
-	display: flex;
-	width: 100%;
-	align-items: center;
-	justify-content: center;
-}
-
-
-
-
 

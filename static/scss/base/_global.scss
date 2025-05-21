@@ -4,9 +4,48 @@
 
 a {
   text-decoration: none;
-  color: $primary-color;
+  color: $color-primary;
 
   &:hover {
-    color: $secondary-color;
+    color: $color-secondary;
   }
+}
+
+html, body {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	position: relative;
+	background: #fff;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	min-width: 260px;
+
+	flex: none;
+	order: 0;
+	align-self: stretch;
+	flex-grow: 1;
+
+}
+
+
+@media (max-width: 450px) {
+	body {
+		max-width: 450px;
+	}
+}
+
+
+main {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+	width: 100%;
+	//outline: 2px dotted green;
 }

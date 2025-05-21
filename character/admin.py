@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Character, PlayerCharacterLink, CharacterRelationship, RomanticRelationship, CharacterRelationshipMembership, CharacterRole, CharacterRoleSkill, CharacterProgression
+from .models import Character, PlayerCharacterLink, CharacterRelationship, CharacterRole, CharacterProgression
 # Register your models here.
 
 
@@ -7,7 +7,7 @@ class LinkInline(admin.TabularInline):
     model = PlayerCharacterLink
 
 
-#@admin.register(Character)
+@admin.register(Character)
 class CharacterAdmin(admin.ModelAdmin):
     # def current_player(self, obj):
     #     link = PlayerCharacterLink.objects.filter(character=obj, is_active=True).first()
@@ -46,7 +46,7 @@ class CharacterAdmin(admin.ModelAdmin):
     ]
     inlines = [LinkInline]
 
-admin.site.register(Character, CharacterAdmin)
+#admin.site.register(Character, CharacterAdmin)
 
 @admin.register(PlayerCharacterLink)
 class PlayerCharacterLinkAdmin(admin.ModelAdmin):
@@ -75,10 +75,10 @@ class CharacterRelationshipAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'last_updated']
     filter_horizontal = ['characters',]
 
+    @admin.display(description="Characters")
     def get_linked_characters(self, obj):
         return ', '.join([str(char) for char in obj.get_members()])
     
-    get_linked_characters.short_description = "Characters"
 
 @admin.register(CharacterRole)
 class CharacterRoleAdmin(admin.ModelAdmin):

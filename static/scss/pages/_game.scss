@@ -1,315 +1,115 @@
 
 
-
 #activity-section {
 	order: 0;
 }
 
-#activity-section > * {
-	display: flex;
-}
-
-/* Quest content */
 #quest-section {
 	order: 1;
 }
 
 .section-top-bar {
-	order: 0;
-}
-
-.current-item {
-	order: 1;
-}
-
-#activity-input-div, #quest-description {
-	order: 2;
-}
-
-#activity-buttons, #quest-stages {
-	order: 3;
-}
-
-#today-activities, #quest-rewards {
-	order: 4;
-}
-
-#show-quests-btn-frame {
-	order: 5;
-	
-}
-
-#choose-quest {
-	order: 6;
-}
-
-
-/* Game Section top bar */
-.section-top-bar {
-	/* Auto layout */
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
 	align-items: center;
-	padding: 4px 0px;
-	gap: 10px;
-
-	//width: 100%;
-	//height: 40px;
-
-
-	/* Inside auto layout */
-	flex: none;
-	order: 0;
-	align-self: stretch;
-	flex-grow: 0;
+	padding: 0.25rem 0;
+	gap: 0.5rem;
 }
 
-/* Section status */
 .section-status {
-	/* Auto layout */
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 	justify-content: center;
-	padding: 0px;
-	gap: 10px;
-
-	//margin: 0 auto;
-	//width: 168px;
-	//height: 28px;
-
-
-	/* Inside auto layout */
-	flex: none;
-	order: 0;
-	flex-grow: 0;
+	gap: 0.5rem;
 }
 
-
-/* Section status header : */
-.section-status-header {
-	//width: 78px;
-	//height: 28px;
-
-	/* M3/title/large */
-	
-	
-	font-weight: 400;
-	font-size: 22px;
-	line-height: 28px;
-	/* identical to box height, or 127% */
-	display: flex;
-	align-items: center;
-
-	color: #000000;
-
-
-	/* Inside auto layout */
-	flex: none;
-	order: 0;
-	flex-grow: 0;
-}
-
-/* Section status message */
+.section-status-header,
 .section-status-message {
-	//width: 80px;
-	height: 28px;
-
-	/* M3/title/large */
-	
-	
-	font-weight: 400;
-	font-size: 22px;
-	line-height: 28px;
-	/* identical to box height, or 127% */
 	display: flex;
 	align-items: center;
-
-	color: #000000;
-
-	/* Inside auto layout */
-	flex: none;
-	order: 1;
-	flex-grow: 0;
+	font-size: 1.25rem;
+	line-height: 1.75rem;
 }
 
+.section-status-message {
+	order: 1;
+}
 
-/* Current thing */
 .current-item {
-	/* Auto layout */
+	order: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	padding: 4px 0px;
-	gap: 10px;
-
-	//width: 328px;
-	//height: 28px;
-
-
-	/* Inside auto layout */
-	flex: none;
-	order: 1;
-	align-self: stretch;
-	flex-grow: 0;
-	
-	font-weight: 500;
-	font-size: 14px;
-	line-height: 20px;
-
-	/* identical to box height, or 143% */
-	letter-spacing: 0.1px;
-
+	width: 100%;
+	gap: 0.5rem;
 }
-
-
-/* Button frame */
-
-
-
-/* Frame 59 
-#ident {
-	/* Auto layout 
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-	align-items: center;
-	padding: 4px 8px;
-	gap: 10px;
-
-	//width: 203px;
-	height: 48px;
-
-	filter: drop-shadow(4px 3px 4px rgba(0, 0, 0, 0.25));
-	border-radius: 8px;
-
-	/* Inside auto layout 
-	flex: none;
-	order: 0;
-	flex-grow: 0;
-}
-
-*/
-
-/* Button
-
-Buttons communicate actions that users can take. They are typically placed throughout your UI, in places like Dialogs, Modal windows, Forms, Cards and Toolbars
-
-Filled buttons are high-emphasis buttons.
-They have the most visual impact after the FAB, and should be used for important, final actions that complete a flow, like &quot;Save&quot;, &quot;Join now&quot;, or &quot;Confirm&quot;.
-*/
-
-
-/* state-layer 
-#ident {
-	/* Auto layout 
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-	align-items: center;
-	padding: 10px 24px;
-	gap: 8px;
-
-	//width: 187px;
-	height: 40px;
-
-	/* M3/state-layers/light/on-primary/opacity-0.08 
-	background: rgba(255, 255, 255, 0.08);
-
-	/* Inside auto layout 
-	flex: none;
-	order: 0;
-	align-self: stretch;
-	flex-grow: 1;
-}
-*/
-
 
 #quest-list {
 	list-style-type:none;
+	padding: 0;
+	margin: 0;
 }
 
+#activity-input-div, #quest-description {
+	order: 2;
+}	
 
+#activity-buttons, #quest-stages {
+	order: 3;
+}	
+
+#today-activities, #quest-rewards {
+	order: 4;
+}	
+
+#show-quests-btn-frame {
+	order: 5;
+	
+}	
+
+#choose-quest {
+	order: 6;
+}	
 
 /* Quest: */
 #ident {
-	//width: 63px;
-	//height: 28px;
-
-	/* M3/title/large */
-	
-	
 	font-weight: 400;
 	font-size: 22px;
 	line-height: 28px;
-	/* identical to box height, or 127% */
+
 	display: flex;
 	align-items: center;
-
-	color: #000000;
-
-
-	/* Inside auto layout */
-	flex: none;
-	order: 0;
-	flex-grow: 0;
 }
-
-
-
-
 
 
 /* Quest display */
 #ident {
-	/* Auto layout */
+
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	padding: 4px 0px;
-	gap: 10px;
+	padding: 0.25rem 0;
+	gap: 0.5rem;
 
-	//width: 328px;
-	//height: 78px;
-
-
-	/* Inside auto layout */
-	flex: none;
-	order: 1;
 	align-self: stretch;
-	flex-grow: 0;
 }
 
-/* Frame 53 */
+
 #ident {
-	/* Auto layout */
+
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
 	align-items: center;
-	padding: 0px;
-	gap: 10px;
-
-	//width: 225px;
-	//height: 20px;
-
-
-	/* Inside auto layout */
-	flex: none;
-	order: 0;
-	flex-grow: 0;
+	padding: 0;
+	gap: 0.5rem;
 }
 
 /* Active quest: 
 #ident {
-	//width: 83px;
-	//height: 20px;
-
-	/* M3/title/small 
-	
-	
 	font-weight: 500;
 	font-size: 14px;
 	line-height: 20px;
@@ -317,125 +117,60 @@ They have the most visual impact after the FAB, and should be used for important
 	display: flex;
 	align-items: center;
 	letter-spacing: 0.1px;
-
-	color: #000000;
-
-
-	/* Inside auto layout 
-	flex: none;
-	order: 0;
-	flex-grow: 0;
 }
 
 /* Searching for scraps 
 #ident {
-	//width: 132px;
-	//height: 20px;
-
-	/* M3/title/small 
-	
-	
 	font-weight: 500;
 	font-size: 14px;
 	line-height: 20px;
 	/* identical to box height, or 143% 
 	display: flex;
 	align-items: center;
-	letter-spacing: 0.1px;
-
-	color: #000000;
-
-
-	/* Inside auto layout 
-	flex: none;
-	order: 1;
-	flex-grow: 0;
-}
+	letter-spacing: 0.1px;}
 */
 
 /* Frame 57 */
 #ident {
-	/* Auto layout */
+
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
 	align-items: center;
-	padding: 0px;
-	gap: 10px;
+	padding: 0;
+	gap: 0.5rem;
 
-	//width: 328px;
-	//height: 40px;
-
-
-	/* Inside auto layout */
-	flex: none;
-	order: 1;
 	align-self: stretch;
-	flex-grow: 0;
 }
 
 /* Description of the quest. This goes on for a little while, but not too long or the player will get bored. */
 #ident {
-	//width: 328px;
-	//height: 40px;
-
-	/* M3/body/medium */
-	
-	
 	font-weight: 400;
 	font-size: 14px;
 	line-height: 20px;
-	/* or 143% */
 	display: flex;
 	align-items: center;
 	letter-spacing: 0.25px;
 
-	color: #000000;
-
-
-	/* Inside auto layout */
-	flex: none;
-	order: 0;
-	flex-grow: 1;
 }
 
 /* Quest stages */
 #ident {
-	/* Auto layout */
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	padding: 4px 0px;
-	gap: 10px;
-
-	//width: 328px;
-	//height: 82px;
-
-
-	/* Inside auto layout */
-	flex: none;
-	order: 2;
+	padding: 0.25rem 0;
+	gap: 0.5rem;
 	align-self: stretch;
-	flex-grow: 0;
 }
 
 /* Quest stages header */
 #ident {
-	/* Auto layout */
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
 	align-items: center;
-	padding: 0px;
-	gap: 10px;
-
-	//width: 84px;
-	//height: 20px;
-
-
-	/* Inside auto layout */
-	flex: none;
-	order: 0;
-	flex-grow: 0;
+	padding: 0;
+	gap: 0.5rem;
 }
 

@@ -1,13 +1,17 @@
-from datetime import datetime
+#from datetime import datetime
 from django.db import models, transaction, IntegrityError
-from django.utils.timezone import now, timedelta
+from django.utils.timezone import now
 from random import random
-import json, math, logging
+from typing import TYPE_CHECKING, Optional
+import logging
 
 from users.models import Person, Profile
 
-from gameplay.models import Buff, AppliedBuff, QuestCompletion
+from gameplay.models import Buff, AppliedBuff, QuestCompletion, Quest
 from gameplay.serializers import QuestResultSerializer
+
+if TYPE_CHECKING:
+    from gameplay.models import QuestTimer
 
 logger = logging.getLogger("django")
 
@@ -88,7 +92,7 @@ class LifeCycleMixin(models.Model):
         abstract = True
 
     def get_age(self):
-        return now().date() - self.birth_date
+        return (now().date() - self.birth_date).days
     
     def die(self):
         self.death_date = now().date()
@@ -152,7 +156,7 @@ class LifeCycleMixin(models.Model):
 
     def get_miscarriage_change(self):
         chance = 0.05
-        if self.get_age() > 40 * 365:
+        if self.get_age() > (40 * 365):
             chance += 0.10
         return chance
 
@@ -171,6 +175,7 @@ class Character(Person, LifeCycleMixin):
     buffs = models.ManyToManyField('gameplay.Buff', related_name='characters', blank=True)
     is_npc = models.BooleanField(default=True)
     position = models.OneToOneField('locations.Position', on_delete=models.SET_NULL, null=True)
+    #quest_timer = Optional["QuestTimer"]
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -182,7 +187,7 @@ class Character(Person, LifeCycleMixin):
     def start_quest(self, quest):
         self.quest_timer.change_quest(quest)
 
-    def get_quest_completions(self, quest):
+    def get_quest_completions(self, quest: Quest):
         return QuestCompletion.objects.filter(character=self, quest=quest)
 
     @transaction.atomic
@@ -251,9 +256,11 @@ class PlayerCharacterLink(models.Model):
     is_active = models.BooleanField(default=True)
 
     @classmethod
-    def get_character(cls, profile):
+    def get_character(cls, profile: Profile) -> Character:
         link = PlayerCharacterLink.objects.filter(profile=profile, is_active=True).first()
-        return link.character if link else None
+        if link is None:
+            raise ValueError("Character not found for this profile.")
+        return link.character
 
     @classmethod
     def get_profile(cls, character):

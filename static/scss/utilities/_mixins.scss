@@ -1,3 +1,4 @@
+@use '../base/variables' as *;
 
 @mixin respond-to($breakpoint) {
   @if $breakpoint == small {
@@ -9,4 +10,39 @@
       @content;
     }
   } 
+}
+
+@mixin button-style(
+  $bg: #006128,
+  $hover-bg: #00682b,
+  $text-color: #ffffff,
+  $padding: $button-padding,
+  $height: 2rem,
+  $gap: 0.5rem
+) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  padding: $padding;
+  height: $height;
+  gap: $gap;
+
+  background: $bg;
+  border-radius: $button-radius;
+  color: $text-color;
+
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: 0.1px;
+
+  cursor: pointer;
+  
+  &:hover {
+    background: $hover-bg;
+    box-shadow: 
+      0px 1px 2px rgba(0, 0, 0, 0.267),
+      0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+  }
 }

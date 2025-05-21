@@ -22,16 +22,22 @@ Author:
 
 """
 
-from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models, transaction
-from django.db.models import F, ExpressionWrapper, fields
-from django.utils.timezone import now, timedelta
+from django.utils.timezone import now
+from typing import TYPE_CHECKING, Optional
 import logging
 
+
+
+if TYPE_CHECKING:
+    from character.models import Character
+    
 logger = logging.getLogger("django")
 
 
-class CustomUserManager(BaseUserManager):
+#class CustomUserManager(BaseUserManager):
+class CustomUserManager(UserManager["CustomUser"]):
     """
     Custom manager for `CustomUser` model to handle user creation.
 
@@ -41,7 +47,7 @@ class CustomUserManager(BaseUserManager):
     """
 
     @transaction.atomic
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(self, username: Optional[str], email: Optional[str], password: Optional[str], **extra_fields):
         """
         Create and return a regular user with an email and password.
 
@@ -64,7 +70,7 @@ class CustomUserManager(BaseUserManager):
         return user
 
     @transaction.atomic
-    def create_superuser(self, email, password=None, **extra_fields):
+    def create_superuser(self, username: Optional[str], email: Optional[str], password: Optional[str], **extra_fields):
         """
         Create and return a superuser with elevated permissions.
 
@@ -100,6 +106,7 @@ class CustomUser(AbstractUser):
     pending_delete = models.BooleanField(default=False)
     delete_at=models.DateTimeField(null=True, blank=True)
 
+    EMAIL_FIELD = 'email'
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
@@ -129,7 +136,7 @@ class Person(models.Model):
         abstract = True
 
     @transaction.atomic
-    def add_xp(self, amount):
+    def add_xp(self, amount: int):
         """
         Add experience points (XP) to the person and handle level-up logic.
 
@@ -158,7 +165,7 @@ class Person(models.Model):
         """
         return 100 * (self.level + 1) if self.level >= 1 else 100
     
-    def apply_buffs(self, base_value, attribute):
+    def apply_buffs(self, base_value: Optional[int], attribute: Optional[str]) -> int:
         """
         Apply active buffs to a given attribute (e.g., 'xp').
 
@@ -234,7 +241,7 @@ class Profile(Person):
     def __str__(self):
         return self.name if self.name else "Unnamed profile"
 
-    def add_activity(self, time, num = 1):
+    def add_activity(self, time: int, num: int = 1):
         """
         Update the total time and number of activities for this profile.
 
@@ -247,7 +254,7 @@ class Profile(Person):
         self.total_activities += num
         self.save()
 
-    def change_character(self, new_character):
+    def change_character(self, new_character: "Character"):
         """
         Switch the profile's active character to a new character.
 
@@ -259,5 +266,5 @@ class Profile(Person):
         if old_link:
             old_link.unlink()
 
-        new_link = PlayerCharacterLink.objects.create(profile=self, character=new_character)
+        PlayerCharacterLink.objects.create(profile=self, character=new_character)
         self.save()

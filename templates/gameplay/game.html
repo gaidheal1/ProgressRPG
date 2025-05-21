@@ -35,7 +35,7 @@
     <div id="character-info" class="info-box">
 
       <div class="info-block left">
-        <div class="info-line person">
+        <div class="info-line">
           <span>Character:</span>
           <span id="character-name" class="name-disp"></span>
         </div>
@@ -76,13 +76,14 @@
 
       <div class="current-item" id="current-activity-section">
         <div class="input-div" id="activity-input-div">
-          <input class="field-div" type="text" id="activity-input" placeholder="Enter activity" />
+          <input class="field-div" type="text" id="activity-input" placeholder="Enter activity" />    
         </div>
-      </div>
 
-      <div class="button-frame" id="activity-buttons">
-        <button class="button-filled" id="start-activity-btn">Start Activity</button>
-        <button class="button-filled" id="stop-activity-btn" disabled="true" style="display: none;">Submit activity</button>
+        <div class="button-frame" id="activity-buttons">
+          <button class="button-filled" id="start-activity-btn">Start Activity</button>
+          <button class="button-filled" id="stop-activity-btn" disabled="true" style="display: none;">Submit activity</button>
+        </div>
+        
       </div>
 
 
@@ -169,6 +170,7 @@
           <div class="details-pane">
             <h2 id="quest-title">No quest selected</h2>
             <p id="quest-description"></p>
+
             <div id="quest-rewards">
               <h3>Rewards:</h3>
               <div id="xp-reward" class="reward">
@@ -185,6 +187,7 @@
                 </ul>
               </div>
             </div>
+
             <div id="choose-quest">
               <div>
                 <label for="quest-durations">Select quest duration:</label>
@@ -192,8 +195,11 @@
                   <!-- options loaded dynamically here -->
                 </select>
               </div>
-              <button class="button-filled" id="choose-quest-btn">Choose Quest</button>
+              <div class="button-frame">
+                <button class="button-filled" id="choose-quest-btn">Choose Quest</button>
+              </div>
             </div>
+            
           </div>
 
         </div>

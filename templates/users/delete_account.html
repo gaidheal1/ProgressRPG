@@ -7,7 +7,9 @@
     <p>Are you sure you want to delete your account? This action cannot be undone.</p>
     <form method="POST">
         {% csrf_token %}
-        <button type="submit">Yes, delete my account</button>
+        <div class="button-frame">
+            <button type="submit">Yes, delete my account</button>
+        </div>
     </form>
     
     <a href="{% url 'profile' %}">Cancel</a>

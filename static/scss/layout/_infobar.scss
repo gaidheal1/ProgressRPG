@@ -1,68 +1,17 @@
 @use '../utilities/mixins' as *;
+@use '../layout/two-columns' as *;
 
-/* Top infobar */
 
 #info-bar {
-	/* Auto layout */
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	background: #E8FFF1;
-	border-radius: 0px 0px 8px 8px;
-	max-width: 100%;
-	flex: none;
-	order: 0;
-	align-self: stretch;
-	flex-grow: 0;
-
+	@extend .two-column-layout;
+	border-radius: 0 0 0.5rem 0.5rem;
 }
 
-@include respond-to(small) {
-	#info-bar {
-		flex-direction: column;
-		gap: 4px;
-	}
-}
-
-@include respond-to(big) {
-	#info-bar {
-		flex-direction: row;
-		gap: 8px;
-	}
-}
-
-/* info box (one each for player and character) */
-/* should be column for mobile, row for desktop */
 
 .info-box {
-	/* Auto layout */
-	display: flex;
+	@extend .section-box;
 	flex-direction: row;
-	justify-content: space-between;
-	align-items: center;
-	padding: 8px 16px;
-	gap: 8px;
-	//max-width: 100%;
-	/* Inside auto layout */
-	flex: none;
-	align-self: stretch;
-	flex-grow: 1;
-
-	border: 1px solid rgba(0, 0, 0, 0.45);
-	border-radius: 8px;
-
-}
-
-@include respond-to(small) {
-	#info-box {
-		max-width: 100%;
-	}
-}
-
-@include respond-to(big) {
-	#info-box {
-		max-width: 50%;
-	}
+	align-items: space-between;
 }
 
 #player-info {
@@ -76,73 +25,50 @@
 .info-block {
 	display: flex;
 	flex-direction: column;
-	align-self: stretch;
-	padding: 0px;
-	gap: 4px;
-
-	/* Inside auto layout */
-	flex: none;
-
+	//align-items: space-between;
+	align-self: auto;
+	gap: 0.25rem;
+	flex: 1 1 45%;
+	
+	&.left {
+		justify-content: flex-start;
+		order: 0;
+	}
+	
+	&.right {
+		justify-content: flex-end;
+		order: 1;
+	}
 }
 
-.left {
-	justify-content: flex-start;
-	order: 0;
-}
-
-.right {
-	justify-content: flex-end;
-	order: 1;
-}
 
 
 .info-line {
 	display: flex;
+	flex-wrap: wrap;
 	flex-direction: row;
 	align-items: center;
-	padding: 0px;
-	gap: 10px;
-
-	/* Inside auto layout */
-	flex: none;
-	flex-grow: 1;
+	align-self: auto;
+	gap: 0.5rem;
 }
 
-/* name display */
+
+.name-disp,
+.level-disp {
+	display: flex;
+	align-items: center;
+	color: #000000;
+	letter-spacing: 0.4px;
+	
+	white-space: normal;
+	word-break: break-word;
+	text-align: right;
+}
 
 .name-disp {
-
-	/* or 133% */
-	display: flex;
-	align-items: center;
-	letter-spacing: 0.4px;
-
-	color: #000000;
-
-
-	/* Inside auto layout */
-	flex: none;
 	order: 0;
-	flex-grow: 0;
 }
 
-/* Level disp */
-
 .level-disp {
-	font-weight: 400;
-	font-size: 12px;
-	line-height: 16px;
-	/* or 133% */
-	display: flex;
-	align-items: center;
-	text-align: right;
-	letter-spacing: 0.4px;
-
-	color: #000000;
-
-
-	/* Inside auto layout */
-	flex: none;
 	order: 1;
-	flex-grow: 0;
 }

@@ -7,17 +7,18 @@ function closeModal() {
 }
 
 function showToast(message) {
+  console.log("showToast called with message:", message);
   const toastContainer = document.getElementById("toast-container");
+  console.log("Toast container:", toastContainer);
   const toast = document.createElement("div");
-  toast.className = "toast";
-  toast.innerText = message;
+  toast.classList.add("toast");
+  toast.textContent = message;
 
   toastContainer.appendChild(toast);
 
   setTimeout(() => {
-    toast.classList.add("hide");
-    setTimeout(() => toast.remove(), 500);
-  }, 3000); // Toast disappears after 3s
+    toast.remove();
+  }, 3300);
 }
 
 function showQuestDetails(quest) {
@@ -475,10 +476,10 @@ function validateInput(input) {
 // api/activityApi.js
 async function createActivity() {
   const activityInput = document.getElementById("activity-input");
-  if (!validateInput(activityInput.value)) {
-    alert("Invalid input. Please use only letters, numbers, and spaces.");
-    return;
-  }
+  // if (!validateInput(activityInput.value)) {
+  //   alert("Invalid input. Please use only letters, numbers, and spaces.");
+  //   return;
+  // }
   try {
     const response = await fetch("/create_activity/", {
       method: "POST",
@@ -1038,6 +1039,9 @@ function handleSocketMessage(data) {
         break;
       case "warn":
         console.error(data.message);
+        break;
+      case "notification":
+        showToast(data.message);
         break;
       default:
         console.error("Unknown message action:", data.action);

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser, Profile
-from character.models import PlayerCharacterLink
+from character.models import PlayerCharacterLink, Character
 
 # Register your models here.
 
@@ -76,16 +76,15 @@ class PlayerAdmin(admin.ModelAdmin):
     ]
     search_fields = [
         'name',
-        'get_character__name',
         ]
 
+    @admin.display(description='Character')
     def get_character(self, obj):
         return PlayerCharacterLink().get_character(obj)
-    
-    get_character.short_description = 'Character'
 
+    @admin.display(
+        description='User Created',
+        ordering='user__created_at',
+    )
     def user_created_at(self, obj):
         return obj.user.created_at
-    
-    user_created_at.admin_order_field = 'user__created_at'  # Enables sorting
-    user_created_at.short_description = 'User Created'  # Label in admin

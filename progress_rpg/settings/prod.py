@@ -80,8 +80,8 @@ DATABASES = {
 }
 
 
-REDIS_HOST = (os.environ.get('REDIS_URL'))
-print("REDIS_HOST:", REDIS_HOST)
+REDIS_HOST = os.environ.get('REDIS_URL')
+#print("REDIS_HOST:", REDIS_HOST)
 
 CHANNEL_LAYERS = {
     "default": {

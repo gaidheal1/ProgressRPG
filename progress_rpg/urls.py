@@ -14,12 +14,14 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-#from gameplay.admin import custom_admin_site
-from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.http import HttpResponseNotFound
+from django.urls import re_path, path, include
 from django.views.generic import TemplateView
+
+#from gameplay.admin import custom_admin_site
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,6 +33,7 @@ urlpatterns = [
     path('', include('payments.urls')),
     path('', include('gameworld.urls')),
     path('', TemplateView.as_view(template_name='users/index.html'), name='index'),  # Add a path for the index page
+    re_path(r'^\.well-known/.*$', lambda request: HttpResponseNotFound()),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 """ # Serve media files during development

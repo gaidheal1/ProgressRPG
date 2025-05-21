@@ -1,8 +1,4 @@
-from django.urls import path
-from django.shortcuts import render
 from django.contrib import admin
-from django.http import HttpResponse
-from django.template.response import TemplateResponse
 
 from .models import Quest, QuestRequirement, QuestCompletion, Activity, ActivityTimer, QuestTimer, QuestResults, ServerMessage
 
@@ -82,7 +78,7 @@ class ActivityAdmin(admin.ModelAdmin):
     ]
     readonly_fields = ['created_at', 'last_updated']
     date_hierarchy = 'created_at'
-    search_fields = ['profile__name']
+    #search_fields = ['profile__name']
     show_full_result_count = False
     
 @admin.register(ActivityTimer)
@@ -91,17 +87,17 @@ class ActivityTimerAdmin(admin.ModelAdmin):
     list_filter = ['status',]
     actions = ['pause_timers', 'reset_timers']
 
+    @admin.display(description="Pause selected timers")
     def pause_timers(self, request, queryset):
         for timer in queryset:
             timer.pause()
         self.message_user(request, "Selected timers have been paused.")
-    pause_timers.short_description = "Pause selected timers"
 
+    @admin.display(description="Reset selected timers")
     def reset_timers(self, request, queryset):
         for timer in queryset:
             timer.reset()
         self.message_user(request, "Selected timers have been reset.")
-    reset_timers.short_description = "Reset selected timers"
 
 @admin.register(QuestTimer)
 class QuestTimerAdmin(admin.ModelAdmin):
@@ -117,17 +113,17 @@ class QuestTimerAdmin(admin.ModelAdmin):
     ]
     actions = ['pause_timers', 'reset_timers']
 
+    @admin.display(description="Pause selected timers")
     def pause_timers(self, request, queryset):
         for timer in queryset:
             timer.pause()
         self.message_user(request, "Selected timers have been paused.")
-    pause_timers.short_description = "Pause selected timers"
 
+    @admin.display(description="Reset selected timers")
     def reset_timers(self, request, queryset):
         for timer in queryset:
             timer.reset()
         self.message_user(request, "Selected timers have been reset.")
-    reset_timers.short_description = "Reset selected timers"
 
 
 @admin.register(ServerMessage)
