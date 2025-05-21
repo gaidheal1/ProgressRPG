@@ -1,20 +1,17 @@
 @use '../utilities/mixins' as *;
+@use '../layout/two-columns' as *;
 
-/* Content */
 #gameplay-container {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	gap: 8px;
-	padding: 0px;
-	width: 100%;
 	align-self: stretch;
-	flex: none;
-	order: 1;
-	flex-grow: 0;
-	
+	gap: 0.5rem;
+	width: 100%;
+	margin: 0 auto;
+		
 	@include respond-to (small) {
-		max-width: 550px;
+		max-width: 576px;
 	}
 	
 	@include respond-to (big) {
@@ -22,40 +19,13 @@
 	}
 }
 
-/* Game content */
 #game-content {
-	display: flex;
-	justify-content: center;
-	align-items: flex-start;
-	align-content: flex-start;
-	gap: 8px;
-	padding: 0px;
-	width: 100%;
-	align-self: stretch;
-	flex: none;
-	order: 1;
-	flex-grow: 0;
-	
-	@include respond-to (small) {
-		flex-direction: column;
-	}
-	
-	@include respond-to(big) {
-		flex-direction: row;
-	}
+	@extend .two-column-layout;
+	outline: 2px solid red;
 }
 
 .game-section {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 8px;
-	padding: 8px 16px;
-
-	background: #E8FFF1;
-	border: 1px solid rgba(0, 0, 0, 0.45);
-	border-radius: 8px;
-
-	flex: 1 1 auto;
-	align-self: stretch;
+	@extend .section-box;
+	//align-items: flex-start;
+	outline: 2px dashed blue;
 }

@@ -1,61 +1,42 @@
 @use '../utilities/mixins' as *;
 
-/* Content */
-#gameplay-container {
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	gap: 8px;
-	padding: 0px;
-	width: 100%;
-	align-self: stretch;
-	flex: none;
-	order: 1;
-	flex-grow: 0;
-	
-	@include respond-to (small) {
-		max-width: 550px;
-	}
-	
-	@include respond-to (big) {
-		max-width: 1400px;
-	}
-}
-
-/* Game content */
-#game-content {
+.two-column-layout {
 	display: flex;
 	justify-content: center;
 	align-items: flex-start;
-	align-content: flex-start;
-	gap: 8px;
-	padding: 0px;
+	gap: 0.5rem;
 	width: 100%;
-	align-self: stretch;
-	flex: none;
-	order: 1;
-	flex-grow: 0;
 	
 	@include respond-to (small) {
 		flex-direction: column;
 	}
 	
-	@include respond-to(big) {
+	@include respond-to (big) {
 		flex-direction: row;
 	}
 }
 
-.game-section {
+.section-box {
 	display: flex;
+	//flex-wrap: wrap;
+	justify-content: space-between;
 	flex-direction: column;
-	align-items: flex-start;
-	gap: 8px;
-	padding: 8px 16px;
-
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem 1rem;
 	background: #E8FFF1;
 	border: 1px solid rgba(0, 0, 0, 0.45);
-	border-radius: 8px;
-
-	flex: 1 1 auto;
-	align-self: stretch;
+	border-radius: 0.5rem;
+	
+	@include respond-to (small) {
+		flex: 1 1 100%;
+		width: 100%;
+		max-width: 100%;
+		align-self: stretch;
+	}
+	
+	@include respond-to (big) {
+		flex: 1 1 50%;
+		align-self: stretch;
+	}
 }
