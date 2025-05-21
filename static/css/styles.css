@@ -50,7 +50,6 @@ main {
   align-items: stretch;
   justify-content: flex-start;
   width: 100%;
-  outline: 2px dotted green;
 }
 
 .button-frame {
@@ -80,8 +79,6 @@ main {
   text-align: center;
   letter-spacing: 0.1px;
   cursor: pointer;
-  flex: none;
-  flex-grow: 0;
 }
 .button-filled:hover {
   background: #00682b;
@@ -103,8 +100,6 @@ main {
   text-align: center;
   letter-spacing: 0.1px;
   cursor: pointer;
-  flex: none;
-  flex-grow: 0;
 }
 .button-empty:hover {
   background: #f0f0f0;
@@ -180,7 +175,6 @@ h1, h2, h3 {
 }
 
 .input-div {
-  /* Auto layout */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -188,10 +182,6 @@ h1, h2, h3 {
   isolation: isolate;
   height: 3.5rem;
   padding: 0;
-  border-radius: 0.25rem 0.25rem 0 0;
-  flex: none;
-  order: 0;
-  flex-grow: 0;
 }
 @media (max-width: 576px) {
   .input-div {
@@ -210,14 +200,12 @@ h1, h2, h3 {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 0;
+  padding: 0.25rem;
   gap: 0.5rem;
   background: #E8FFF1;
-  border-radius: 0.25rem 0.25rem 0 0;
-  flex: none;
-  order: 0;
+  border-radius: 0.5rem;
   align-self: stretch;
-  flex-grow: 1;
+  height: 2rem;
   z-index: 0;
 }
 
@@ -698,14 +686,6 @@ header nav .right-links {
   }
 }
 
-#game-content {
-  outline: 2px solid red;
-}
-
-.game-section {
-  outline: 2px dashed blue;
-}
-
 #toast-container {
   position: fixed;
   top: 100px;
@@ -830,11 +810,8 @@ header nav .right-links {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 100%;
   gap: 0.5rem;
-  font-weight: 500;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  letter-spacing: 0.1px;
 }
 
 #quest-list {

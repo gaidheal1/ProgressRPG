@@ -21,11 +21,11 @@
 
 #game-content {
 	@extend .two-column-layout;
-	outline: 2px solid red;
+	//outline: 2px solid red;
 }
 
 .game-section {
 	@extend .section-box;
 	//align-items: flex-start;
-	outline: 2px dashed blue;
+	//outline: 2px dashed blue;
 }
