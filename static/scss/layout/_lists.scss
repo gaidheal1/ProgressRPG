@@ -8,10 +8,7 @@
 
 	width: 100%;
 	
-	flex: none;
-	order: 3;
 	align-self: stretch;
-	flex-grow: 0;
 }
 
 .list-section-header {
@@ -19,10 +16,6 @@
 	display: flex;
 	align-items: center;
 	color: #000000;
-
-	flex: none;
-	order: 0;
-	flex-grow: 0;
 }
 
 ul {
@@ -40,10 +33,7 @@ ul {
 
 	width: 100%;
 	
-	flex: none;
-	order: 1;
 	align-self: stretch;
-	flex-grow: 0;
 
 	li {
 		display: flex;
@@ -53,10 +43,6 @@ ul {
 		padding: 0;
 		gap: 0.5rem;
 		width: 100%;
-		
-		flex: none;
-		order: 0;
-		flex-grow: 0;
 	}
 }
 

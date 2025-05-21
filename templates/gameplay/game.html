@@ -104,7 +104,9 @@
 
     <!-- Quest -->
     <div id="quest-section" class="game-section">
+
       <div class="section-top-bar">
+
         <div class="section-status">
           <span class="section-status-header">Quest:</span><span class="section-status-message"
             id="quest-status-text">waiting</span>
@@ -117,27 +119,20 @@
       </div>
 
       <div class="current-item" id="current-quest-section">
-        <div class="quest-text">
-          <span class="current-item-header">Current quest:</span> <span class="current-item-message"
-            id="current-quest-title">None</span>
-        </div>
-        <div id="current-quest-intro" class="quest-text"></div>
-        <div id="current-quest-outro" class="quest-text" style="display: none;"></div>
+        <p id="quest-label" class="quest-text">
+          <strong>Current quest:</strong> <span id="current-quest-title">None</span>
+        </p>
+        <p id="current-quest-intro" class="quest-text"></p>
+        <p id="current-quest-outro" class="quest-text" style="display: none;"></p>
       </div>
 
-
-
       <div id="quest-stages">
-        <div id="current-stage-section">
-          <span>Current stage:</span> <span id="current-quest-active-stage"></span>
-        </div>
+        <p id="quest-label" class="quest-text"><strong>Quest stages</strong></p>
         <div class="list-section" id="quest-previous-stages">
-          <span class="list-section-header">Previous stages</span>
           <ul class="list" id="quest-stages-list" style="display:none">
             <!-- Quest stages dynamically loaded here -->
           </ul>
         </div>
-
       </div>
 
 

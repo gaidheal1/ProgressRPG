@@ -82,11 +82,24 @@ class Quest {
   }
 
   advanceStage() {
+    const stagesList = document.getElementById("quest-stages-list");
+
     if (this.currentStageIndex < this.stages.length - 1) {
       this.renderPreviousStage();
       this.currentStageIndex++;
       document.getElementById("current-quest-active-stage").textContent =
         this.stages[this.currentStageIndex].text;
+
+      const existingCurrent = stagesList.querySelector(".quest-stage.current");
+      if (existingCurrent) {
+        existingCurrent.classList.remove("current");
+        existingCurrent.classList.add("previous");
+      }
+
+      const li = document.createElement("li");
+      li.textContent = this.stages[this.currentStageIndex].text;
+      li.classList.add("quest-stage", "current");
+      stagesList.appendChild(li);
     } else {
       console.log("Quest complete!");
     }
@@ -106,25 +119,38 @@ class Quest {
     if (stagesList.style.display == "none") {
       stagesList.style.display = "flex";
     }
-    stagesList.innerHTML += `<li>${
-      this.stages[this.currentStageIndex].text
-    }</li>`;
+    const prevStage = this.stages[this.currentStageIndex];
+    const li = document.createElement("li");
+    li.textContent = prevStage.text;
+    li.classList.add("quest-stage", "previous")
+    stagesList.appendChild(li);
   }
 
   initialDisplay() {
     document.getElementById("current-quest-title").textContent = this.name;
-    //document.getElementById('current-quest-description').textContent = this.description;
     document.getElementById("current-quest-intro").textContent = this.intro;
-    document.getElementById("current-quest-active-stage").textContent =
-      this.getCurrentStage().text;
     document.getElementById("current-quest-outro").textContent = this.outro;
+    
+    const stagesList = document.getElementById("quest-stages-list");
+    stagesList.style.display = "flex";
+
+    const li = document.createElement("li");
+    li.textContent = this.getCurrentStage().text;
+    li.classList.add("quest-stage", "current");
+    stagesList.appendChild(li);
   }
 
   resetDisplay() {
     const stagesList = document.getElementById("quest-stages-list");
-    stagesList.style.display = "none";
-    stagesList.innerHTML = "";
-    document.getElementById("current-stage-section").style.display = "flex";
+    if (stagesList) {
+      stagesList.style.display = "none";
+      stagesList.innerHTML = "";
+    }
+
+    const currentStageSection = document.getElementById("current-stage-section");
+    if (currentStageSection) {
+      currentStageSection.style.display = "flex";
+    }
   }
 }
 
