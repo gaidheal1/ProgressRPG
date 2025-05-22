@@ -1,21 +1,53 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.core.exceptions import ValidationError
 import logging 
 
-from .models import CustomUser, Profile
+from .models import CustomUser, Profile, InviteCode
 
 logger = logging.getLogger("django")
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
-    agree_to_terms = forms.BooleanField(required=True, label="I agree to the terms and conditions.")
+    invite_code = forms.CharField(required=True)
+    agree_to_terms = forms.BooleanField(
+        required=True, 
+        label="I agree to the terms and conditions.",
+        error_messages={
+            'required': "You must agree to the terms and conditions to register."
+        }
+    )
 
     class Meta:
         model = CustomUser
         fields = ['email', 'password1', 'password2']
 
+    def clean_invite_code(self):
+        code = self.cleaned_data['invite_code'].strip()
+        try:
+            invite = InviteCode.objects.get(code=code)
+        except InviteCode.DoesNotExist:
+            raise ValidationError("Invalid or inactive invite code.")
         
+        if not invite.is_valid():
+            raise ValidationError("This invite code has already been used or is invalid.")
+        
+        self.cleaned_data['_invite'] = invite
+        return code
+
+    def clean(self):
+        cleaned_data = super().clean()
+        return cleaned_data
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if commit:
+            user.save()
+            invite = self.cleaned_data.get('_invite')
+            if invite:
+                invite.use()
+        return user
 
 
 class EmailAuthenticationForm(AuthenticationForm):

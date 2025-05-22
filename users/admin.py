@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Profile
+
+from .models import CustomUser, Profile, InviteCode
 from character.models import PlayerCharacterLink, Character
 
 # Register your models here.
@@ -88,3 +89,23 @@ class PlayerAdmin(admin.ModelAdmin):
     )
     def user_created_at(self, obj):
         return obj.user.created_at
+    
+@admin.register(InviteCode)
+class InviteCodeAdmin(admin.ModelAdmin):
+    list_display = [
+        'code',
+        'is_active',
+        'max_uses',
+        'uses',
+        'expires_at',
+    ]
+    list_filter = [
+        'is_active',
+    ]
+    fields = [
+        'code',
+        'is_active',
+        'expires_at',
+        'max_uses',
+        'uses',
+    ]

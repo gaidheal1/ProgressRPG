@@ -29,6 +29,13 @@
             {% endif %}
         </div>
         <div class="form-group">
+            <label for="{{ form.invite_code.id_for_label }}">Invite Code</label>
+            {{ form.invite_code }}
+            {% if form.invite_code.errors %}
+            <div class="error">{{ form.invite_code.errors }}</div>
+            {% endif %}
+        </div>        
+        <div class="form-group">
             <label for="{{ form.agree_to_terms.id_for_label }}">
                 {{ form.agree_to_terms.label }}
             </label>
