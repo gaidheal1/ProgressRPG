@@ -7,7 +7,7 @@
 	justify-content: center;
 	isolation: isolate;
 	
-	height: 3.5rem;
+	//height: 3.5rem;
 	padding: 0;
 	//border-radius: 0.25rem 0.25rem 0 0;
 
@@ -18,7 +18,7 @@
 
 	@include respond-to(big) {
 		width: 80%;
-		max-width: 25rem;
+		max-width: 30rem;
 	}
 }
 
@@ -32,6 +32,6 @@
 	background: #E8FFF1;
 	border-radius: 0.5rem;
 	align-self: stretch;
-	height: 2rem;
+	height: 2.5rem;
 	z-index: 0;
 }

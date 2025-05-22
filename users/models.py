@@ -24,7 +24,7 @@ Author:
 
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models, transaction
-from django.utils.timezone import now
+from django.utils import timezone
 from typing import TYPE_CHECKING, Optional
 import logging
 
@@ -211,7 +211,7 @@ class Profile(Person):
     total_time = models.IntegerField(default=0)
     total_activities = models.IntegerField(default=0)
     is_premium = models.BooleanField(default=False)
-    last_login = models.DateTimeField(default=now)
+    last_login = models.DateTimeField(default=timezone.now)
     login_streak = models.PositiveIntegerField(default=1)
     login_streak_max = models.PositiveIntegerField(default=1)
     total_logins = models.PositiveIntegerField(default=0)
@@ -268,3 +268,30 @@ class Profile(Person):
 
         PlayerCharacterLink.objects.create(profile=self, character=new_character)
         self.save()
+
+
+class InviteCode(models.Model):
+    code = models.CharField(max_length=50, unique=True)
+    is_active = models.BooleanField(default=True)
+    max_uses = models.PositiveIntegerField(null=True, blank=True)
+    uses = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    def is_valid(self):
+        if not self.is_active:
+            return False
+        if self.expires_at and timezone.now() > self.expires_at:
+            return False
+        if self.max_uses and self.uses >= self.max_uses:
+            return False
+        return True
+
+    def use(self):
+        self.uses += 1
+        if self.max_uses and self.uses >= self.max_uses:
+            self.is_active = False
+        self.save()
+
+    def __str__(self):
+        return self.code

@@ -44,7 +44,7 @@
 	align-items: center;
 	justify-content: center;
 	width: 100%;
-	gap: 0.5rem;
+	gap: 0.25rem;
 }
 
 #quest-list {
@@ -74,103 +74,51 @@
 	order: 6;
 }	
 
-/* Quest: */
-#ident {
-	font-weight: 400;
-	font-size: 22px;
-	line-height: 28px;
-
-	display: flex;
-	align-items: center;
-}
-
-
-/* Quest display */
-#ident {
-
+#current-quest-section {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	padding: 0.25rem 0;
 	gap: 0.5rem;
-
-	align-self: stretch;
-}
-
-
-#ident {
-
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-	align-items: center;
-	padding: 0;
-	gap: 0.5rem;
-}
-
-/* Active quest: 
-#ident {
+	text-align: left;
+	width: 100%;
+  }
+  
+  .quest-label {
+	font-size: 1rem;
 	font-weight: 500;
-	font-size: 14px;
-	line-height: 20px;
-	/* identical to box height, or 143% 
-	display: flex;
-	align-items: center;
-	letter-spacing: 0.1px;
-}
-
-/* Searching for scraps 
-#ident {
-	font-weight: 500;
-	font-size: 14px;
-	line-height: 20px;
-	/* identical to box height, or 143% 
-	display: flex;
-	align-items: center;
-	letter-spacing: 0.1px;}
-*/
-
-/* Frame 57 */
-#ident {
-
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-	align-items: center;
-	padding: 0;
-	gap: 0.5rem;
-
-	align-self: stretch;
-}
-
-/* Description of the quest. This goes on for a little while, but not too long or the player will get bored. */
-#ident {
-	font-weight: 400;
-	font-size: 14px;
-	line-height: 20px;
-	display: flex;
-	align-items: center;
-	letter-spacing: 0.25px;
-
-}
-
-/* Quest stages */
-#ident {
+	margin: 0;
+  }
+  
+  .quest-text {
+	font-size: 0.95rem;
+	line-height: 1.4;
+	margin: 0;
+  }
+  
+  #quest-stages {
 	display: flex;
 	flex-direction: column;
-	align-items: flex-start;
-	padding: 0.25rem 0;
 	gap: 0.5rem;
-	align-self: stretch;
-}
-
-/* Quest stages header */
-#ident {
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-	align-items: center;
-	padding: 0;
-	gap: 0.5rem;
-}
-
+	text-align: left;
+	width: 100%;
+	margin-top: 1rem;
+  }
+  
+  .quest-stage-list {
+	list-style-type: disc;
+	padding-left: 1.25rem;
+	margin: 0;
+  }
+  
+  .quest-stage {
+	font-size: 0.95rem;
+	line-height: 1.4;
+  
+	&.previous {
+	  color: #888;
+	}
+  
+	&.current {
+	  font-weight: 500;
+	}
+  }
