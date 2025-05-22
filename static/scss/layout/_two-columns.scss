@@ -18,9 +18,8 @@
 
 .section-box {
 	display: flex;
-	justify-content: space-between;
 	flex-direction: column;
-	align-items: center;
+	align-items: flex-start;
 	gap: 0.5rem;
 	padding: 0.5rem 1rem;
 	background: #E8FFF1;
@@ -38,4 +37,35 @@
 		flex: 1 1 50%;
 		align-self: stretch;
 	}
+}
+
+.section-row {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	width: 100%;
+}
+
+.section-top-bar {
+	flex-direction: row;
+	align-items: center;
+	padding: 0.25rem 0;
+	gap: 0.5rem;
+
+	&.justify-between {
+		justify-content: space-between;
+	  }
+	
+	&.justify-center {
+	justify-content: center;
+	}
+}
+
+.section-header {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 1.25rem;
+	line-height: 1.75rem;
 }
