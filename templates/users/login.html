@@ -3,7 +3,8 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div>
+<div class="form-container">
+
   <h2>Login</h2>
   <form method="POST">
     {% csrf_token %}
@@ -23,13 +24,13 @@
     </div>
     <button type="submit" class="button-filled">Login</button>
   </form>
-</div>
-<div>
-  <p><a href="{% url 'password_reset' %}">Forgot your password?</a></p>
 
-  <p>
-    Don't have an account? <a href="{% url 'register' %}">Sign up</a>
-  </p>
+  <div>
+    <p><a href="{% url 'password_reset' %}">Forgot your password?</a></p>
+    <p>
+      Don't have an account? <a href="{% url 'register' %}">Sign up</a>
+    </p>
+  </div>
+  
 </div>
-
-{% endblock %}
+  {% endblock %}
