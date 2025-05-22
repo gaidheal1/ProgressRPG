@@ -13,7 +13,7 @@
         </div>
 
         <div class="section-row">
-            <p>Welcome, {{ profile.name|default:"(no name)" }}!</p>
+            <p><strong>Name:</strong> {{ profile.name|default:"(no name)" }}!</p>
             <p><strong>Bio:</strong> {{ profile.bio }}</p>
         </div>
 
@@ -65,7 +65,7 @@
             <ul class="list">
                 <li>Level: {{ character.level }}</li>
                 <li>XP: {{ character.xp }}/{{ character.xp_next_level }}</li>
-                <li>Quests completed: {{ character.quests_completed }}</li>
+                <li>Quests completed: {{ character.total_quests }}</li>
             </ul>
         </div>
 

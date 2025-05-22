@@ -312,9 +312,11 @@ def profile_view(request):
     profile = request.user.profile
     total_minutes = round(profile.total_time / 60)
 
+    character = PlayerCharacterLink().get_character(profile)
+
     logger.info(f"User {request.user.username} (ID: {request.user.id}) viewed their profile. Total time spent: {total_minutes} minutes.")
 
-    return render(request, 'users/profile.html', {'profile': profile, 'total_minutes': total_minutes})
+    return render(request, 'users/profile.html', {'profile': profile, 'character': character, 'total_minutes': total_minutes})
 
 
 # Edit profile view
