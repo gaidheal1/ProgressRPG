@@ -283,7 +283,7 @@ def link_character_view(request):
 
         logger.info(f"User {request.user.username} (ID: {request.user.id}) updated onboarding_step to 3.")
 
-        return redirect('subscribe')
+        return redirect('tutorial')
     else:
         link = PlayerCharacterLink.objects.filter(profile=profile, is_active=True).first()
         
@@ -297,6 +297,15 @@ def link_character_view(request):
 
     return render(request, 'users/link_character.html', {'char_name': character.name})
 
+
+@login_required
+def tutorial_view(request):
+    user = request.user
+    if request.method =='POST':
+        user.profile.onboarding_step = 4
+        user.profile.save()
+        return redirect('game')
+    return render(request, 'users/tutorial.html')
 
 # Profile view
 @login_required
@@ -312,9 +321,11 @@ def profile_view(request):
     profile = request.user.profile
     total_minutes = round(profile.total_time / 60)
 
+    character = PlayerCharacterLink().get_character(profile)
+
     logger.info(f"User {request.user.username} (ID: {request.user.id}) viewed their profile. Total time spent: {total_minutes} minutes.")
 
-    return render(request, 'users/profile.html', {'profile': profile, 'total_minutes': total_minutes})
+    return render(request, 'users/profile.html', {'profile': profile, 'character': character, 'total_minutes': total_minutes})
 
 
 # Edit profile view

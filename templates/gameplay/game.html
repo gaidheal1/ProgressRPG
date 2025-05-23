@@ -62,9 +62,9 @@
   <div id="game-content">
 
     <!-- Activity -->
-    <div id="activity-section" class="game-section">
+    <div id="activity-section" class="section-box">
 
-      <div id="activity-top-bar" class="section-top-bar">
+      <div id="activity-top-bar" class="section-row section-top-bar justify-between">
         <div class="section-status">
           <span class="section-status-header">Activity:</span><span class="section-status-message"
             id="activity-status-text">waiting</span>
@@ -74,12 +74,13 @@
         </div>
       </div>
 
-      <div class="current-item" id="current-activity-section">
-        <div class="input-div" id="activity-input-div">
+      <div id="current-activity-section" class="section-row current-item">
+        
+        <div id="activity-input-div" class="input-div">
           <input class="field-div" type="text" id="activity-input" placeholder="Enter activity" />    
         </div>
 
-        <div class="button-frame" id="activity-buttons">
+        <div id="activity-buttons" class="button-frame">
           <button class="button-filled" id="start-activity-btn">Start Activity</button>
           <button class="button-filled" id="stop-activity-btn" disabled="true" style="display: none;">Submit activity</button>
         </div>
@@ -87,15 +88,15 @@
       </div>
 
 
-      <div class="list-section" id="today-activities">
-        <h3 class="list-section-header">Today's activities</h3>
+      <div id="today-activities" class="section-row list-section">
+        <p class="list-section-header"><strong>Today's activities</strong></p>
         <div id="activity-totals">
           <span id="activities-time-message"></span>
           <span id="activities-time-data"></span>
           <span id="activities-total-message"></span>
           <span id="activities-total-data"></span>
         </div>
-        <ul class="list" id="activity-list">
+        <ul id="activity-list" class="list">
           Searching for activities completed today...
         </ul>
       </div>
@@ -105,20 +106,17 @@
     <!-- Quest -->
     <div id="quest-section" class="game-section">
 
-      <div class="section-top-bar">
-
+      <div id="activity-top-bar" class="section-row section-top-bar justify-between">
         <div class="section-status">
           <span class="section-status-header">Quest:</span><span class="section-status-message"
             id="quest-status-text">waiting</span>
         </div>
-
         <div class="timer-frame">
           <span id="quest-timer" class="timer-text">00:00</span>
         </div>
-
       </div>
 
-      <div class="current-item" id="current-quest-section">
+      <div id="current-quest-section" class="section-row current-item">
         <p id="quest-label" class="quest-text">
           <strong>Current quest:</strong> <span id="current-quest-title">None</span>
         </p>
@@ -126,7 +124,7 @@
         <p id="current-quest-outro" class="quest-text" style="display: none;"></p>
       </div>
 
-      <div id="quest-stages">
+      <div id="quest-stages" class="section-row list-section">
         <p id="quest-label" class="quest-text"><strong>Quest stages</strong></p>
         <div class="list-section" id="quest-previous-stages">
           <ul class="list" id="quest-stages-list" style="display:none">
@@ -137,7 +135,7 @@
 
 
 
-      <div class="list-section hidden" id="quest-rewards">
+      <div id="quest-rewards" class="section-row list-section hidden">
         <h2 class="list-section-header">Quest rewards</h2>
         <ul class="list" id="quest-rewards-list">
         </ul>
@@ -156,7 +154,7 @@
           <!-- Quest Categories and list-->
           <div class="quest-pane">
             <h2 id="quest-list-title">Available quests</h2>
-            <ul id="quest-list-modal" class="list">
+            <ul id="quest-list-modal" class="quest-list list">
               <!-- Quests dynamically loaded here -->
             </ul>
           </div>
