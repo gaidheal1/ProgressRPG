@@ -227,6 +227,7 @@ class Character(Person, LifeCycleMixin):
         except Exception as e:
             logger.exception(f"[CHAR.COMPLETE_QUEST] Error applying rewards for quest {quest.id}: {e}")
 
+        logger.debug(f"[CHAR.COMPLETE_QUEST] Rewards applied: {rewards}")
         try:
             xp_reward = self.quest_timer.complete()
             self.add_xp(xp_reward)

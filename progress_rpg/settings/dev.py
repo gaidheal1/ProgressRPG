@@ -88,7 +88,7 @@ SECRET_KEY_FALLBACKS=['django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 DB_NAME = os.getenv('DB_NAME', default='progress_rpg')
 
-DB_USER = os.getenv('DB_USERNAME', default='duncan')
+DB_USER = os.getenv('DB_USER', default='duncan')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
 #print("DB_PASSWORD:", DB_PASSWORD)
 

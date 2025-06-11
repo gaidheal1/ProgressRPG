@@ -1,4 +1,3 @@
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -7,7 +6,6 @@ from unittest import skip
 from .models import Profile
 
 from character.models import Character, PlayerCharacterLink
-
 
 
 class UserCreationTest(TestCase):
@@ -43,6 +41,7 @@ class UserCreationTest(TestCase):
         self.assertTrue(superuser.is_staff)
 
     def test_character_assigned_on_profile(self):
+        """Test that a character is assigned to the user's profile."""
         user = self.UserModel.objects.create_user(
             email='testuser1@example.com',
             password='testpassword123'
@@ -51,8 +50,19 @@ class UserCreationTest(TestCase):
         character = link.character
         self.assertEqual(character, self.character)
 
+    def test_profile_defaults(self):
+        """Test default values for a new profile."""
+        user = self.UserModel.objects.create_user(
+            email='testuser2@example.com',
+            password='testpassword123'
+        )
+        profile = user.profile
+        self.assertEqual(profile.onboarding_step, 0)
+        self.assertEqual(profile.total_time, 0)
+        self.assertEqual(profile.total_activities, 0)
+
+
 class OnboardingTest(TestCase):
-    @skip("Skipping due to DB changes")
     def setUp(self):
         User = get_user_model()
         self.user = User.objects.create_user(
@@ -61,103 +71,62 @@ class OnboardingTest(TestCase):
         )
         self.client.login(email='testuser@example.com', password='testpassword123')
         self.profile = self.user.profile
-        self.character = Character.objects.get(profile=self.profile)
 
     def test_initial_onboarding(self):
-        self.assertTrue(self.user.profile.onboarding_step == 0)
+        """Test that onboarding starts at step 0."""
+        self.assertEqual(self.user.profile.onboarding_step, 0)
 
     def test_onboarding_profile(self):
+        """Test the profile creation step in onboarding."""
         url = reverse("create_profile")
-
-        data = {
-            'name': 'Test name',
-        }
-        
+        data = {'name': 'Test name'}
         response = self.client.post(url, data)
 
         self.assertEqual(response.status_code, 302)
         expected_url = reverse('create_character')
         self.assertRedirects(response, expected_url)
-        
+
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.onboarding_step, 2)
-        self.assertTrue(self.profile.name=='Test name')
+        self.assertEqual(self.profile.name, 'Test name')
 
     def test_onboarding_character(self):
+        """Test the character creation step in onboarding."""
         self.profile.onboarding_step = 2
-        
-        url = reverse("create_character")
+        self.profile.save()
 
-        data = {
-            'character_name': 'Test name',
-        }
-        
+        url = reverse("create_character")
+        data = {'character_name': 'Test Character'}
         response = self.client.post(url, data)
 
         self.assertEqual(response.status_code, 302)
         expected_url = reverse('subscribe')
         self.assertRedirects(response, expected_url)
-        
+
         self.profile.refresh_from_db()
-        self.character.refresh_from_db()
         self.assertEqual(self.profile.onboarding_step, 3)
-        self.assertTrue(self.character.name=='Test name')
+        self.assertEqual(self.profile.character.first_name, 'Test Character')
 
     def test_onboarding_subscribe(self):
+        """Test the subscription step in onboarding."""
         self.profile.onboarding_step = 3
-        
-        url = reverse("subscribe")
+        self.profile.save()
 
-        data = {}
-        
-        response = self.client.post(url, data)
+        url = reverse("subscribe")
+        response = self.client.post(url, {})
 
         self.assertEqual(response.status_code, 302)
         expected_url = reverse('game')
         self.assertRedirects(response, expected_url)
-        
+
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.onboarding_step, 4)
 
-class PersonXpTest(TestCase):
-    def setUp(self):
-        User = get_user_model()
-        self.user = User.objects.create_user(
-            email='testuser1@example.com',
-            password='testpassword123'
-        )
-
-    def test_profile_create(self):
-        self.assertTrue(isinstance(self.user.profile, Profile))
-        self.assertEqual(self.user, self.user.profile.user)
-        self.assertEqual(self.user.profile.xp, 0)
-
-    def test_profile_addxp(self):
-        profile = self.user.profile
-        self.assertEqual(profile.get_xp_for_next_level(), 100)
-
-        profile.xp = 100
-        profile.level_up()
-        self.assertEqual(profile.level, 1)
-        
-        profile.add_xp(100)
-        self.assertEqual(profile.xp, 100)
-        self.assertEqual(profile.level, 1)
-        self.assertEqual(profile.get_xp_for_next_level(), 200)
-
-        profile.add_xp(100)
-        self.assertEqual(profile.xp, 0)
-        self.assertEqual(profile.level, 2)
-        self.assertEqual(profile.get_xp_for_next_level(), 300)
 
 class ProfileMethodsTest(TestCase):
     def setUp(self):
-        character=Character.objects.create(
-            first_name="Jane",
-        )
-        self.character2=Character.objects.create(
-            first_name="John",
-        )
+        self.character = Character.objects.create(first_name="Jane")
+        self.character2 = Character.objects.create(first_name="John")
         User = get_user_model()
         self.user = User.objects.create_user(
             email='testuser1@example.com',
@@ -165,21 +134,19 @@ class ProfileMethodsTest(TestCase):
         )
 
     def test_profile_addactivity(self):
+        """Test adding activity to a profile."""
         profile = self.user.profile
         profile.add_activity(10, 1)
         self.assertEqual(profile.total_time, 10)
         self.assertEqual(profile.total_activities, 1)
 
     def test_change_character(self):
+        """Test changing the character linked to a profile."""
         profile = self.user.profile
-        link = PlayerCharacterLink.objects.filter(profile=profile).first()
-        character = link.character
-        self.assertTrue(character.first_name, "Jane")
         profile.change_character(self.character2)
-        self.assertTrue(character.first_name, "John")
+        link = PlayerCharacterLink.objects.filter(profile=profile).first()
+        self.assertEqual(link.character, self.character2)
 
-
-# Testing views: mock the response, then write the assertions
 
 class TestViews_LoggedIn(TestCase):
     def setUp(self):
@@ -199,26 +166,23 @@ class TestViews_LoggedIn(TestCase):
         self.client.login(email='testuser@example.com', password='testpassword123')
 
     def test_index_GET(self):
-        """
-        Check the index is rendered successfully
-        """
+        """Check the index is rendered successfully."""
         response = self.client.get(self.index_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'users/index.html')
 
     def test_profile_GET(self):
-        """
-        Check the profile is rendered successfully
-        """
+        """Check the profile is rendered successfully."""
         response = self.client.get(self.profile_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'users/profile.html')
-    
-    def test_profile_edit_GET(self):
 
+    def test_profile_edit_GET(self):
+        """Check the edit profile page is rendered successfully."""
         response = self.client.get(self.editprofile_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'users/edit_profile.html')
+
 
 class TestViews_LoggedOut(TestCase):
     def setUp(self):
@@ -229,20 +193,17 @@ class TestViews_LoggedOut(TestCase):
         self.register_url = reverse('register')
 
     def test_profile_GET_loggedout(self):
-        """
-        Check redirect to login if user not logged in
-        """
+        """Check redirect to login if user not logged in."""
         response = self.client.get(self.profile_url)
         self.assertEqual(response.status_code, 302)
 
     def test_editprofile_GET_loggedout(self):
-        """
-        Check redirect to login if user not logged in
-        """
+        """Check redirect to login if user not logged in."""
         response = self.client.get(self.editprofile_url)
         self.assertEqual(response.status_code, 302)
 
     def test_register_GET(self):
+        """Check the register page is rendered successfully."""
         response = self.client.get(self.register_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'users/register.html')

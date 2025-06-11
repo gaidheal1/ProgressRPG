@@ -21,6 +21,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("django")
 
+
+
 class Quest(models.Model):
     """
     Represents a quest in the game, with eligibility criteria, duration, and category.
@@ -48,9 +50,12 @@ class Quest(models.Model):
     description = models.TextField(max_length=2000, blank = True)
     intro_text = models.TextField(max_length=2000, blank = True)
     outro_text = models.TextField(max_length=2000, blank = True)
-    DURATION_CHOICES = [(300 * i) for i in range(1, 7)]
-    def default_duration_choices(self) -> List[int]:
+    #DURATION_CHOICES = [(300 * i) for i in range(1, 7)]
+
+    @staticmethod
+    def default_duration_choices() -> List[int]:
         return [(300 * i) for i in range(1, 7)]
+    
     duration_choices: Any = models.JSONField(default=default_duration_choices)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     start_date = models.DateTimeField(blank=True, null=True)
@@ -207,6 +212,9 @@ class Quest(models.Model):
         # Quest passed the test
         return True
 
+
+
+
     
 class QuestResults(models.Model):
     """
@@ -261,6 +269,7 @@ class QuestResults(models.Model):
         :param character: The character receiving the rewards.
         :type character: Character
         """
+        logger.info(f"[QUESTRESULTS.APPLY] Applying results for quest {self.quest.name} to character {character.name}")
         #character.add_coins(self.coin_reward)
         character.coins += self.coin_reward
 
@@ -271,7 +280,11 @@ class QuestResults(models.Model):
                     method = getattr(character, f"apply_{key}")
                     method(value)
                 elif hasattr(character, key):
-                    setattr(character, key, getattr(character, key) + value if isinstance(value, (int, float)) else value)
+                    current_value = getattr(character, key)
+                    if isinstance(current_value, (int, float)):
+                        setattr(character, key, current_value + value)
+                    else:
+                        setattr(character, key, value)
         else:
             logger.info(f"[QUESTRESULTS.APPLY] No dynamic rewards found for quest {self.quest.name}.")
 
@@ -289,6 +302,10 @@ class QuestResults(models.Model):
             )
             character.buffs.add(applied_buff)
         character.save()
+
+
+
+
 
 class QuestRequirement(models.Model):
     """
@@ -433,6 +450,10 @@ class Project(models.Model):
         return self.name
 
 
+
+
+
+
 class Timer(models.Model):
     """
     An abstract base model that represents a general timer for activities
@@ -534,6 +555,11 @@ class Timer(models.Model):
             self.elapsed_time = 0
             self.start_time = None
 
+
+
+
+
+
 class ActivityTimer(Timer):
     """
     A timer that tracks progress on player activities.
@@ -607,6 +633,10 @@ class ActivityTimer(Timer):
         :rtype: int
         """
         return self.activity.calculate_xp_reward()
+
+
+
+
 
 
 class QuestTimer(Timer):
