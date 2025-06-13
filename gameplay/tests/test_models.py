@@ -8,7 +8,7 @@ from django.utils.timezone import now, timedelta
 from time import sleep
 from unittest import skip
 
-from .models import Quest, QuestRequirement, Activity, Skill, Project, QuestCompletion, QuestResults, Buff, AppliedBuff, ActivityTimer, QuestTimer, ServerMessage
+from gameplay.models import Quest, QuestRequirement, Activity, Skill, Project, QuestCompletion, QuestResults, Buff, AppliedBuff, ActivityTimer, QuestTimer, ServerMessage
 from character.models import Character
 
 
@@ -545,34 +545,6 @@ class TestTimers(TestCase):
         self.assertIsNone(self.timer.quest)
         self.assertEqual(self.timer.status, 'empty')
         self.assertEqual(self.timer.elapsed_time, 0)
-
-class TestQuestViews(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        User = get_user_model()
-        cls.user = User.objects.create_user(
-            username='testuser@example.com',
-            email='testuser@example.com',
-            password='testpassword123'
-        )
-        cls.client = Client()
-        cls.quest = Quest.objects.create(
-            name='Test Quest',
-            description='Test Quest Description',
-            levelMax=10,
-        )
-
-    @skip("Skipping quest views tests")
-    def test_quest_list_view(self):
-        response = self.client.get(reverse('quest-list'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.quest.name)
-
-    @skip("Skipping quest views tests")
-    def test_quest_detail_view(self):
-        response = self.client.get(reverse('quest-detail', args=[self.quest.id]))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.quest.description)
 
 class TestBuffExpiration(TestCase):
     def test_buff_expiration(self):
