@@ -19,10 +19,10 @@ click-repl==0.3.0
 colorama==0.4.6
 constantly==23.10.4
 cron-descriptor==1.4.5
-cryptography==44.0.0
+cryptography==44.0.1
 daphne==4.1.2
 dj-database-url==2.3.0
-Django==4.2.17
+Django==4.2.22
 django-allauth==64.2.1
 django-celery-beat==2.7.0
 django-environ==0.11.2
@@ -65,10 +65,10 @@ python-dateutil==2.9.0.post0
 python-decouple==3.8
 python-dotenv==1.0.1
 redis==5.2.1
-requests==2.32.3
+requests==2.32.4
 roman-numerals-py==3.1.0
 service-identity==24.2.0
-setuptools==75.8.0
+setuptools==78.1.1
 six==1.17.0
 snowballstemmer==2.2.0
 Sphinx==8.2.3
