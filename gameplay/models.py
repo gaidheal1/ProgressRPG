@@ -339,7 +339,7 @@ class QuestCompletion(models.Model):
     character = models.ForeignKey('character.Character', on_delete=models.CASCADE) # don't add related_name, use character.quest_completions!
     quest = models.ForeignKey('gameplay.Quest', on_delete=models.CASCADE, related_name='quest_completions')
     times_completed = models.PositiveIntegerField(default=1)
-    last_completed = models.DateTimeField(auto_now=True)
+    last_completed = models.DateTimeField(default=now)
 
     class Meta:
         unique_together = ('character', 'quest')
