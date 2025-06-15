@@ -13,7 +13,7 @@ class UserRegisterForm(UserCreationForm):
     invite_code = forms.CharField(required=True)
     agree_to_terms = forms.BooleanField(
         required=True, 
-        label="I agree to the terms and conditions.",
+        label="I agree to the terms and conditions.", # Template doesn't use this label
         error_messages={
             'required': "You must agree to the terms and conditions to register."
         }
