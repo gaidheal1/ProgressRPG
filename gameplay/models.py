@@ -480,22 +480,19 @@ class Timer(models.Model):
         abstract = True
 
     def get_elapsed_time(self):
-        """
-        Calculate the total elapsed time for the timer.
-
-        :return: The elapsed time in seconds.
-        :rtype: int
-        """
-        this_round = (now() - self.start_time).total_seconds() if self.start_time else 0
-        return int(this_round + self.elapsed_time)
+        if self.start_time and self.status == 'active':
+            return int((now() - self.start_time).total_seconds()) + self.elapsed_time
+        return self.elapsed_time
     
-    def update_time(self):
-        """
-        Update the elapsed time for the timer based on the current time.
-        """
-        if self.start_time:
-            self.elapsed_time = self.get_elapsed_time()
-            self.save()
+    def compute_elapsed(self):
+        """Calculate time without updating the model."""
+        return self.get_elapsed_time()
+    
+    def apply_elapsed(self):
+        """Store current elapsed time in the DB."""
+        self.elapsed_time = self.get_elapsed_time()
+        self.start_time = None
+        return self
 
     def start(self):
         """
