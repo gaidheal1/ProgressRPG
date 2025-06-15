@@ -376,6 +376,96 @@ class TestQuestCompletionModel(TestCase):
         # Again, it prints 'None'
         #print(char.quest_completions)
 
+
+
+class BaseTimerTest(TestCase):
+    def assertTimerReset(self, timer):
+        self.assertIsNone(timer.start_time)
+        self.assertEqual(timer.status, 'empty')
+        self.assertEqual(timer.elapsed_time, 0)
+
+
+class TestActivityTimer(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(email='user1@gmail.com', password='test')
+        cls.profile = cls.user.profile
+        cls.activity = Activity.objects.create(profile=cls.profile, name="Test Activity", duration=10)
+
+    def setUp(self):
+        self.timer = self.profile.activity_timer
+
+    def test_new_activity_sets_state(self):
+        self.timer.new_activity(self.activity)
+        self.assertEqual(self.timer.activity, self.activity)
+        self.assertEqual(self.timer.status, 'waiting')
+
+    def test_start_and_pause(self):
+        self.timer.new_activity(self.activity)
+        self.timer.start()
+        self.assertEqual(self.timer.status, 'active')
+        self.assertIsNotNone(self.timer.start_time)
+
+        self.timer.pause()
+        self.assertEqual(self.timer.status, 'paused')
+        self.assertIsNone(self.timer.start_time)
+        self.assertGreaterEqual(self.timer.elapsed_time, 0)
+
+    def test_reset_clears_activity(self):
+        self.timer.new_activity(self.activity)
+        self.timer.reset()
+        self.assertIsNone(self.timer.activity)
+        self.assertEqual(self.timer.status, 'empty')
+
+    def test_complete_returns_xp(self):
+        self.timer.new_activity(self.activity)
+        self.timer.start()
+        xp = self.timer.complete()
+        self.assertIsInstance(xp, int)
+        self.assertEqual(self.timer.status, 'empty')
+        self.assertIsNone(self.timer.activity)
+
+
+class TestQuestTimer(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.character = Character.objects.create(name="Hero")
+        cls.character.save()
+        cls.quest = Quest.objects.create(name="Test Quest", levelMax=10)
+
+    def setUp(self):
+        self.timer, created = QuestTimer.objects.get_or_create(character=self.character)
+
+    def test_change_quest_sets_state(self):
+        self.timer.change_quest(self.quest, duration=300)
+        self.assertEqual(self.timer.quest, self.quest)
+        self.assertEqual(self.timer.duration, 300)
+        self.assertEqual(self.timer.status, 'waiting')
+
+    def test_start_and_complete(self):
+        self.timer.change_quest(self.quest, duration=300)
+        self.timer.start()
+        self.assertEqual(self.timer.status, 'active')
+        xp = self.timer.complete()
+        self.assertEqual(self.timer.status, 'completed')
+        self.assertIsInstance(xp, int)
+
+    def test_reset_clears_quest(self):
+        self.timer.change_quest(self.quest, duration=300)
+        self.timer.reset()
+        self.assertIsNone(self.timer.quest)
+        self.assertEqual(self.timer.status, 'empty')
+        self.assertEqual(self.timer.elapsed_time, 0)
+
+    @freeze_time("2025-01-01 12:00:00")
+    def test_get_remaining_time(self):
+        self.timer.change_quest(self.quest, duration=300)
+        self.timer.start()
+        with freeze_time("2025-01-01 12:05:00"):
+            self.assertEqual(self.timer.get_remaining_time(), 0)
+            self.assertTrue(self.timer.time_finished())
+
+
 class TestBuffModel(TestCase):
     @skip("Skipping Buff model tests as they are not fully implemented yet")
     def test_buff_create(self):

@@ -505,25 +505,17 @@ class Timer(models.Model):
             self.status = 'active'
             self.start_time = now()
             self.save()
-    
-    def is_active(self):
-        """
-        Check if the timer is currently active.
-
-        :return: True if the timer is active, False otherwise.
-        :rtype: bool
-        """
-        return self.status == 'active'
+        return self
     
     def pause(self):
         """
         Pause the timer and update its elapsed time.
         """
-        if self.status not in ['paused',]:
+        if self.status != 'paused':
+            self.apply_elapsed()
             self.status = 'paused'
-            self.update_time()
-            self.start_time = None
             self.save()
+        return self
 
     def set_waiting(self):
         """
@@ -532,15 +524,17 @@ class Timer(models.Model):
         if self.status != 'waiting':
             self.status = 'waiting'
             self.save()
+        return self
 
-    def complete(self) -> int:
+    def complete(self):
         """
         Mark the timer as 'completed' and update its elapsed time.
         """
         if self.status != 'completed':
-            self.update_time()
+            self.apply_elapsed()
             self.status = 'completed'
-        return 0
+            self.save(update_fields=['status', 'elapsed_time'])
+        return self
             
     def reset(self):
         """
@@ -550,10 +544,26 @@ class Timer(models.Model):
             self.status = 'empty'
             self.elapsed_time = 0
             self.start_time = None
+            self._reset_hook()
+            self.save(update_fields=['status', 'elapsed_time', 'start_time'])
+        return self
 
+    @abstractmethod
+    def calculate_xp(self) -> int:
+        """Must be implemented by subclass to return XP."""
+        raise NotImplementedError
+    
+    def _reset_hook(self):
+        pass
+    
+    def is_active(self):
+        """
+        Check if the timer is currently active.
 
-
-
+        :return: True if the timer is active, False otherwise.
+        :rtype: bool
+        """
+        return self.status == 'active'
 
 
 class ActivityTimer(Timer):
@@ -580,13 +590,12 @@ class ActivityTimer(Timer):
         self.reset()
         self.activity = activity
         self.set_waiting()
-        self.save()
+        self.save(update_fields=['activity', 'status'])
 
     def pause(self):
         """
         Pause the activity timer and update the associated activity's duration.
         """
-        #print("Activity timer pause()")
         super().pause()
         self.update_activity_time()
 
@@ -596,7 +605,6 @@ class ActivityTimer(Timer):
         """
         if self.activity:
             self.activity.new_time(self.elapsed_time)
-            self.save()
         else:
             logger.info(f"[ACTIVITYTIMER.UPDATE_ACTIVITY_TIME] No activity found for timer {self}. Resetting timer.")
             self.reset()
@@ -613,13 +621,16 @@ class ActivityTimer(Timer):
         self.reset()
         return xp
 
+    def _reset_hook(self):
+        self.activity = None
+
     def reset(self):
         """
         Reset the activity timer and dissociate the current activity.
         """
         super().reset()
         self.activity = None
-        self.save()
+        self.save(update_fields=['activity', 'status', 'elapsed_time', 'start_time'])
 
     def calculate_xp(self):
         """
@@ -628,7 +639,9 @@ class ActivityTimer(Timer):
         :return: The calculated XP reward.
         :rtype: int
         """
-        return self.activity.calculate_xp_reward()
+        if self.activity:
+            return self.activity.calculate_xp_reward()
+        return 0
 
 
 
@@ -648,6 +661,9 @@ class QuestTimer(Timer):
     quest = models.ForeignKey('Quest', on_delete=models.SET_NULL, related_name='quest_timer', null=True, blank=True)
     duration = models.IntegerField(default=0)
 
+    def __str__(self):
+        return f"QuestTimer for {self.character.name}"
+
     # def save(self, *args, **kwargs):
     #     #print(f"QuestTimer saved. {self}")
     #     #traceback.print_stack()
@@ -666,7 +682,7 @@ class QuestTimer(Timer):
         self.quest = quest
         self.duration = duration
         self.set_waiting()
-        self.save()
+        self.save(update_fields=['quest', 'duration', 'status'])
 
     def complete(self):
         """
@@ -675,11 +691,9 @@ class QuestTimer(Timer):
         :return: The calculated XP reward.
         :rtype: int
         """
-        super().complete()
         #logger.debug(f"[QUESTTIMER.COMPLETE] {self}")
-        xp = self.calculate_xp()
-        self.save()
-        return xp
+        super().complete()
+        return self.calculate_xp()
 
     def reset(self):
         """
@@ -687,17 +701,23 @@ class QuestTimer(Timer):
         """
         super().reset()
         self.quest = None
-        self.save()
-        #print("Quest timer reset. Quest:", self.quest)
+        self.duration = 0
+        self.save(update_fields=['quest', 'status', 'elapsed_time', 'start_time', 'duration'])
 
-    def calculate_xp(self):
+    def _reset_hook(self):
+        self.quest = None
+        self.duration = 0
+
+    def calculate_xp(self) -> int:
         """
         Calculate the XP reward for the associated quest.
 
         :return: The calculated XP reward.
         :rtype: int
         """
-        return self.quest.results.calculate_xp_reward(self.character, self.duration)
+        if self.quest and hasattr(self.quest, 'results'):
+            return self.quest.results.calculate_xp_reward(self.character, self.duration)
+        return 0
 
     def get_remaining_time(self):
         """
@@ -707,9 +727,11 @@ class QuestTimer(Timer):
         :rtype: int
         """
         if self.status == 'active':
-            elapsed = self.get_elapsed_time()
-            return max(self.duration - int(elapsed + self.elapsed_time), 0)
-        return max(self.duration - self.elapsed_time, 0)
+            #elapsed = self.get_elapsed_time()
+            remaining = self.duration - self.get_elapsed_time()
+        else:
+            remaining = self.duration - self.elapsed_time
+        return max(int(remaining), 0)
 
     def time_finished(self):
         """
@@ -721,8 +743,6 @@ class QuestTimer(Timer):
         #logger.debug(f"[QUESTTIMER.TIME FINISHED] Duration: {self.duration}, Remaining time: {self.get_remaining_time()}")
         return self.get_remaining_time() <= 0
 
-    def __str__(self):
-        return f"QuestTimer for {self.character.name}"
     
 
 class ServerMessage(models.Model):
