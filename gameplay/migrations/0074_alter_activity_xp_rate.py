@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0073_alter_quest_duration_choices'),
+        ('gameplay', '0072_remove_quest_default_duration_and_more'),
     ]
 
     operations = [

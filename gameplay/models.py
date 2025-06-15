@@ -50,12 +50,8 @@ class Quest(models.Model):
     description = models.TextField(max_length=2000, blank = True)
     intro_text = models.TextField(max_length=2000, blank = True)
     outro_text = models.TextField(max_length=2000, blank = True)
-    #DURATION_CHOICES = [(300 * i) for i in range(1, 7)]
-
-    @staticmethod
-    def default_duration_choices() -> List[int]:
-        return [(300 * i) for i in range(1, 7)]
-    
+    def default_duration_choices():
+        return [300 * i for i in range(1, 7)]
     duration_choices: Any = models.JSONField(default=default_duration_choices)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     start_date = models.DateTimeField(blank=True, null=True)
