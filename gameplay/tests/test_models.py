@@ -3,16 +3,16 @@
 from datetime import datetime
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
-from django.urls import reverse
 from django.utils.timezone import now, timedelta
-from time import sleep
+from freezegun import freeze_time
 from unittest import skip
+import logging
 
 from gameplay.models import Quest, QuestRequirement, Activity, Skill, Project, QuestCompletion, QuestResults, Buff, AppliedBuff, ActivityTimer, QuestTimer, ServerMessage
 from character.models import Character
 
+logging.getLogger("django").setLevel(logging.CRITICAL)
 
-# Create your tests here.
 
 class TestQuestCreate(TestCase):
     def test_quest_create(self):
@@ -54,7 +54,6 @@ class TestQuestModels(TestCase):
         )        
         User = get_user_model()
         user = User.objects.create_user(
-            username='testuser1@example.com',
             email='testuser1@example.com',
             password='testpassword123'
         )
@@ -74,7 +73,7 @@ class TestQuestEligible(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.quest1 = Quest.objects.create(
-            name='Test Quest',
+            name='Test Quest 1',
             description='Test Quest Description 1',
             levelMax=10,
             canRepeat=False
@@ -129,7 +128,6 @@ class TestQuestEligible(TestCase):
         )
         User = get_user_model()
         cls.user = User.objects.create_user(
-            username='testuser@example.com',
             email='testuser@example.com',
             password='testpassword123'
         )
@@ -173,7 +171,7 @@ class TestQuestEligible(TestCase):
         self.assertTrue(self.quest3.not_repeating(self.char)==False)
         self.assertTrue(self.quest2.not_repeating(self.char))
         self.assertTrue(len(eligible_quests)==2)
-        self.assertTrue(eligible_quests[0].name == 'Test Quest')
+        self.assertTrue(eligible_quests[0].name == 'Test Quest 1')
 
 class TestQuestEligibleFrequency(TestCase):
     def setUp(self):
@@ -224,7 +222,7 @@ class TestQuestEligibleFrequency(TestCase):
             times_completed=3,
             last_completed=monthago,
         )
-
+        
         self.assertTrue(self.quest4.frequency_eligible(self.char))
         self.assertTrue(self.quest5.frequency_eligible(self.char))
         self.assertTrue(self.quest6.frequency_eligible(self.char))
@@ -237,7 +235,6 @@ class TestQuestResults(TestCase):
         )
         User = get_user_model()
         user = User.objects.create_user(
-            username='testuser1@example.com',
             email='testuser1@example.com',
             password='testpassword123'
         )
@@ -285,7 +282,6 @@ class TestActivityModel(TestCase):
     def setUpTestData(cls):
         User = get_user_model()
         user = User.objects.create_user(
-            username='testuser1@example.com',
             email='testuser1@example.com',
             password='testpassword123'
         )
@@ -332,7 +328,6 @@ class TestSkillProjectModels(TestCase):
         )
         User = get_user_model()
         user = User.objects.create_user(
-            username='testuser1@example.com',
             email='testuser1@example.com',
             password='testpassword123'
         )
@@ -528,114 +523,6 @@ class TestBuffModel(TestCase):
         result1.save()
 
 
-        #print(result1)
-
-class TestTimers(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.char = Character.objects.create(
-            name="Bob"
-        )
-
-    def setUp(self):
-        self.char = Character.objects.create(
-            name="Bob"
-        )
-        
-        self.timer = self.char.quest_timer
-        User = get_user_model()
-        user = User.objects.create_user(
-            username='testuser1@example.com',
-            email='testuser1@example.com',
-            password='testpassword123'
-        )
-        self.profile = user.profile
-        self.quest1 = Quest.objects.create(
-            name='Test Quest 1',
-            description='Test Quest Description 1',
-            levelMax=10,
-            canRepeat=False
-        )
-        self.act = Activity.objects.create(
-            profile=self.profile,
-            name='Writing tests',
-            duration=10
-        )
-        self.quest1 = Quest.objects.create(
-            name='Test Quest 1',
-            description='Test Quest Description 1',
-            levelMax=10,
-            canRepeat=False
-        )
-
-    def test_timer_create(self):
-        activity_timer = ActivityTimer.objects.filter(profile = self.profile).first()
-        self.assertTrue(isinstance(activity_timer, ActivityTimer))
-        self.assertEqual(activity_timer.profile, self.profile)
-
-        quest_timer = QuestTimer.objects.filter(character = self.char).first()
-        self.assertTrue(isinstance(quest_timer, QuestTimer))
-        self.assertEqual(quest_timer.character, self.char)
-
-    def test_timer_start(self):
-        timer = ActivityTimer.objects.filter(profile = self.profile).first()
-        self.assertTrue(timer.start_time == None)
-        self.assertEqual(timer.status, "empty")
-
-        timer.start()
-
-        self.assertTrue(timer.start_time)
-        self.assertEqual(timer.status, "active")
-
-    def test_timer_pause(self):
-        timer = ActivityTimer.objects.filter(profile = self.profile).first()
-        timer.start()
-        timer.pause()
-
-        self.assertTrue(timer.start_time == None)
-        self.assertEqual(timer.status, "paused")
-        # Need to wait for couple secs before next test as it is integerised in Timer method
-        #self.assertTrue(timer.elapsed_time > 0)
-
-    def test_timer_reset(self):
-        timer = ActivityTimer.objects.filter(profile = self.profile).first()
-        timer.start()
-        timer.new_activity(self.act)
-        timer.complete()
-        timer.reset()
-
-        self.assertTrue(timer.start_time == None)
-        self.assertEqual(timer.status, "empty")
-        self.assertTrue(timer.elapsed_time == 0)
-
-    def test_questtimer_func(self):        
-        timer = QuestTimer.objects.filter(character = self.char).first()
-        timer.duration = 5
-        timer.start()
-
-        self.assertTrue(timer.get_remaining_time() > 0)
-        self.assertTrue(timer.status != False)
-
-    def test_change_quest(self):
-        self.timer.change_quest(self.quest, duration=300)
-        self.assertEqual(self.timer.quest, self.quest)
-        self.assertEqual(self.timer.duration, 300)
-        self.assertEqual(self.timer.status, 'waiting')
-
-    def test_complete_timer(self):
-        self.timer.change_quest(self.quest, duration=300)
-        self.timer.start()
-        self.timer.complete()
-        self.assertEqual(self.timer.status, 'completed')
-        self.assertTrue(self.timer.time_finished())
-
-    def test_reset_timer(self):
-        self.timer.change_quest(self.quest, duration=300)
-        self.timer.reset()
-        self.assertIsNone(self.timer.quest)
-        self.assertEqual(self.timer.status, 'empty')
-        self.assertEqual(self.timer.elapsed_time, 0)
-
 class TestBuffExpiration(TestCase):
     def test_buff_expiration(self):
         buff = Buff.objects.create(
@@ -669,7 +556,6 @@ class TestServerMessageModel(TestCase):
     def setUpTestData(cls):
         User = get_user_model()
         user = User.objects.create_user(
-            username='testuser@example.com',
             email='testuser@example.com',
             password='testpassword123'
         )

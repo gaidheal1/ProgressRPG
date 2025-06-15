@@ -6,16 +6,17 @@ from django.http import JsonResponse
 from users.models import Profile
 from character.models import Character, PlayerCharacterLink
 from gameplay.models import Activity, Quest
-import json
+import json, logging
 
 User = get_user_model()
 
+logging.getLogger("django").setLevel(logging.CRITICAL)
 
 class GameplayViewTestBase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.character = Character.objects.create(name="Bob")
-        cls.user = User.objects.create_user(username="testuser@gmail.com", email="testuser@gmail.com", password="testpass")
+        cls.user = User.objects.create_user(email="testuser@gmail.com", password="testpass")
         cls.profile = cls.user.profile
 
     def setUp(self):
