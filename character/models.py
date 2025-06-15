@@ -1,7 +1,7 @@
 #from datetime import datetime
 from django.db import models, transaction, IntegrityError
 from django.utils.timezone import now
-from random import random
+from random import random, randint
 from typing import TYPE_CHECKING, Optional
 import logging
 
@@ -139,9 +139,9 @@ class LifeCycleMixin(models.Model):
         child = Character.objects.create(
             name=child_name,
             birth_date=now().date(),
-            sex="Male" if random() < 50 else "Female",
-            x_coordinate=self.x_coordinate,
-            y_coordinate=self.y_coordinate,
+            sex="Male" if randint(0,1) == 0 else "Female",
+            #x_coordinate=self.x_coordinate,
+            #y_coordinate=self.y_coordinate,
         )
 
         child.parents.add(self)
@@ -158,7 +158,8 @@ class LifeCycleMixin(models.Model):
         chance = 0.05
         if self.get_age() > (40 * 365):
             chance += 0.10
-        return chance
+        return round(chance, 5)
+
 
 
 class Character(Person, LifeCycleMixin):
