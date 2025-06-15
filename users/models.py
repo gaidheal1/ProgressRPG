@@ -47,7 +47,7 @@ class CustomUserManager(UserManager["CustomUser"]):
     """
 
     @transaction.atomic
-    def create_user(self, username: Optional[str], email: Optional[str], password: Optional[str], **extra_fields):
+    def create_user(self, email: Optional[str], password: Optional[str], **extra_fields):
         """
         Create and return a regular user with an email and password.
 
@@ -70,7 +70,7 @@ class CustomUserManager(UserManager["CustomUser"]):
         return user
 
     @transaction.atomic
-    def create_superuser(self, username: Optional[str], email: Optional[str], password: Optional[str], **extra_fields):
+    def create_superuser(self, email: Optional[str], password: Optional[str], **extra_fields):
         """
         Create and return a superuser with elevated permissions.
 
