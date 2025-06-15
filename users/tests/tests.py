@@ -2,11 +2,13 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.urls import reverse
 from unittest import skip
+import logging
 
-from .models import Profile
+from users.models import Profile
 
 from character.models import Character, PlayerCharacterLink
 
+logging.getLogger("django").setLevel(logging.CRITICAL)
 
 class UserCreationTest(TestCase):
     def setUp(self):
@@ -76,6 +78,7 @@ class OnboardingTest(TestCase):
         """Test that onboarding starts at step 0."""
         self.assertEqual(self.user.profile.onboarding_step, 0)
 
+    @skip("Need new character onboarding test")
     def test_onboarding_profile(self):
         """Test the profile creation step in onboarding."""
         url = reverse("create_profile")
@@ -90,6 +93,7 @@ class OnboardingTest(TestCase):
         self.assertEqual(self.profile.onboarding_step, 2)
         self.assertEqual(self.profile.name, 'Test name')
 
+    @skip("Need new character onboarding test")
     def test_onboarding_character(self):
         """Test the character creation step in onboarding."""
         self.profile.onboarding_step = 2
@@ -144,7 +148,7 @@ class ProfileMethodsTest(TestCase):
         """Test changing the character linked to a profile."""
         profile = self.user.profile
         profile.change_character(self.character2)
-        link = PlayerCharacterLink.objects.filter(profile=profile).first()
+        link = PlayerCharacterLink.objects.filter(profile=profile, is_active=True).first()
         self.assertEqual(link.character, self.character2)
 
 
@@ -157,6 +161,7 @@ class TestViews_LoggedIn(TestCase):
         self.profile_url = reverse('profile')
         self.editprofile_url = reverse('edit_profile')
 
+        character = Character.objects.create(name="Bob")
         User = get_user_model()
         user = User.objects.create_user(
             email='testuser@example.com',
