@@ -69,7 +69,7 @@ INSTALLED_APPS = [
     'events',
     'locations',
     'payments',
-
+    'server_management',
     'decouple',
 ]
 
