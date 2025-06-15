@@ -7,7 +7,7 @@ Author: Duncan Appleby
 """
 
 # gameplay.models
-
+from abc import ABC, abstractmethod
 #from django_stubs_ext.db.models import Related
 from django.db import models, transaction
 #from django.db.models import ForeignKey
@@ -151,23 +151,15 @@ class Quest(models.Model):
         :return: True if the quest is frequency-eligible, False otherwise.
         :rtype: bool
         """
-        # Check frequency eligibility
         if self.frequency != 'NONE':            
             today = now()
             completions = self.quest_completions.all()
-
             for completion in completions:
                 if completion.character == character:
                     lastCompleted = completion.last_completed
-                    #print("lastCompleted:", lastCompleted)
-
+                    
                     if self.frequency == 'DAY':
-                        #print("we are here :D")
-                        todayDate = int(today.strftime('%d'))
-                        lastCompletedDate = int(lastCompleted.strftime('%d'))    
-                        #print("lastCompletedDate:", lastCompletedDate)
-                        if todayDate == lastCompletedDate:
-                            #print("should only happen once")
+                        if (today - lastCompleted).days == 0:
                             return False
                         
                     elif self.frequency == 'WEEK':
@@ -248,11 +240,14 @@ class QuestResults(models.Model):
         :rtype: int
         """
         character_level = character.level
-        quest_completions = character.get_quest_completions(self.quest).first()
         base_xp = self.xp_rate
         time_xp = base_xp * duration
         level_scaling = 1 + (character_level * 0.05)
-        repeat_penalty = 0.99 ** quest_completions.times_completed
+
+        quest_completions = character.get_quest_completions(self.quest).first()
+        
+        repeat_penalty = 0.99 ** quest_completions.times_completed if quest_completions else 1
+        
         final_xp = time_xp * level_scaling * repeat_penalty
         return max(1, round(final_xp))
 
