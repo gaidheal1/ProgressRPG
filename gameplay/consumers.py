@@ -31,10 +31,6 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
             
             self.profile_group = f"profile_{self.profile.id}"
             await self.channel_layer.group_add(self.profile_group, self.channel_name)
-            #logger.debug(f"[CONNECT] Consumer {self.channel_name} joined group: {self.profile_group}")
-
-            #logger.info(f"Consumer subscribed to: {self.profile_group}")
-            #logger.info(f"Sending message to: profile_{profile.id}")
             
             await self._send_pending_messages()
 
@@ -62,11 +58,6 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
             logger.info(f"Pausing timers for profile {self.profile.id}; websocket disconnected")
             if self.activity_timer.status not in ["completed", "empty", "paused"] or self.quest_timer.status not in ["completed", "empty", "paused"]:
                 await control_timers(self.profile, self.activity_timer, self.quest_timer, "pause")
-
-        # if close_code != 1000:
-        #     logger.warning(f"Unexpected disconnect: {close_code}")
-        #raise StopConsumer()
-
 
     async def test_message(self, event):
         logger.info(f"[TEST MESSAGE] Received test message: {event}")
