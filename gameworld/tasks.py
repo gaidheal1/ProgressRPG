@@ -27,30 +27,30 @@ def check_character_deaths():
 
     print(f"{death_count} people died of old age today.")
 
-# @shared_task
-def start_character_pregnancies():
-    today = timezone.now().date()
-    for partnership in Partnership.objects.filter(partner_is_pregnant=False):
-        partner1 = partnership.partner1
-        partner2 = partnership.partner2
+# # @shared_task
+# def start_character_pregnancies():
+#     today = timezone.now().date()
+#     for partnership in Partnership.objects.filter(partner_is_pregnant=False):
+#         partner1 = partnership.partner1
+#         partner2 = partnership.partner2
 
-        if partner1.gender == "Male" and partner2.gender == "Male": continue
+#         if partner1.gender == "Male" and partner2.gender == "Male": continue
 
-        time_since_last_birth = today - partnership.last_birth_date.days if partnership.last_birth_date else None
-        partner1_age = partner1.get_age()
-        partner2_age = partner2.get_age()
+#         time_since_last_birth = today - partnership.last_birth_date.days if partnership.last_birth_date else None
+#         partner1_age = partner1.get_age()
+#         partner2_age = partner2.get_age()
 
-        chance_of_pregnancy = 0
-        if time_since_last_birth:
-            if time_since_last_birth > 365:
-                chance_of_pregnancy += 10
-            if partner1_age > 30 and partner2_age > 30:
-                chance_of_pregnancy += 5
+#         chance_of_pregnancy = 0
+#         if time_since_last_birth:
+#             if time_since_last_birth > 365:
+#                 chance_of_pregnancy += 10
+#             if partner1_age > 30 and partner2_age > 30:
+#                 chance_of_pregnancy += 5
 
-        if random.random() < (chance_of_pregnancy / 100):
-            if partner1.gender == "Female":
-                partner1.start_pregnancy()
-            else: partner2.start_pregnancy()
+#         if random.random() < (chance_of_pregnancy / 100):
+#             if partner1.gender == "Female":
+#                 partner1.start_pregnancy()
+#             else: partner2.start_pregnancy()
 
 @shared_task
 def check_character_pregnancies():
