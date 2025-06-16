@@ -1,3 +1,7 @@
 from django.shortcuts import render
 
-# Create your views here.
+def maintenance_view(request):
+    profile = request.user.profile
+    
+    return render(request, 'server_management/maintenance.html', {"profile": profile})
+    
