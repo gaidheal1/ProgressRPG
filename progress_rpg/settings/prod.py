@@ -70,6 +70,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1').split(',')
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '127.0.0.1:8000').split(',')
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '127.0.0.1:8000').split(',')
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
