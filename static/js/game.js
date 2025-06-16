@@ -1069,6 +1069,12 @@ function handleSocketMessage(data) {
       case "notification":
         showToast(data.message);
         break;
+      case "refresh":
+        handleRefresh(data);
+        break;
+      case "load-game":
+        handleLoadGame(data);
+        break;
       default:
         console.error("Unknown message action:", data.action);
     }
@@ -1118,6 +1124,28 @@ function handleReconnect() {
   if (pendingQuest) {
     console.log("Found pending quest, attempting to resubmit...");
     //await completeQuest();
+  }
+}
+
+function handleRefresh(data) {
+  if (data.success) {
+    console.log("Maintenance activated! Refreshing...");
+    location.reload();  // Force refresh
+  } else {
+    console.error(
+      `[HANDLE REFRESH] Checking data: ${data}`
+    );
+  }
+}
+
+function handleLoadGame(data) {
+  if (data.success) {
+    console.log("Maintenance deactivated! Loading game...");
+    window.location.href = "/game/";
+  } else {
+    console.error(
+      `[HANDLE REFRESH] Checking data: ${data}`
+    );
   }
 }
 
