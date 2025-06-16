@@ -18,7 +18,7 @@ def check_character_deaths():
     death_count = 0
 
     for character in characters:
-        age = timezone.now().date() - character.dob
+        age = timezone.now().date() - character.birth_date
         chance = death_probability(age)
 
         if random.random() < chance:
