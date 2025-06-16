@@ -36,10 +36,12 @@ class CharacterAdmin(admin.ModelAdmin):
     list_display = [
         'first_name',
         'last_name',
+        'backstory',
         #'current_player',
         'is_npc',
         'birth_date',
         ]
+    #list_editable = ['birth_date']
     search_fields = [
         'first_name',
         'last_name',
