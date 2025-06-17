@@ -558,6 +558,7 @@ class Timer(models.Model):
         return self.status == 'active'
 
 
+
 class ActivityTimer(Timer):
     """
     A timer that tracks progress on player activities.
