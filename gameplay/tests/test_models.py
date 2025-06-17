@@ -568,6 +568,7 @@ class TestServerMessageModel(TestCase):
             action='quest_complete',
             data={'quest_id': 1},
             message='Quest completed successfully!',
+            is_draft=False,
         )
         self.assertTrue(isinstance(message, ServerMessage))
         self.assertEqual(message.type, 'notification')
@@ -577,11 +578,12 @@ class TestServerMessageModel(TestCase):
 
     def test_server_message_mark_delivered(self):
         message = ServerMessage.objects.create(
-            profile=self.profile,
+            group=self.profile.group_name,
             type='notification',
             action='quest_complete',
             data={'quest_id': 1},
             message='Quest completed successfully!',
+            is_draft=False,
         )
         message.mark_delivered()
         self.assertTrue(message.is_delivered)

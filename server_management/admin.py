@@ -52,19 +52,18 @@ class MaintenanceWindowAdmin(admin.ModelAdmin):
         if not window.is_active:
             window.activate_maintenance()
             profile = request.user.profile
-            async_to_sync(send_group_message)(f"profile_{profile.id}", {"type": "action", "action": "refresh", "success": True})
+            async_to_sync(send_group_message)("online_users", {"type": "action", "action": "refresh", "success": True})
             self.message_user(request, f"Maintenance window '{window.name}' now active!")
         else:    
             self.message_user(request, f"Maintenance window is already active: no action taken.")
         return redirect(f'/admin/server_management/maintenancewindow/{maintenancewindow_id}/change/')
 
-    
     def deactivate_maintenance(self, request, maintenancewindow_id):
         window = self.get_object(request, maintenancewindow_id)
         if window.is_active:
             window.deactivate_maintenance()
             profile = request.user.profile
-            async_to_sync(send_group_message)(f"profile_{profile.id}", {"type": "action", "action": "load-game", "success": True})
+            async_to_sync(send_group_message)("online_users", {"type": "action", "action": "load-game", "success": True})
             self.message_user(request, f"Maintenance window '{window.name}' has finished. Enjoy playing!")
         else:
             self.message_user(request, f"Maintenance window is not activated: no action taken.")

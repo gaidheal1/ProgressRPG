@@ -751,7 +751,10 @@ class ServerMessage(models.Model):
         is_delivered (bool): Whether the message has been delivered to the user.
         created_at (datetime): The timestamp for when the message was queued.
     """
-    profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name='pending_notifications')
+    group = models.CharField(
+        max_length=50,
+        help_text="WebSocket group to send this message to."
+    )
     type = models.CharField(
         max_length=20, choices=[
             ('event', 'Event'),
@@ -763,10 +766,11 @@ class ServerMessage(models.Model):
         ]
     )
     action = models.CharField(max_length=50)  # e.g., 'quest_complete', 'reward', 'message'
-    data = models.JSONField()  # Store event-specific data as JSON
+    data = models.JSONField(blank=True, null=True)  # Store event-specific data as JSON
     message = models.TextField(max_length=2000, blank=True, null=True)
     is_delivered = models.BooleanField(default=False)  # Track delivery status
     created_at = models.DateTimeField(auto_now_add=True)  # Timestamp for when it was queued
+    is_draft = models.BooleanField(default=True)
 
     def to_dict(self):
         """
@@ -804,16 +808,16 @@ class ServerMessage(models.Model):
         return f"{self.type.upper()} - {self.action} ({'Delivered' if self.is_delivered else 'Pending'})"
     
     @classmethod
-    def get_unread(cls, profile):
+    def get_unread(cls, group_name):
         """
-        Fetch all undelivered server messages for a specific profile.
+        Fetch all undelivered server messages for a specific WebSocket group.
 
-        :param profile: The user profile to fetch unread messages for.
-        :type profile: Profile
-        :return: A QuerySet of undelivered server messages.
+        :param group_name: The WebSocket group to fetch unread messages for.
+        :type group_name: str
+        :return: A QuerySet of undelivered server messages for the given group.
         :rtype: QuerySet
         """
-        return cls.objects.filter(profile=profile, is_delivered=False)
+        return cls.objects.filter(group=group_name, is_delivered=False)
     
     @classmethod
     def clear_old(cls, days=30):

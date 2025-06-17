@@ -25,12 +25,13 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
                 return
             
             self.profile, self.character = await self.set_profile_and_character(user)
+            self.profile_group = f"profile_{self.profile.id}"
+
+
+            await self.channel_layer.group_add(self.profile_group, self.channel_name)
 
             await self.accept()
             logger.info(f"[CONNECT] WebSocket connection accepted for profile {self.profile.id}")
-            
-            self.profile_group = f"profile_{self.profile.id}"
-            await self.channel_layer.group_add(self.profile_group, self.channel_name)
             
             await self._send_pending_messages()
 
@@ -117,11 +118,12 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
         """Store the action in the ServerMessage model if the WebSocket is closed"""
         logger.info(f"[STORE ACTION] Storing action: {event}")
         ServerMessage.objects.create(
-            profile=self.profile, 
+            group=self.profile_group, 
             type=event.get("type"),
             action=event["action"],
             data=event.get("data", {}),
             message=event.get("message", ""),
+            is_draft=False,
             is_delivered=False
         )
 
@@ -226,25 +228,26 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
         """
         Send pending messages to the client.
         """
-        logger.info(f"[SEND PENDING MESSAGES (event handler)] Sending pending messages to profile {self.profile.id}.")
+        logger.info(f"[SEND PENDING MESSAGES (event handler)] Sending pending messages to group {self.profile_group}.")
+        logger.debug(f"[SEND PENDING MESSAGE] Event: {event}")
         await self._send_pending_messages()
 
 
     async def _send_pending_messages(self):
         """
-        Fetch and send all pending messages for the connected profile.
+        Fetch and send all pending messages for the connected WebSocket group.
         Marks successfully sent messages as delivered.
         """
-        logger.info(f"[SEND PENDING MESSAGES] Fetching pending messages for profile {self.profile.id}.")
+        logger.info(f"[SEND PENDING MESSAGES] Fetching pending messages for group {self.profile_group}.")
         from .models import ServerMessage
 
         get_unread_messages = database_sync_to_async(lambda profile: list(ServerMessage.get_unread(profile)))
         messages = await get_unread_messages(self.profile)
 
         if not messages:
-            logger.info(f"[SEND PENDING MESSAGES] No pending messages for profile {self.profile.id}.")
+            logger.info(f"[SEND PENDING MESSAGES] No pending messages for group {self.profile_group} or 'online_users'.")
             return
-        logger.info(f"[SEND PENDING MESSAGES] Found {len(messages)} pending messages for profile {self.profile.id}.")
+        logger.info(f"[SEND PENDING MESSAGES] Found {len(messages)} pending messages for group {self.profile_group}.")
 
         successful_message_ids = []
         for message in messages:
