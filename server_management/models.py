@@ -36,14 +36,20 @@ class MaintenanceWindow(models.Model):
 
         from server_management.tasks import send_warning, activate_maintenance
 
-        warning_times = [30, 15, 10, 5, 3, 2, 1]  # List of warning times in minutes
-        for minutes_until in warning_times:
+        # List of warning times in minutes
+        warning_times = [30, 15, 10, 5, 3, 2, 1]
+
+        minutes_to_start = (self.start_time - now).total_seconds() / 60
+
+        times_to_schedule = [t for t in warning_times if t <= minutes_to_start]
+
+        for minutes_until in times_to_schedule:
             message = f"Warning: maintenance is starting in {minutes_until} minute(s)!"
             send_warning.apply_async(
                 kwargs={"message": message}, 
                 eta=self.start_time - timezone.timedelta(minutes=minutes_until)
             )
-        logger.debug(f"[SCHEDULE TASKS] Scheduled {len(warning_times)} maintenance warnings")
+        logger.debug(f"[SCHEDULE TASKS] Scheduled {len(times_to_schedule)} maintenance warnings")
 
         activate_maintenance.apply_async(
             kwargs={"window_id": self.id},
