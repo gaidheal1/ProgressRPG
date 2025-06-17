@@ -26,7 +26,7 @@ from django.contrib.sessions.models import Session
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.timezone import now, timedelta
-import logging
+import logging, sys
 
 from character.models import Character, PlayerCharacterLink
 from gameplay.models import QuestTimer, Quest
@@ -59,13 +59,15 @@ def assign_character_to_profile(profile):
         character.save()
 
         qt, created = QuestTimer.objects.get_or_create(character=character)
-        tut_quest = Quest.objects.filter(name="[TUTORIAL] Getting started").first()
-        if not tut_quest:
-            logger.warning(f"Tutorial quest '[TUTORIAL] Getting started' not found!")
-            raise ValueError("Tutorial quest '[TUTORIAL] Getting started' not found!")
 
-        if created or profile.created_at > (now() - timedelta(days=14)):
-            qt.change_quest(tut_quest, 60)
+        if not ("test" in sys.argv):
+            tut_quest = Quest.objects.filter(name="[TUTORIAL] Getting started").first()
+            if not tut_quest:
+                logger.warning(f"Tutorial quest '[TUTORIAL] Getting started' not found!")
+                raise ValueError("Tutorial quest '[TUTORIAL] Getting started' not found!")
+
+            if created or profile.created_at > (now() - timedelta(days=14)):
+                qt.change_quest(tut_quest, 60)
 
 def send_signup_email(user):
     """

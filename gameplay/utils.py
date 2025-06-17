@@ -339,7 +339,7 @@ async def send_group_message(group_name: str, message: dict) -> bool:
     if channel_layer is not None:
         try:
             await channel_layer.group_send(group_name, message)
-            logger.debug(f"[SEND GROUP MESSAGE] Data sent to group 'profile_1': {message}")
+            logger.debug(f"[SEND GROUP MESSAGE] Data sent to group '{group_name}': {message}")
             return True
         except ConnectionError as e:
             logger.error(f"[SEND GROUP MESSAGE] Connection error sending data to group '{group_name}': {e}")

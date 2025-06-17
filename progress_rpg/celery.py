@@ -22,7 +22,7 @@ app.conf.beat_schedule = {
     #     'task': 'gameplay.tasks.update_quest_availability',
     #     'schedule': crontab(hour=0, minute=0), # Run every day
     # },
-    'daily-characater-death-check': {
+    'daily-character-death-check': {
         'task': 'gameworld.tasks.check_character_deaths',
         'schedule': crontab(hour=0, minute=0),
     },
