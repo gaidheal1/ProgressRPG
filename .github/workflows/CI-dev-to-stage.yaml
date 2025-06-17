@@ -63,7 +63,9 @@ jobs:
       - name: Set DATABASE_URL environment variable
         run: echo "DATABASE_URL=postgres://postgres@localhost:5432/postgres" >> $GITHUB_ENV
 
-
+      - name: Create logs directory
+        run: mkdir -p logs
+  
       - name: Run Migrations
         run: python manage.py migrate
 
