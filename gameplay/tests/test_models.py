@@ -563,7 +563,7 @@ class TestServerMessageModel(TestCase):
 
     def test_server_message_create(self):
         message = ServerMessage.objects.create(
-            profile=self.profile,
+            group=self.profile.group_name,
             type='notification',
             action='quest_complete',
             data={'quest_id': 1},
