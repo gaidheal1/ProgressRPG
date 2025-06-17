@@ -1,4 +1,4 @@
-name: Progress RPG CI/CD
+name: Progress RPG CI
 
 on:
   push:
