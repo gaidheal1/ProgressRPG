@@ -69,9 +69,3 @@ jobs:
 
       - name: Run Django Tests
         run: python manage.py test
-
-  
-  deploy:
-    needs: [test]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/staging'
