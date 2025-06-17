@@ -68,8 +68,9 @@ REGISTRATION_ENABLED = True
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1').split(',')
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '127.0.0.1:8000').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'app.progressrpg.com').split(',')
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'https://app.progressrpg.com/').split(',')
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://app.progressrpg.com/').split(',')
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

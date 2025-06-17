@@ -111,9 +111,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').replace('\r', '').split(',')
 #ALLOWED_HOSTS = ["*"]
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://127.0.0.1,http://localhost:8000').split(',')
-#CORS_ALLOWED_ORIGINS = ["*"]
-#CORS_ALLOWED_HEADER = ["*"]
-#CORS_ALLOWED_METHODS = ["*"]
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://127.0.0.1,http://localhost:8000').split(',')
 
 print("ALLOWED HOSTS:", ALLOWED_HOSTS)
 print("CORS:", CORS_ALLOWED_ORIGINS)
