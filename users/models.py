@@ -211,6 +211,7 @@ class Profile(Person):
     total_time = models.IntegerField(default=0)
     total_activities = models.IntegerField(default=0)
     is_premium = models.BooleanField(default=False)
+    is_online = models.BooleanField(default=False)
     last_login = models.DateTimeField(default=timezone.now)
     login_streak = models.PositiveIntegerField(default=1)
     login_streak_max = models.PositiveIntegerField(default=1)
@@ -225,6 +226,27 @@ class Profile(Person):
         (4, "Completed"),
     ]
     onboarding_step = models.PositiveIntegerField(choices=ONBOARDING_STEPS, default=0)
+
+    @property
+    def group_name(self):
+            """Returns the WebSocket group name for this profile."""
+            return f"profile_{self.id}"
+
+
+    def set_online(self):
+        """Marks profile as online."""
+        self.is_online = True
+        self.save(update_fields=['is_online'])
+
+    def set_offline(self):
+        """Marks profile as offline."""
+        self.is_online = False
+        self.save(update_fields=['is_online'])
+        
+    @classmethod
+    def get_online_profiles(cls):
+        """Returns a QuerySet of all currently online profiles."""
+        return cls.objects.filter(is_online=True)
 
     @property
     def current_character(self):

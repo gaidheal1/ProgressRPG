@@ -426,11 +426,12 @@ def submit_activity(request):
 
         message_text = f"Activity submitted. You got {xp_reward} XP!"
         ServerMessage.objects.create(
-            profile=profile, 
+            group=profile.group_name,
             type="notification",
             action="notification",
             data={},
             message=message_text,
+            is_draft=False,
         )
 
         try:

@@ -63,11 +63,12 @@ def update_login_streak(sender, request, user, **kwargs):
         logger.debug(f"[UPDATE LOGIN STREAK] Profile {profile.id} has a new max login streak: {profile.login_streak_max}")
     
     ServerMessage.objects.create(
-            profile=profile, 
+            group=profile.group_name,
             type="notification",
             action="notification",
             data={},
             message=message_text,
+            is_draft=False,
         )
 
     profile.last_login = now()

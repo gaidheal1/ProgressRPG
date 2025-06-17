@@ -1,0 +1,16 @@
+{% extends "base_generic.html" %}
+{% load static %}
+
+{% block title %}Maintenance{% endblock %}
+
+{% block content %}
+    <script src="{% static 'js/maintenance.js' %}"></script>
+
+    <div id="gameplay-container" data-profile-id="{{ profile.id }}">
+        <h1>🚧 Under Maintenance 🚧</h1>
+        <p>We’re performing some upgrades to improve your experience.</p>
+        <p>Please check back later.</p>
+    </div>
+
+
+{% endblock %}

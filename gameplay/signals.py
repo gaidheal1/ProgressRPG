@@ -86,14 +86,12 @@ def create_quest_results(sender, instance, created, **kwargs):
 @receiver(post_save, sender=ServerMessage)
 def server_message_created(sender, instance, created, **kwargs):
     """Triggers consumer to run message send method when a new server message is created."""
-    if created:
+    if created and not instance.is_draft:
         from asgiref.sync import async_to_sync
         from channels.layers import get_channel_layer
 
         channel_layer = get_channel_layer()
         async_to_sync(send_group_message)(
-            f"profile_{instance.profile.id}",
-            {
-                "type": "send_pending_messages"
-            }
+            instance.group,
+            {"type": "send_pending_messages"}
         )

@@ -26,6 +26,7 @@ Django==4.2.22
 django-allauth==64.2.1
 django-celery-beat==2.7.0
 django-environ==0.11.2
+django-extensions==4.1
 django-redis==5.4.0
 django-stubs==5.1.1
 django-stubs-ext==5.1.1
@@ -68,6 +69,7 @@ python-dotenv==1.0.1
 redis==5.2.1
 requests==2.32.4
 roman-numerals-py==3.1.0
+sentry-sdk==2.30.0
 service-identity==24.2.0
 setuptools==78.1.1
 six==1.17.0
