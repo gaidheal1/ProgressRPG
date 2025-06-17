@@ -6,34 +6,10 @@ from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
 from django.urls import path
 from asgiref.sync import async_to_sync
-
+import logging
 from gameplay.utils import send_group_message
-
-@admin.action(description="Schedule maintenance tasks")
-def schedule_window_tasks(modeladmin, request, queryset):
-    for window in queryset:
-        success = window.schedule_tasks()
-        if success:
-            modeladmin.message_user(request, f"Scheduled tasks for {window.name}.")
-        else:
-            modeladmin.message_user(request, f"Tasks already scheduled for {window.name}.", level="warning")
-
-@admin.action(description="Delete scheduled tasks")
-def delete_window_tasks(modeladmin, request, queryset):
-    for window in queryset:
-        window.delete_scheduled_tasks()
-        modeladmin.message_user(request, f"Deleted tasks for {window.name}.")
-
-@admin.action(description="Activate maintenance mode")
-def activate_maintenance(modeladmin, request, queryset):
-    for window in queryset:
-        window.activate()
-        modeladmin.message_user(request, f"Activated maintenance mode for {window.name}.")
-
-@admin.action(description="Deactivate maintenance mode")
-def deactivate_maintenance(modeladmin, request, queryset):
-    subprocess.run(["python", "server_management/scripts/deactivate_maintenance.py"])
-    modeladmin.message_user(request, "Maintenance mode deactivated.")
+from django.utils.html import format_html
+logger = logging.getLogger("django")
 
 
 @admin.register(MaintenanceWindow)
@@ -44,8 +20,20 @@ class MaintenanceWindowAdmin(admin.ModelAdmin):
     readonly_fields = [
         'is_active',
     ]
-    actions = [schedule_window_tasks, delete_window_tasks] #, activate_maintenance, deactivate_maintenance
 
+    #actions = [schedule_window_tasks, delete_window_tasks] #, activate_maintenance, deactivate_maintenance
+
+    def schedule_tasks(self, request, maintenancewindow_id):
+        logger.info(f"[ADMIN - SCHEDULE TASKS]")
+        window = self.get_object(request, maintenancewindow_id)
+        
+        success = window.schedule_tasks()
+        
+        if success:
+            self.message_user(request, f"Tasks scheduled for window '{window.name}'.")
+        else:    
+            self.message_user(request, f"Tasks already scheduled: no action taken.")
+        return redirect(f'/admin/server_management/maintenancewindow/{maintenancewindow_id}/change/')
     
     def activate_maintenance(self, request, maintenancewindow_id):
         window = self.get_object(request, maintenancewindow_id)
@@ -73,6 +61,7 @@ class MaintenanceWindowAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
+            path('<int:maintenancewindow_id>/schedule/', self.admin_site.admin_view(self.schedule_tasks), name="schedule_tasks"),
             path('<int:maintenancewindow_id>/activate/', self.admin_site.admin_view(self.activate_maintenance), name="activate_maintenance"),
             path('<int:maintenancewindow_id>/deactivate/', self.admin_site.admin_view(self.deactivate_maintenance), name="deactivate_maintenance"),
         ]
@@ -80,6 +69,7 @@ class MaintenanceWindowAdmin(admin.ModelAdmin):
     
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
+        extra_context['schedule_url'] = f'/admin/server_management/maintenancewindow/{object_id}/schedule/'
         extra_context['activate_url'] = f'/admin/server_management/maintenancewindow/{object_id}/activate/'
         extra_context['deactivate_url'] = f'/admin/server_management/maintenancewindow/{object_id}/deactivate/'  # Add this line
         return super().change_view(request, object_id, form_url, extra_context)
