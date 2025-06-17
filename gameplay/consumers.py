@@ -5,7 +5,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.db import transaction
 #from django.utils.timezone import now
 import json, logging
-
+from django.core.cache import cache
 from .models import ServerMessage
 from .utils import process_completion, process_initiation, control_timers
 
@@ -27,8 +27,14 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
             self.profile, self.character = await self.set_profile_and_character(user)
             self.profile_group = f"profile_{self.profile.id}"
 
+            await database_sync_to_async(self.profile.set_online)()
+
+            is_online_now = await database_sync_to_async(lambda: self.profile.is_online)()
+            print(f"[CONNECT] Profile {self.profile.id} is_online={is_online_now}")  # ✅ Verify status
 
             await self.channel_layer.group_add(self.profile_group, self.channel_name)
+            await self.channel_layer.group_add("online_users", self.channel_name)
+            logger.info(f"[CONNECT] Added profile {self.profile.id} to 'online_users' group.")  # ✅ Debug log
 
             await self.accept()
             logger.info(f"[CONNECT] WebSocket connection accepted for profile {self.profile.id}")
@@ -50,6 +56,8 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
 
     async def disconnect(self, close_code):
         logger.info(f"[DISCONNECT] WebSocket disconnecting with close code: {close_code}")
+        await database_sync_to_async(self.profile.set_offline)()
+        await self.channel_layer.group_discard("online_users", self.channel_name)
 
         if hasattr(self, "profile_group"):
             logger.info(f"[DISCONNECT] Removed from group: {self.profile_group}")
@@ -241,8 +249,10 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
         logger.info(f"[SEND PENDING MESSAGES] Fetching pending messages for group {self.profile_group}.")
         from .models import ServerMessage
 
-        get_unread_messages = database_sync_to_async(lambda profile: list(ServerMessage.get_unread(profile)))
-        messages = await get_unread_messages(self.profile)
+        get_unread_messages = database_sync_to_async(
+            lambda: list(ServerMessage.get_unread(self.profile_group)) + list(ServerMessage.get_unread("online_users"))
+        )
+        messages = await get_unread_messages()
 
         if not messages:
             logger.info(f"[SEND PENDING MESSAGES] No pending messages for group {self.profile_group} or 'online_users'.")
