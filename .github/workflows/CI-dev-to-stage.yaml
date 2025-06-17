@@ -37,14 +37,8 @@ jobs:
     services:
       postgres:
         image: postgres:13
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: ${{ secrets.DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.DB_NAME }}
         options: >-
-          --health-cmd="pg_isready -U $POSTGRES_USER"
+          --health-cmd="pg_isready"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -63,7 +57,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Set DATABASE_URL environment variable
-        run: echo "DATABASE_URL=postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@localhost:5432/${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+        run: echo "DATABASE_URL=postgres://postgres@localhost:5432/postgres" >> $GITHUB_ENV
+
 
       - name: Run Migrations
         run: python manage.py migrate
