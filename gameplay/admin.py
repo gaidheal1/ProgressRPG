@@ -1,5 +1,6 @@
+from asgiref.sync import async_to_sync
 from django.contrib import admin
-
+from channels.layers import get_channel_layer
 from .models import Quest, QuestRequirement, QuestCompletion, Activity, ActivityTimer, QuestTimer, QuestResults, ServerMessage
 
 # Register your models here.
@@ -126,24 +127,42 @@ class QuestTimerAdmin(admin.ModelAdmin):
         self.message_user(request, "Selected timers have been reset.")
 
 
+@admin.action(description="Send selected ServerMessages")
+def send_selected_messages(modeladmin, request, queryset):
+    """Manually sends non-draft ServerMessages via WebSockets."""
+    channel_layer = get_channel_layer()
+
+    groups_to_notify = queryset.filter(is_draft=False).values_list('group', flat=True).distinct()
+    if not groups_to_notify:
+        modeladmin.message_user(request, "No groups found for sending pending messages.")
+        return
+    
+    for group in groups_to_notify:
+        async_to_sync(channel_layer.group_send)(
+            group,
+            {"type": "send_pending_messages"}
+        )
+
 @admin.register(ServerMessage)
 class ServerMessageAdmin(admin.ModelAdmin):
-    list_display = ['profile', 'message', 'created_at']
+    list_display = ['group', 'message', 'created_at','is_draft','is_delivered',]
     list_filter = [
-        'profile',
+        'group',
         'created_at',
+        'is_delivered',
     ]
     fields = [
-        'profile', 
+        'group', 
         'type',
         'action',
-        #'data',
         'message', 
+        'data',
+        'is_draft',
         'is_delivered',
         'created_at',
     ]
     readonly_fields = ['created_at']
-
+    actions = [send_selected_messages]
 
 
 # class CustomAdminSite(admin.AdminSite):

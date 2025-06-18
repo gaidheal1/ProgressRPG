@@ -325,12 +325,13 @@ def create_activity(request):
             logger.error(f"[CREATE ACTIVITY] JSON decode error for profile {profile.id}: {e}")
             return JsonResponse({"error": "Invalid JSON format"}, status=400)
         
-        activity_name = escape(data.get("activityName"))
+        activity_name_raw = data.get("activityName")
 
-        if not activity_name:
+        if not activity_name_raw:
             logger.warning(f"[CREATE ACTIVITY] Activity name missing from request for user {profile.id}")
             return JsonResponse({"error": "Activity name is required"}, status=400)
         
+        activity_name = escape(data.get("activityName"))
         logger.debug(f"[CREATE ACTIVITY] Received activity name: {activity_name}")
 
         try:
@@ -425,11 +426,12 @@ def submit_activity(request):
 
         message_text = f"Activity submitted. You got {xp_reward} XP!"
         ServerMessage.objects.create(
-            profile=profile, 
+            group=profile.group_name,
             type="notification",
             action="notification",
             data={},
             message=message_text,
+            is_draft=False,
         )
 
         try:

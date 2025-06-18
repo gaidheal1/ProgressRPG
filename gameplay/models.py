@@ -7,7 +7,7 @@ Author: Duncan Appleby
 """
 
 # gameplay.models
-
+from abc import ABC, abstractmethod
 #from django_stubs_ext.db.models import Related
 from django.db import models, transaction
 #from django.db.models import ForeignKey
@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from character.models import Character
 
 logger = logging.getLogger("django")
+
+
 
 class Quest(models.Model):
     """
@@ -48,9 +50,8 @@ class Quest(models.Model):
     description = models.TextField(max_length=2000, blank = True)
     intro_text = models.TextField(max_length=2000, blank = True)
     outro_text = models.TextField(max_length=2000, blank = True)
-    DURATION_CHOICES = [(300 * i) for i in range(1, 7)]
-    def default_duration_choices(self) -> List[int]:
-        return [(300 * i) for i in range(1, 7)]
+    def default_duration_choices():
+        return [300 * i for i in range(1, 7)]
     duration_choices: Any = models.JSONField(default=default_duration_choices)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     start_date = models.DateTimeField(blank=True, null=True)
@@ -150,23 +151,15 @@ class Quest(models.Model):
         :return: True if the quest is frequency-eligible, False otherwise.
         :rtype: bool
         """
-        # Check frequency eligibility
         if self.frequency != 'NONE':            
             today = now()
             completions = self.quest_completions.all()
-
             for completion in completions:
                 if completion.character == character:
                     lastCompleted = completion.last_completed
-                    #print("lastCompleted:", lastCompleted)
-
+                    
                     if self.frequency == 'DAY':
-                        #print("we are here :D")
-                        todayDate = int(today.strftime('%d'))
-                        lastCompletedDate = int(lastCompleted.strftime('%d'))    
-                        #print("lastCompletedDate:", lastCompletedDate)
-                        if todayDate == lastCompletedDate:
-                            #print("should only happen once")
+                        if (today - lastCompleted).days == 0:
                             return False
                         
                     elif self.frequency == 'WEEK':
@@ -207,6 +200,9 @@ class Quest(models.Model):
         # Quest passed the test
         return True
 
+
+
+
     
 class QuestResults(models.Model):
     """
@@ -244,11 +240,14 @@ class QuestResults(models.Model):
         :rtype: int
         """
         character_level = character.level
-        quest_completions = character.get_quest_completions(self.quest).first()
         base_xp = self.xp_rate
         time_xp = base_xp * duration
         level_scaling = 1 + (character_level * 0.05)
-        repeat_penalty = 0.99 ** quest_completions.times_completed
+
+        quest_completions = character.get_quest_completions(self.quest).first()
+        
+        repeat_penalty = 0.99 ** quest_completions.times_completed if quest_completions else 1
+        
         final_xp = time_xp * level_scaling * repeat_penalty
         return max(1, round(final_xp))
 
@@ -261,6 +260,7 @@ class QuestResults(models.Model):
         :param character: The character receiving the rewards.
         :type character: Character
         """
+        logger.info(f"[QUESTRESULTS.APPLY] Applying results for quest {self.quest.name} to character {character.name}")
         #character.add_coins(self.coin_reward)
         character.coins += self.coin_reward
 
@@ -271,7 +271,11 @@ class QuestResults(models.Model):
                     method = getattr(character, f"apply_{key}")
                     method(value)
                 elif hasattr(character, key):
-                    setattr(character, key, getattr(character, key) + value if isinstance(value, (int, float)) else value)
+                    current_value = getattr(character, key)
+                    if isinstance(current_value, (int, float)):
+                        setattr(character, key, current_value + value)
+                    else:
+                        setattr(character, key, value)
         else:
             logger.info(f"[QUESTRESULTS.APPLY] No dynamic rewards found for quest {self.quest.name}.")
 
@@ -289,6 +293,10 @@ class QuestResults(models.Model):
             )
             character.buffs.add(applied_buff)
         character.save()
+
+
+
+
 
 class QuestRequirement(models.Model):
     """
@@ -326,7 +334,7 @@ class QuestCompletion(models.Model):
     character = models.ForeignKey('character.Character', on_delete=models.CASCADE) # don't add related_name, use character.quest_completions!
     quest = models.ForeignKey('gameplay.Quest', on_delete=models.CASCADE, related_name='quest_completions')
     times_completed = models.PositiveIntegerField(default=1)
-    last_completed = models.DateTimeField(auto_now=True)
+    last_completed = models.DateTimeField(default=now)
 
     class Meta:
         unique_together = ('character', 'quest')
@@ -433,6 +441,10 @@ class Project(models.Model):
         return self.name
 
 
+
+
+
+
 class Timer(models.Model):
     """
     An abstract base model that represents a general timer for activities
@@ -463,22 +475,19 @@ class Timer(models.Model):
         abstract = True
 
     def get_elapsed_time(self):
-        """
-        Calculate the total elapsed time for the timer.
-
-        :return: The elapsed time in seconds.
-        :rtype: int
-        """
-        this_round = (now() - self.start_time).total_seconds() if self.start_time else 0
-        return int(this_round + self.elapsed_time)
+        if self.start_time and self.status == 'active':
+            return int((now() - self.start_time).total_seconds()) + self.elapsed_time
+        return self.elapsed_time
     
-    def update_time(self):
-        """
-        Update the elapsed time for the timer based on the current time.
-        """
-        if self.start_time:
-            self.elapsed_time = self.get_elapsed_time()
-            self.save()
+    def compute_elapsed(self):
+        """Calculate time without updating the model."""
+        return self.get_elapsed_time()
+    
+    def apply_elapsed(self):
+        """Store current elapsed time in the DB."""
+        self.elapsed_time = self.get_elapsed_time()
+        self.start_time = None
+        return self
 
     def start(self):
         """
@@ -488,25 +497,17 @@ class Timer(models.Model):
             self.status = 'active'
             self.start_time = now()
             self.save()
-    
-    def is_active(self):
-        """
-        Check if the timer is currently active.
-
-        :return: True if the timer is active, False otherwise.
-        :rtype: bool
-        """
-        return self.status == 'active'
+        return self
     
     def pause(self):
         """
         Pause the timer and update its elapsed time.
         """
-        if self.status not in ['paused',]:
+        if self.status != 'paused':
+            self.apply_elapsed()
             self.status = 'paused'
-            self.update_time()
-            self.start_time = None
             self.save()
+        return self
 
     def set_waiting(self):
         """
@@ -515,15 +516,17 @@ class Timer(models.Model):
         if self.status != 'waiting':
             self.status = 'waiting'
             self.save()
+        return self
 
-    def complete(self) -> int:
+    def complete(self):
         """
         Mark the timer as 'completed' and update its elapsed time.
         """
         if self.status != 'completed':
-            self.update_time()
+            self.apply_elapsed()
             self.status = 'completed'
-        return 0
+            self.save(update_fields=['status', 'elapsed_time'])
+        return self
             
     def reset(self):
         """
@@ -533,6 +536,28 @@ class Timer(models.Model):
             self.status = 'empty'
             self.elapsed_time = 0
             self.start_time = None
+            self._reset_hook()
+            self.save(update_fields=['status', 'elapsed_time', 'start_time'])
+        return self
+
+    @abstractmethod
+    def calculate_xp(self) -> int:
+        """Must be implemented by subclass to return XP."""
+        raise NotImplementedError
+    
+    def _reset_hook(self):
+        pass
+    
+    def is_active(self):
+        """
+        Check if the timer is currently active.
+
+        :return: True if the timer is active, False otherwise.
+        :rtype: bool
+        """
+        return self.status == 'active'
+
+
 
 class ActivityTimer(Timer):
     """
@@ -558,13 +583,12 @@ class ActivityTimer(Timer):
         self.reset()
         self.activity = activity
         self.set_waiting()
-        self.save()
+        self.save(update_fields=['activity', 'status'])
 
     def pause(self):
         """
         Pause the activity timer and update the associated activity's duration.
         """
-        #print("Activity timer pause()")
         super().pause()
         self.update_activity_time()
 
@@ -574,7 +598,6 @@ class ActivityTimer(Timer):
         """
         if self.activity:
             self.activity.new_time(self.elapsed_time)
-            self.save()
         else:
             logger.info(f"[ACTIVITYTIMER.UPDATE_ACTIVITY_TIME] No activity found for timer {self}. Resetting timer.")
             self.reset()
@@ -591,13 +614,16 @@ class ActivityTimer(Timer):
         self.reset()
         return xp
 
+    def _reset_hook(self):
+        self.activity = None
+
     def reset(self):
         """
         Reset the activity timer and dissociate the current activity.
         """
         super().reset()
         self.activity = None
-        self.save()
+        self.save(update_fields=['activity', 'status', 'elapsed_time', 'start_time'])
 
     def calculate_xp(self):
         """
@@ -606,7 +632,13 @@ class ActivityTimer(Timer):
         :return: The calculated XP reward.
         :rtype: int
         """
-        return self.activity.calculate_xp_reward()
+        if self.activity:
+            return self.activity.calculate_xp_reward()
+        return 0
+
+
+
+
 
 
 class QuestTimer(Timer):
@@ -621,6 +653,9 @@ class QuestTimer(Timer):
     character = models.OneToOneField('character.Character', on_delete=models.CASCADE, related_name='quest_timer')
     quest = models.ForeignKey('Quest', on_delete=models.SET_NULL, related_name='quest_timer', null=True, blank=True)
     duration = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"QuestTimer for {self.character.name}"
 
     # def save(self, *args, **kwargs):
     #     #print(f"QuestTimer saved. {self}")
@@ -640,7 +675,7 @@ class QuestTimer(Timer):
         self.quest = quest
         self.duration = duration
         self.set_waiting()
-        self.save()
+        self.save(update_fields=['quest', 'duration', 'status'])
 
     def complete(self):
         """
@@ -649,11 +684,9 @@ class QuestTimer(Timer):
         :return: The calculated XP reward.
         :rtype: int
         """
-        super().complete()
         #logger.debug(f"[QUESTTIMER.COMPLETE] {self}")
-        xp = self.calculate_xp()
-        self.save()
-        return xp
+        super().complete()
+        return self.calculate_xp()
 
     def reset(self):
         """
@@ -661,17 +694,23 @@ class QuestTimer(Timer):
         """
         super().reset()
         self.quest = None
-        self.save()
-        #print("Quest timer reset. Quest:", self.quest)
+        self.duration = 0
+        self.save(update_fields=['quest', 'status', 'elapsed_time', 'start_time', 'duration'])
 
-    def calculate_xp(self):
+    def _reset_hook(self):
+        self.quest = None
+        self.duration = 0
+
+    def calculate_xp(self) -> int:
         """
         Calculate the XP reward for the associated quest.
 
         :return: The calculated XP reward.
         :rtype: int
         """
-        return self.quest.results.calculate_xp_reward(self.character, self.duration)
+        if self.quest and hasattr(self.quest, 'results'):
+            return self.quest.results.calculate_xp_reward(self.character, self.duration)
+        return 0
 
     def get_remaining_time(self):
         """
@@ -681,9 +720,11 @@ class QuestTimer(Timer):
         :rtype: int
         """
         if self.status == 'active':
-            elapsed = self.get_elapsed_time()
-            return max(self.duration - int(elapsed + self.elapsed_time), 0)
-        return max(self.duration - self.elapsed_time, 0)
+            #elapsed = self.get_elapsed_time()
+            remaining = self.duration - self.get_elapsed_time()
+        else:
+            remaining = self.duration - self.elapsed_time
+        return max(int(remaining), 0)
 
     def time_finished(self):
         """
@@ -695,8 +736,6 @@ class QuestTimer(Timer):
         #logger.debug(f"[QUESTTIMER.TIME FINISHED] Duration: {self.duration}, Remaining time: {self.get_remaining_time()}")
         return self.get_remaining_time() <= 0
 
-    def __str__(self):
-        return f"QuestTimer for {self.character.name}"
     
 
 class ServerMessage(models.Model):
@@ -713,7 +752,10 @@ class ServerMessage(models.Model):
         is_delivered (bool): Whether the message has been delivered to the user.
         created_at (datetime): The timestamp for when the message was queued.
     """
-    profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE, related_name='pending_notifications')
+    group = models.CharField(
+        max_length=50,
+        help_text="WebSocket group to send this message to."
+    )
     type = models.CharField(
         max_length=20, choices=[
             ('event', 'Event'),
@@ -725,10 +767,11 @@ class ServerMessage(models.Model):
         ]
     )
     action = models.CharField(max_length=50)  # e.g., 'quest_complete', 'reward', 'message'
-    data = models.JSONField()  # Store event-specific data as JSON
+    data = models.JSONField(blank=True, null=True)  # Store event-specific data as JSON
     message = models.TextField(max_length=2000, blank=True, null=True)
     is_delivered = models.BooleanField(default=False)  # Track delivery status
     created_at = models.DateTimeField(auto_now_add=True)  # Timestamp for when it was queued
+    is_draft = models.BooleanField(default=True)
 
     def to_dict(self):
         """
@@ -766,16 +809,16 @@ class ServerMessage(models.Model):
         return f"{self.type.upper()} - {self.action} ({'Delivered' if self.is_delivered else 'Pending'})"
     
     @classmethod
-    def get_unread(cls, profile):
+    def get_unread(cls, group_name):
         """
-        Fetch all undelivered server messages for a specific profile.
+        Fetch all undelivered server messages for a specific WebSocket group.
 
-        :param profile: The user profile to fetch unread messages for.
-        :type profile: Profile
-        :return: A QuerySet of undelivered server messages.
+        :param group_name: The WebSocket group to fetch unread messages for.
+        :type group_name: str
+        :return: A QuerySet of undelivered server messages for the given group.
         :rtype: QuerySet
         """
-        return cls.objects.filter(profile=profile, is_delivered=False)
+        return cls.objects.filter(group=group_name, is_delivered=False)
     
     @classmethod
     def clear_old(cls, days=30):

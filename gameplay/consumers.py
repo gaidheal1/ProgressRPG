@@ -5,7 +5,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.db import transaction
 #from django.utils.timezone import now
 import json, logging
-
+from django.core.cache import cache
 from .models import ServerMessage
 from .utils import process_completion, process_initiation, control_timers
 
@@ -25,16 +25,19 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
                 return
             
             self.profile, self.character = await self.set_profile_and_character(user)
+            self.profile_group = f"profile_{self.profile.id}"
+
+            await database_sync_to_async(self.profile.set_online)()
+
+            is_online_now = await database_sync_to_async(lambda: self.profile.is_online)()
+            print(f"[CONNECT] Profile {self.profile.id} is_online={is_online_now}")  # ✅ Verify status
+
+            await self.channel_layer.group_add(self.profile_group, self.channel_name)
+            await self.channel_layer.group_add("online_users", self.channel_name)
+            logger.info(f"[CONNECT] Added profile {self.profile.id} to 'online_users' group.")  # ✅ Debug log
 
             await self.accept()
             logger.info(f"[CONNECT] WebSocket connection accepted for profile {self.profile.id}")
-            
-            self.profile_group = f"profile_{self.profile.id}"
-            await self.channel_layer.group_add(self.profile_group, self.channel_name)
-            #logger.debug(f"[CONNECT] Consumer {self.channel_name} joined group: {self.profile_group}")
-
-            #logger.info(f"Consumer subscribed to: {self.profile_group}")
-            #logger.info(f"Sending message to: profile_{profile.id}")
             
             await self._send_pending_messages()
 
@@ -53,6 +56,8 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
 
     async def disconnect(self, close_code):
         logger.info(f"[DISCONNECT] WebSocket disconnecting with close code: {close_code}")
+        await database_sync_to_async(self.profile.set_offline)()
+        await self.channel_layer.group_discard("online_users", self.channel_name)
 
         if hasattr(self, "profile_group"):
             logger.info(f"[DISCONNECT] Removed from group: {self.profile_group}")
@@ -62,11 +67,6 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
             logger.info(f"Pausing timers for profile {self.profile.id}; websocket disconnected")
             if self.activity_timer.status not in ["completed", "empty", "paused"] or self.quest_timer.status not in ["completed", "empty", "paused"]:
                 await control_timers(self.profile, self.activity_timer, self.quest_timer, "pause")
-
-        # if close_code != 1000:
-        #     logger.warning(f"Unexpected disconnect: {close_code}")
-        #raise StopConsumer()
-
 
     async def test_message(self, event):
         logger.info(f"[TEST MESSAGE] Received test message: {event}")
@@ -126,11 +126,12 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
         """Store the action in the ServerMessage model if the WebSocket is closed"""
         logger.info(f"[STORE ACTION] Storing action: {event}")
         ServerMessage.objects.create(
-            profile=self.profile, 
+            group=self.profile_group, 
             type=event.get("type"),
             action=event["action"],
             data=event.get("data", {}),
             message=event.get("message", ""),
+            is_draft=False,
             is_delivered=False
         )
 
@@ -235,25 +236,28 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
         """
         Send pending messages to the client.
         """
-        logger.info(f"[SEND PENDING MESSAGES (event handler)] Sending pending messages to profile {self.profile.id}.")
+        logger.info(f"[SEND PENDING MESSAGES (event handler)] Sending pending messages to group {self.profile_group}.")
+        logger.debug(f"[SEND PENDING MESSAGE] Event: {event}")
         await self._send_pending_messages()
 
 
     async def _send_pending_messages(self):
         """
-        Fetch and send all pending messages for the connected profile.
+        Fetch and send all pending messages for the connected WebSocket group.
         Marks successfully sent messages as delivered.
         """
-        logger.info(f"[SEND PENDING MESSAGES] Fetching pending messages for profile {self.profile.id}.")
+        logger.info(f"[SEND PENDING MESSAGES] Fetching pending messages for group {self.profile_group}.")
         from .models import ServerMessage
 
-        get_unread_messages = database_sync_to_async(lambda profile: list(ServerMessage.get_unread(profile)))
-        messages = await get_unread_messages(self.profile)
+        get_unread_messages = database_sync_to_async(
+            lambda: list(ServerMessage.get_unread(self.profile_group)) + list(ServerMessage.get_unread("online_users"))
+        )
+        messages = await get_unread_messages()
 
         if not messages:
-            logger.info(f"[SEND PENDING MESSAGES] No pending messages for profile {self.profile.id}.")
+            logger.info(f"[SEND PENDING MESSAGES] No pending messages for group {self.profile_group} or 'online_users'.")
             return
-        logger.info(f"[SEND PENDING MESSAGES] Found {len(messages)} pending messages for profile {self.profile.id}.")
+        logger.info(f"[SEND PENDING MESSAGES] Found {len(messages)} pending messages for group {self.profile_group}.")
 
         successful_message_ids = []
         for message in messages:
