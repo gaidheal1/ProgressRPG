@@ -81,29 +81,32 @@ class Quest {
     return this.stages[this.currentStageIndex];
   }
 
-  advanceStage() {
+  renderStages() {
     const stagesList = document.getElementById("quest-stages-list");
+    stagesList.innerHTML = '';
 
-    if (this.currentStageIndex < this.stages.length - 1) {
-      this.renderPreviousStage();
-      this.currentStageIndex++;
-      document.getElementById("current-quest-active-stage").textContent =
-        this.stages[this.currentStageIndex].text;
-
-      const existingCurrent = stagesList.querySelector(".quest-stage.current");
-      if (existingCurrent) {
-        existingCurrent.classList.remove("current");
-        existingCurrent.classList.add("previous");
-      }
-
+    for (let i = 0; i <= this.currentStageIndex; i++) {
       const li = document.createElement("li");
-      li.textContent = this.stages[this.currentStageIndex].text;
-      li.classList.add("quest-stage", "current");
+      li.textContent = this.stages[i].text;
+      li.classList.add("quest-stage");
+
+      if (i === this.currentStageIndex) {
+        li.classList.add("current");
+      } else {
+        li.classList.add("previous");
+      }
       stagesList.appendChild(li);
-    } else {
-      console.log("Quest complete!");
     }
   }
+
+  advanceStage() {
+    if (this.currentStageIndex < this.stages.length - 1) {
+      this.currentStageIndex++;
+      this.renderStages();
+      } else {
+        console.log("Quest complete!");
+      }
+    } 
 
   updateProgress(elapsedTime) {
     while (
@@ -114,18 +117,6 @@ class Quest {
     }
   }
 
-  renderPreviousStage() {
-    const stagesList = document.getElementById("quest-stages-list");
-    if (stagesList.style.display == "none") {
-      stagesList.style.display = "flex";
-    }
-    const prevStage = this.stages[this.currentStageIndex];
-    const li = document.createElement("li");
-    li.textContent = prevStage.text;
-    li.classList.add("quest-stage", "previous")
-    stagesList.appendChild(li);
-  }
-
   initialDisplay() {
     document.getElementById("current-quest-title").textContent = this.name;
     document.getElementById("current-quest-intro").textContent = this.intro;
@@ -134,10 +125,11 @@ class Quest {
     const stagesList = document.getElementById("quest-stages-list");
     stagesList.style.display = "flex";
 
-    const li = document.createElement("li");
-    li.textContent = this.getCurrentStage().text;
-    li.classList.add("quest-stage", "current");
-    stagesList.appendChild(li);
+    if (typeof this.currentStageIndex !== 'number' || this.currentStageIndex < 0) {
+      this.currentStageIndex = 0;
+    }
+
+    this.renderStages();
   }
 
   resetDisplay() {
@@ -147,10 +139,10 @@ class Quest {
       stagesList.innerHTML = "";
     }
 
-    const currentStageSection = document.getElementById("current-stage-section");
-    if (currentStageSection) {
-      currentStageSection.style.display = "flex";
-    }
+    // const currentStageSection = document.getElementById("current-stage-section");
+    // if (currentStageSection) {
+    //   currentStageSection.style.display = "flex";
+    // }
   }
 }
 
@@ -189,7 +181,7 @@ class Timer extends EventEmitter {
     this.duration = duration;
     this.intervalIdTime = null;
     //this.startTime = None;
-    this.elapsedTime = 0; // For countdown timers
+    this.elapsedTime = 0;
     this.remainingTime = duration; // For countdown timers
     this.mode = mode;
   }
@@ -212,8 +204,8 @@ class Timer extends EventEmitter {
     console.log(`${this.mode} timer start method. Status: ${this.status}`);
     if (this.status === "completed") return;
     this.updateStatus("active");
-    // Start timer
     this.startTime = Date.now();
+    this.pausedTime = this.elapsedTime || 0;
     this.intervalIdTime = setInterval(() => this.updateTimer(), 1000);
   }
 
@@ -256,25 +248,17 @@ class Timer extends EventEmitter {
   }
 
   updateTimer() {
-    const elapsedTime = Math.round((Date.now() - this.startTime) / 1000);
-    if (this.mode === "activity") {
-      this.elapsedTime = this.duration + elapsedTime;
-      // console
-      //   .log(
-      //   `[TIMER.UPDATE TIMER] ${this.mode} timer. this.elapsedTime: ${this.elapsedTime}, duration: ${this.duration}, elapsedTime: ${elapsedTime}`
-      //   );
-    } else if (this.mode === "quest") {
-      this.remainingTime = this.duration - elapsedTime;
-      // console.log(
-      //   `[TIMER.UPDATE TIMER] ${this.mode} timer. this.remainingTime: ${this.remainingTime}, duration: ${this.duration}, elapsedTime: ${elapsedTime}`
-      //);
-      window.currentQuest.updateProgress(this.remainingTime);
+    this.elapsedTime = this.pausedTime + Math.round((Date.now() - this.startTime) / 1000);
+    
+    if (this.mode === "quest") {
+      this.remainingTime = this.duration - this.elapsedTime;
+      window.currentQuest.updateProgress(this.elapsedTime);
+
       if (this.remainingTime <= 0) {
         this.remainingTime = 0;
         this.onComplete();
       }
     }
-    console.log();
     this.updateDisplay();
   }
 
@@ -741,10 +725,8 @@ function handleQuestCompleteResponse(data) {
     );
     submitQuestDisplayUpdate();
     window.questSelected = false;
-    if (window.currentQuest) {
-      window.currentQuest.renderPreviousStage();
-    }
-    document.getElementById("current-stage-section").style.display = "none";
+    
+    // document.getElementById("current-stage-section").style.display = "none";
     // document
     //   .getElementById("start-activity-btn")
     //   .setAttribute("disabled", true);
