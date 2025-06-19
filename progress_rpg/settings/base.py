@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'locations',
     'payments',
     'server_management',
+
+    'django_ratelimit',
     'decouple',
 ]
 
@@ -59,12 +61,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     
     'server_management.middleware.MaintenanceModeMiddleware',
+    'server_management.middleware.BlockBotMiddleware',
 
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
