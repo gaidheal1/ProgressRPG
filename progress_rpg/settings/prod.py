@@ -76,7 +76,7 @@ CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://app.progr
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(conn_max_age=60, ssl_require=True)
+    'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
 }
 
 
@@ -110,14 +110,34 @@ CACHES = {
     }
 }
 
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL')
+CELERY_BROKER_URL = os.environ.get('REDIS_URL')
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Session settings
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_CACHE_ALIAS = 'default'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = False
+
+SESSION_COOKIE_NAME = 'sessionid'
+#SESSION_COOKIE_DOMAIN = '.progressrpg.com'
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Strict'
+SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
+
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_DOMAIN = '.progressrpg.com'
+
+# Security settings
 SECURE_SSL_REDIRECT = True
+SECURE_REDIRECT_EXEMPT = []
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
-CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL')
-CELERY_BROKER_URL = os.environ.get('REDIS_URL')
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'

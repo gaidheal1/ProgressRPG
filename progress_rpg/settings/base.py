@@ -28,11 +28,6 @@ load_dotenv(dotenv_path)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', os.getenv('DJANGO_SETTINGS_MODULE', 'progress_rpg.settings.dev'))
 
-SECRET_KEY_FALLBACKS=['django-insecure-46)84p=e^!*as-px9&4pl0jqh7wfy$clbwtu3(%9$qj&(5ri-$']
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
 
 # Application definition
 
@@ -56,6 +51,8 @@ INSTALLED_APPS = [
     'locations',
     'payments',
     'server_management',
+
+    'django_ratelimit',
     'decouple',
 ]
 
@@ -64,12 +61,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     
     'server_management.middleware.MaintenanceModeMiddleware',
+    'server_management.middleware.BlockBotMiddleware',
 
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
@@ -93,9 +91,6 @@ TEMPLATES = [
 
 #WSGI_APPLICATION = 'progress_rpg.wsgi.application'
 ASGI_APPLICATION = "progress_rpg.asgi.application"
-
-
-
 
 
 # Password validation
@@ -125,7 +120,7 @@ ACCOUNT_EMAIL_REQUIRED = True
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en-gb'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
@@ -155,16 +150,6 @@ DEFAULT_FROM_EMAIL = 'admin@progressrpg.com'
 # Optionally, configure for error emails
 ADMINS = [('Admin', 'admin@progressrpg.com')]  # The emails to receive error notifications
 
-# Session settings
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-#SESSION_CACHE_ALIAS = 'default'
-SESSION_COOKIE_NAME = 'sessionid'
-SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
-SESSION_SAVE_EVERY_REQUEST = True
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_DOMAIN = None
-SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_HTTPONLY = True
 
 LOGIN_REDIRECT_URL = '/'  # Or wherever you want to go after login
 LOGIN_URL = '/login/'  # Customize the login URL

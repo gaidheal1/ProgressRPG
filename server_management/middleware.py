@@ -7,23 +7,17 @@ from django.http import HttpResponseRedirect
 
 
 
+BLOCKED_USER_AGENTS = ["bot", "crawler", "spider", "scraper", "wget", "curl"]
 
+class BlockBotMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def __call__(self, request):
+        user_agent = request.META.get("HTTP_USER_AGENT", "").lower()
+        if any(bot in user_agent for bot in BLOCKED_USER_AGENTS):
+            return HttpResponseForbidden("Access denied.")
+        return self.get_response(request)
 
 
 
