@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     
     'server_management.middleware.MaintenanceModeMiddleware',
+    'server_management.middleware.BlockBotMiddleware',
 
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
