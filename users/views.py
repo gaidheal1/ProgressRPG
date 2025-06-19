@@ -11,6 +11,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now, timedelta
+from django.views.decorators.cache import cache_page
 from django.views.generic.edit import CreateView, FormView
 from django_ratelimit.decorators import ratelimit
 import json, logging
@@ -24,8 +25,8 @@ from gameplay.serializers import ActivitySerializer
 
 logger = logging.getLogger("django")
 
-
 # Index view
+@cache_page(60 * 15)
 def index_view(request):
     """
     Render the homepage (index) view.
