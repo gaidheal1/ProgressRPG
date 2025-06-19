@@ -1,4 +1,4 @@
-name: Progress RPG CI/CD
+name: Progress RPG CI
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - dev
+      - staging
 
 jobs:
   build:
@@ -40,10 +41,10 @@ jobs:
           - 5432:5432
         env:
           POSTGRES_USER: ${{ secrets.DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}  # Must be non-empty!
           POSTGRES_DB: ${{ secrets.DB_NAME }}
         options: >-
-          --health-cmd="pg_isready -U $POSTGRES_USER"
+          --health-cmd="pg_isready"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -64,14 +65,11 @@ jobs:
       - name: Set DATABASE_URL environment variable
         run: echo "DATABASE_URL=postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@localhost:5432/${{ secrets.DB_NAME }}" >> $GITHUB_ENV
 
+      - name: Create logs directory
+        run: mkdir -p logs
+  
       - name: Run Migrations
         run: python manage.py migrate
 
       - name: Run Django Tests
         run: python manage.py test
-
-  
-  deploy:
-    needs: [test]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/staging'
