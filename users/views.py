@@ -2,15 +2,17 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.sessions.models import Session
+#from django.contrib.sessions.models import Session
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse #, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.utils.timezone import now, timedelta
 from django.views.generic.edit import CreateView, FormView
+from django_ratelimit.decorators import ratelimit
 import json, logging
 
 from .forms import UserRegisterForm, ProfileForm, EmailAuthenticationForm
@@ -52,6 +54,7 @@ def get_client_ip(request):
     return ip
 
 # Login view
+@method_decorator(ratelimit(key='ip', rate='10/m', method='POST', block=True), name='dispatch')
 class LoginView(FormView):
     """
     Handle user login using an email-based authentication form.
@@ -75,7 +78,6 @@ class LoginView(FormView):
         :rtype: django.http.HttpResponseRedirect
         :raises ValueError: If the user's onboarding step is invalid.
         """
-
         user = form.get_user()
         logger.info(f"[LOGIN VIEW] Successful login for user: {user.email} (ID: {user.id})")
         login(self.request, user)
@@ -102,7 +104,7 @@ class LoginView(FormView):
                     return redirect('index')
         else:
             return redirect('game')
-                
+    
     def form_invalid(self, form):
         """
         Handle an invalid login form submission.
@@ -146,7 +148,10 @@ def logout_view(request):
     return redirect('index')
 
 
+
+
 # Register view
+@method_decorator(ratelimit(key='ip', rate='10/m', method='POST', block=True), name='dispatch')
 class RegisterView(CreateView):
     """
     Handle user registration by creating a new `CustomUser` instance
@@ -357,8 +362,9 @@ def edit_profile_view(request):
     return render(request, 'users/edit_profile.html', {'form': form})
 
 # Download user data
-@transaction.atomic
+@ratelimit(key='ip', rate='10/h', method='POST', block=True)
 @login_required
+@transaction.atomic
 def download_user_data(request):
     """
     Generate and provide a downloadable JSON file containing the user's data, 
