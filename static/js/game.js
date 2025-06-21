@@ -1142,6 +1142,7 @@ function handlePong(data) {
 document.addEventListener("DOMContentLoaded", () => {
   initialiseTimers();
   setupEventListeners();
+  fetch('/get_csrf_token/', { credentials: 'include' });
   connectWebsocket();
   updateUI();
 });

@@ -12,5 +12,6 @@ urlpatterns = [
     path('fetch_activities/', views.fetch_activities, name='fetch_activities'),
     path('fetch_info/', views.fetch_info, name='fetch_info'),
     path('submit_bug_report/', views.submit_bug_report, name='submit_bug_report'),
+    path('get_csrf_token/', views.get_csrf_token, name='get_csrf_token'),
 ]
 

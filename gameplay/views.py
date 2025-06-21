@@ -11,7 +11,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.html import escape
 #from django.utils.timezone import now
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from rest_framework.serializers import ValidationError
 import json, logging
 
@@ -29,6 +29,9 @@ from users.serializers import ProfileSerializer
 logger = logging.getLogger("django")
 
 
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return JsonResponse({'detail': 'CSRF cookie set'})
 
 # Game view
 @login_required
