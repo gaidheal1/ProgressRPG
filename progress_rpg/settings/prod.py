@@ -85,11 +85,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": 'channels_redis.core.RedisChannelLayer',
         "CONFIG": {
-            "hosts": [{
-                "address": REDIS_URL,
-                "ssl_cert_reqs": ssl.CERT_REQUIRED  if ssl_required else ssl.CERT_NONE,
-                
-            }],
+            "hosts": [REDIS_URL],
         },
     },
 }
@@ -100,7 +96,7 @@ CACHES = {
         "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            'ssl_cert_reqs': ssl.CERT_REQUIRED  if ssl_required else ssl.CERT_NONE,
+            #'ssl_cert_reqs': ssl.CERT_REQUIRED  if ssl_required else ssl.CERT_NONE,
         }
     }
 }
