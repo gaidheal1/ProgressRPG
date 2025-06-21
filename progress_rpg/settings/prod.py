@@ -90,9 +90,8 @@ REDIS_URL = os.environ.get('REDIS_URL')
 ssl_required = os.environ.get("REDIS_VERIFY_SSL", "0") == "1"
 
 ssl_context = ssl.create_default_context()
-if not ssl_required:
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+ssl_context.check_hostname = False
+ssl_context.verify_mode = ssl.CERT_NONE
 
 CHANNEL_LAYERS = {
     "default": {
@@ -124,11 +123,9 @@ CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 
 CELERY_BROKER_USE_SSL = {
-    'ssl_cert_reqs': ssl.CERT_NONE,
     'ssl_context': ssl_context,
 }
 CELERY_REDIS_BACKEND_USE_SSL = {
-    'ssl_cert_reqs': ssl.CERT_NONE,
     'ssl_context': ssl_context,
 }
 
