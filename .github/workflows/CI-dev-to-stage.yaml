@@ -1,5 +1,8 @@
 name: Progress RPG CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
