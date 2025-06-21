@@ -79,14 +79,17 @@ DATABASES = {
 REDIS_URL = os.environ.get('REDIS_URL')
 #print("REDIS_HOST:", REDIS_HOST)
 
+ssl_required = os.environ.get('REDIS_VERIFY_SSL')
 ssl_context = ssl._create_unverified_context()
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": 'channels_redis.core.RedisChannelLayer',
         "CONFIG": {
-            "hosts": [REDIS_URL],
-            "ssl_context": ssl_context
+            "hosts": [{
+                "adress": REDIS_URL,
+                **({"ssl_context": ssl_context} if ssl_required else {})
+                }],
         },
     },
 }
