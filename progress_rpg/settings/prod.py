@@ -71,11 +71,15 @@ CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://app.progr
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DB_URL = os.environ.get("DATABASE_URL_PGBOUNCER") or os.environ.get("DATABASE_URL")
 #default_db_config = dj_database_url.config(conn_max_age=60, ssl_require=True)
 
 #if os.environ.get("RUNNING_CHANNEL_WORKER") == "1" or os.environ.get("IS_CELERY_WORKER") == "1":
 #    default_db_config["CONN_MAX_AGE"] = 0
+
+if os.environ.get("PGBOUNCER") == "1":
+    os.environ['DATABASE_URL'] = os.environ.get('DATABASE_URL_PGBOUNCER', os.environ['DATABASE_URL'])
+
+DB_URL = os.environ.get("DATABASE_URL")
 
 DATABASES = {
     'default': dj_database_url.parse(DB_URL, conn_max_age=0)
