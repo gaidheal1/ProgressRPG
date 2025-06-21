@@ -79,13 +79,14 @@ DATABASES = {
 REDIS_URL = os.environ.get('REDIS_URL')
 #print("REDIS_HOST:", REDIS_HOST)
 
-ssl_required = os.environ.get("REDIS_VERIFY_SSL", "true").lower() == "true"
+ssl_context = ssl._create_unverified_context()
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": 'channels_redis.core.RedisChannelLayer',
         "CONFIG": {
             "hosts": [REDIS_URL],
+            "ssl_context": ssl_context
         },
     },
 }
@@ -96,6 +97,9 @@ CACHES = {
         "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {
+                "ssl_context": ssl_context,
+            }
             #'ssl_cert_reqs': ssl.CERT_REQUIRED  if ssl_required else ssl.CERT_NONE,
         }
     }
