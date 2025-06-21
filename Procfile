@@ -1,4 +1,4 @@
 release: python manage.py migrate
 web: daphne -b 0.0.0.0 -p $PORT progress_rpg.asgi:application 
-worker: python manage.py runworker default
-# celery: celery -A progress_rpg worker --concurrency=4 --loglevel=info
+worker: RUNNING_CHANNEL_WORKER=1 python manage.py runworker
+#celery: IS_CELERY_WORKER=1 celery -A progress_rpg worker --concurrency=2 --loglevel=info
