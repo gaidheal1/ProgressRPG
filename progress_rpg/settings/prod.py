@@ -137,7 +137,7 @@ SESSION_COOKIE_SAMESITE = 'Strict'
 SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
 
 CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_DOMAIN = '.progressrpg.com'
+#CSRF_COOKIE_DOMAIN = '.progressrpg.com'
 
 # Security settings
 SECURE_SSL_REDIRECT = True
