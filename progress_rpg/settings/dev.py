@@ -116,6 +116,8 @@ print("CORS:", CORS_ALLOWED_ORIGINS)
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -128,13 +130,17 @@ DATABASES = {
     }
 }
 
-REDIS_HOST = 'redis://localhost:6379'
+
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
+#print("REDIS_URL:", REDIS_URL)
+#PRETEND = f"{REDIS_URL}?ssl_cert_reqs=none"
+#print("PRETEND:", PRETEND)
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": 'channels_redis.core.RedisChannelLayer',
         "CONFIG": {
-            "hosts": [REDIS_HOST],   
+            "hosts": [REDIS_URL],   
         },
     },
 }
@@ -143,7 +149,7 @@ CHANNEL_LAYERS = {
 CACHES = {
     'default': {
         "BACKEND": 'django_redis.cache.RedisCache',
-        "LOCATION": REDIS_HOST,
+        "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient"
         }
