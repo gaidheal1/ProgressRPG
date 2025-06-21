@@ -15,7 +15,7 @@ import dj_database_url
 from decouple import Config, RepositoryEnv, config
 import os
 from dotenv import load_dotenv
-import logging
+import logging, ssl
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
