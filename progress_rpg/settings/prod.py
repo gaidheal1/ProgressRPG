@@ -87,7 +87,6 @@ CHANNEL_LAYERS = {
         "CONFIG": {
             "hosts": [{
                 "address": REDIS_URL,
-                "ssl": True,
                 "ssl_cert_reqs": ssl.CERT_REQUIRED  if ssl_required else ssl.CERT_NONE,
                 
             }],
@@ -101,7 +100,6 @@ CACHES = {
         "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "SSL": True,
             'CONNECTION_POOL_KWARGS': {
                     'ssl_cert_reqs': ssl.CERT_REQUIRED  if ssl_required else ssl.CERT_NONE,
                 }
