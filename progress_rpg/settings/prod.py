@@ -77,7 +77,7 @@ if os.environ.get("RUNNING_CHANNEL_WORKER") == "1" or os.environ.get("IS_CELERY_
     default_db_config["CONN_MAX_AGE"] = 0
 
 DATABASES = {
-    'default': default_db_config
+    'default': dj_database_url.config(conn_max_age=0, ssl_require=True)
 }
 
 
