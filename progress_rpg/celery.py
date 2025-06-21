@@ -22,10 +22,10 @@ app.conf.beat_schedule = {
     #     'task': 'gameplay.tasks.update_quest_availability',
     #     'schedule': crontab(hour=0, minute=0), # Run every day
     # },
-    'daily-character-death-check': {
-        'task': 'gameworld.tasks.check_character_deaths',
-        'schedule': crontab(hour=0, minute=0),
-    },
+    # 'daily-character-death-check': {
+    #     'task': 'gameworld.tasks.check_character_deaths',
+    #     'schedule': crontab(hour=0, minute=0),
+    # },
     # 'weekly-pregnancy-start': {
     #     'task': 'gameworld.tasks.start_character_pregnancies',
     #     'schedule': crontab(day_of_week=0, hour=0, minute=0),
