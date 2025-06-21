@@ -87,7 +87,7 @@ DATABASES = {
 
 
 REDIS_URL = os.environ.get('REDIS_URL')
-REDIS_URL_MOD = f"{REDIS_URL}?ssl_cert_reqs=none"
+REDIS_URL_MOD = f"{REDIS_URL}?ssl_cert_reqs=CERT_NONE"
 #print("REDIS_HOST:", REDIS_URL)
 
 ssl_required = os.environ.get('REDIS_VERIFY_SSL')
