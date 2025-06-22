@@ -89,6 +89,8 @@ DATABASES = {
 REDIS_URL = os.environ.get('REDIS_URL')
 ssl_required = os.environ.get("REDIS_VERIFY_SSL", "0") == "1"
 
+REDIS_URL_MOD = f"{REDIS_URL}/0?ssl_cert_reqs=none"
+
 ssl_context = ssl.create_default_context()
 ssl_context.check_hostname = False
 ssl_context.verify_mode = ssl.CERT_NONE
@@ -98,9 +100,7 @@ CHANNEL_LAYERS = {
         "BACKEND": 'channels_redis.core.RedisChannelLayer',
         "CONFIG": {
             "hosts": [{
-                "address": REDIS_URL,
-                #"ssl": True,
-                #"ssl_context": ssl_context
+                "address": REDIS_URL_MOD,
             }],
         },
     },
@@ -109,25 +109,25 @@ CHANNEL_LAYERS = {
 CACHES = {
     'default': {
         "BACKEND": 'django_redis.cache.RedisCache',
-        "LOCATION": REDIS_URL,
+        "LOCATION": REDIS_URL_MOD,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "CONNECTION_POOL_KWARGS": {
-                "ssl_context": ssl_context,
-            }
+            # "CONNECTION_POOL_KWARGS": {
+            #     "ssl_context": ssl_context,
+            # }
         }
     }
 }
 
-CELERY_BROKER_URL = REDIS_URL
-CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_BROKER_URL = REDIS_URL_MOD
+CELERY_RESULT_BACKEND = REDIS_URL_MOD
 
-CELERY_BROKER_USE_SSL = {
-    'ssl_context': ssl_context,
-}
-CELERY_REDIS_BACKEND_USE_SSL = {
-    'ssl_context': ssl_context,
-}
+# CELERY_BROKER_USE_SSL = {
+#     'ssl_context': ssl_context,
+# }
+# CELERY_REDIS_BACKEND_USE_SSL = {
+#     'ssl_context': ssl_context,
+# }
 
 
 # Session settings
