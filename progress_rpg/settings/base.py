@@ -15,7 +15,7 @@ import dj_database_url
 from decouple import Config, RepositoryEnv, config
 import os
 from dotenv import load_dotenv
-import logging
+import logging, ssl
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -131,7 +131,7 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [Path(BASE_DIR / 'static')]
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -157,8 +157,9 @@ LOGIN_URL = '/login/'  # Customize the login URL
 STRIPE_PUBLIC_KEY = "pk_test_51QNRgsGHaENuGVuPh70KmxNTGK3iQPJgjGO2gVcdE0dlRDG7LOZfY3zQxvEdR2hmXDKaEILIRKEnJdn69arGwKCi00bSZWzrzW"
 STRIPE_SECRET_KEY = "nope"
 
-CELERY_ACCEPT_CONTENT = ['json']
+CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_TASK_EAGER_PROPAGATES = False
 CELERY_ENABLE_UTC = True
