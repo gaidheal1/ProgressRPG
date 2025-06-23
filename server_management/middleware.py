@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.shortcuts import redirect
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from server_management.models import MaintenanceWindow
 from django.utils.timezone import now
-from django.http import HttpResponseRedirect
+from django.urls import resolve
 
 
 
@@ -40,11 +40,13 @@ class MaintenanceModeMiddleware:
             if user and request.user.is_authenticated and request.user.is_staff:
                 return self.get_response(request)
             
-            
-            exempt_paths = ['/logout/', '/static/', '/admin/', '/healthcheck/', '/maintenance/']
-            if any(request.path.rstrip('/').startswith(exempt.rstrip('/')) for exempt in exempt_paths):
-                print (f"Successful exemption for  {request.path}")
-                return self.get_response(request)
+            exempt_names = ['logout', 'healthcheck', 'maintenance']
+            try:
+                match = resolve(request.path)
+                if match.url_name in exempt_names or request.path.startswith('/static') or request.path.startswith('/admin'):
+                    return self.get_response(request)
+            except:
+                pass  # let maintenance block unknown paths
             
             return redirect('maintenance')
 
