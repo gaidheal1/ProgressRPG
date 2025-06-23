@@ -82,7 +82,7 @@ if os.environ.get("PGBOUNCER") == "1":
 DB_URL = os.environ.get("DATABASE_URL")
 
 DATABASES = {
-    'default': dj_database_url.parse(DB_URL, conn_max_age=0)
+    'default': dj_database_url.parse(DB_URL, conn_max_age=60)
 }
 
 
