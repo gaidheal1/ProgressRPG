@@ -259,10 +259,6 @@ def create_profile_view(request):
 
             logger.debug(f"Name set to '{profile.name}' and onboarding step set to 2 for user {request.user.username}.")
 
-            if profile.name:
-                logger.debug(f"Sending signup email to {request.user.email} for user {request.user.username}.")
-                
-
             return redirect('link_character')
         else: 
             logger.warning(f"Profile form validation failed for user {request.user.username}.")
@@ -461,3 +457,5 @@ def delete_account(request):
         return redirect("index")
     else: 
         return render(request, 'users/delete_account.html')
+    
+
