@@ -64,23 +64,20 @@ def check_quest_eligibility(character: Character, profile: Profile) -> list:
     for completion in char_quests:
         quests_done[completion.quest] = completion.times_completed
         #logger.debug(f"[CHECK QUEST ELIGIBILITY] Quest {completion.quest} completed {completion.times_completed} times")
-    all_quests = Quest.objects.all()
+    
+    return [
+        quest for quest in Quest.objects.all()
+        if check_individual_quest(quest, character, profile, quests_done)
+    ]
 
-    eligible_quests = []
-    for quest in all_quests:
-        #logger.debug(f"[CHECK QUEST ELIGIBILITY] Evaluating quest: {quest}")
+def check_individual_quest(quest: Quest, character: Character, profile: Profile, quests_done):
+    #logger.debug(f"[CHECK QUEST ELIGIBILITY] Evaluating quest: {quest}")
 
-        # Test for eligibility
-        if quest.checkEligible(character, profile) and \
-            quest.not_repeating(character) and \
-            quest.requirements_met(quests_done):
-                #logger.debug(f"[CHECK QUEST ELIGIBILITY] Quest eligible: {quest}")
-                eligible_quests.append(quest)
-        else:
-            #logger.debug(f"[CHECK QUEST ELIGIBILITY] Quest not eligible: {quest}")
-            pass
-    return eligible_quests
-
+    return (
+        quest.checkEligible(character, profile) and \
+        quest.not_repeating(character) and \
+        quest.requirements_met(quests_done)
+    )
 
 def start_server_timers(act_timer: ActivityTimer, quest_timer: QuestTimer):
     """
