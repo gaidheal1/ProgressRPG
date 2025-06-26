@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.utils.html import escape
 #from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.views.decorators.http import require_GET
 from rest_framework.serializers import ValidationError
 import json, logging
 
@@ -107,6 +108,7 @@ def fetch_activities(request):
 
 
 # Fetch quests
+@require_GET
 @login_required
 def fetch_quests(request):
     """
@@ -117,37 +119,20 @@ def fetch_quests(request):
     :return: A JSON response containing the eligible quests or an error message.
     :rtype: django.http.JsonResponse
     """
-    if request.method != 'GET':
-        logger.warning(f"[FETCH QUESTS] Invalid method {request.method} used by user {request.user.profile.id}")
-        return JsonResponse({"error": "Invalid method"}, status=405)
-
     profile = request.user.profile
+    logger.info(f"[FETCH QUESTS] Request received from user {profile.id}")
+
     try:
         character = PlayerCharacterLink.get_character(profile)
     except ValueError as e:
+        logger.warning(f"[FETCH QUESTS] No character found for profile {profile.id}: {e}")
         return JsonResponse({"Error: {str(e)}"})
 
-    logger.info(f"[FETCH QUESTS] Request received from user {profile.id}")
     try:
         logger.info(f"[FETCH QUESTS] Checking eligible quests for character {character.id}, {profile.id}")
-        
-        #cache_key = f"eligible_quests_{profile.id}"
-        #quests = cache.get(cache_key)
-
-        #if not quests:
-            # eligible_quests = check_quest_eligibility(character, profile)
-            # quests = QuestSerializer(eligible_quests, many=True).data
-            
-            # cache.set(cache_key, quests, timeout=60*15)
-            
         eligible_quests = check_quest_eligibility(character, profile)
-        quests = QuestSerializer(eligible_quests, many=True).data
-        
-        for quest in eligible_quests:
-            quest.save()
-            logger.debug(f"[FETCH QUESTS] Quest {quest.id} - {quest.name} saved for character {character.id}")
-
-        
+        quests = QuestSerializer(eligible_quests, many=True, context={"request"}).data
+            
         data = {
             "success": True,
             "quests": quests,
