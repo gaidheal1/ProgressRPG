@@ -28,24 +28,36 @@ load_dotenv(dotenv_path)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', os.getenv('DJANGO_SETTINGS_MODULE', 'progress_rpg.settings.dev'))
 
-
+TOKEN_MODEL = None
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'rest_framework',
+    'dj_rest_auth',
+    'rest_framework_simplejwt',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'corsheaders',
+    'rest_framework_simplejwt.token_blacklist',
+    'rest_framework.authtoken',
+
+    'django.contrib.admin',
     'django.contrib.sessions',
+    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_celery_beat',
     'django_extensions',
-    'rest_framework',
     'channels',
     #'django-vite',
-    'character',
+    
     'users',
     'gameplay',
+    'character',
     'gameworld',
     'events',
     'locations',
@@ -56,19 +68,34 @@ INSTALLED_APPS = [
     'decouple',
 ]
 
-MIDDLEWARE = [
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    
-    'server_management.middleware.MaintenanceModeMiddleware',
-    'server_management.middleware.BlockBotMiddleware',
+SITE_ID = 1
 
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = 'optional'  # or 'mandatory' if you want email confirmation
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+
+
+MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+
+    'corsheaders.middleware.CorsMiddleware',
+
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+
+    'django.middleware.csrf.CsrfViewMiddleware',
+
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    
+    'allauth.account.middleware.AccountMiddleware',
+    #'server_management.middleware.MaintenanceModeMiddleware',
+    #'server_management.middleware.BlockBotMiddleware',
+
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'progress_rpg.urls'
@@ -93,6 +120,37 @@ TEMPLATES = [
 ASGI_APPLICATION = "progress_rpg.asgi.application"
 
 
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer', #'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+    'DEFAULT_RENDERER_CLASSES_OPTIONS': {
+        'template_pack': 'rest_framework/vertical',
+        'DEFAULT_FORM_RENDERER': 'rest_framework.renderers.TemplateHTMLRenderer',
+    },
+    
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        #'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'api.serializers.CustomRegisterSerializer',
+}
+
+ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
+
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+REST_USE_JWT = True
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -110,6 +168,12 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'users.auth_backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',  # fallback default
+]
+
 
 AUTH_USER_MODEL = 'users.CustomUser'
 ACCOUNT_USERNAME_REQUIRED = False
