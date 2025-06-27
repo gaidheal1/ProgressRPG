@@ -10,13 +10,6 @@ from django.contrib import admin
 from django.http import HttpResponseNotFound
 from django.urls import re_path, path, include
 from django.views.generic import TemplateView
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-    TokenVerifyView
-)
-
-from api.views import ProfileViewSet, confirm_email_and_redirect
 
 #from gameplay.admin import custom_admin_site
 
