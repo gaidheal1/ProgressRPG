@@ -46,15 +46,17 @@ def assign_character_to_profile(profile):
     :raises ValueError: If the tutorial quest is not found in the database.
     """
 
-    PlayerCharacterLink.objects.filter(profile=profile, is_active=True).update(is_active=False)
-    
-    character = Character.objects.filter(is_npc=True, death_date__isnull=True).first()    
+    PlayerCharacterLink.objects.filter(profile=profile, is_active=True).update(
+        is_active=False
+    )
+
+    character = Character.objects.filter(is_npc=True, death_date__isnull=True).first()
 
     if character:
         PlayerCharacterLink.objects.create(
-             profile=profile,
-             character=character,
-             is_active=True,
+            profile=profile,
+            character=character,
+            is_active=True,
         )
         character.is_npc = False
         character.save()
@@ -64,11 +66,18 @@ def assign_character_to_profile(profile):
         if not ("test" in sys.argv):
             tut_quest = Quest.objects.filter(name="[TUTORIAL] Getting started").first()
             if not tut_quest:
-                logger.warning(f"Tutorial quest '[TUTORIAL] Getting started' not found!")
-                raise ValueError("Tutorial quest '[TUTORIAL] Getting started' not found!")
+                logger.warning(
+                    f"Tutorial quest '[TUTORIAL] Getting started' not found!"
+                )
+                raise ValueError(
+                    "Tutorial quest '[TUTORIAL] Getting started' not found!"
+                )
 
-            if created or profile.created_at > (timezone.now() - timezone.timedelta(days=14)):
+            if created or profile.created_at > (
+                timezone.now() - timezone.timedelta(days=14)
+            ):
                 qt.change_quest(tut_quest, 60)
+
 
 def send_email_to_users(users, subject, template_base, context=None, cc_admin=False):
     """
@@ -84,8 +93,8 @@ def send_email_to_users(users, subject, template_base, context=None, cc_admin=Fa
         context = {}
 
     from_email = settings.DEFAULT_FROM_EMAIL
-    admin_email = 'admin@progressrpg.com'
-    
+    admin_email = "admin@progressrpg.com"
+
     # Prepare templates
     plain_message = render_to_string(f"{template_base}.txt", context)
     html_message = render_to_string(f"{template_base}.html", context)
@@ -112,14 +121,11 @@ def send_signup_email(user):
     """
     Sends a welcome email to a newly registered user.
     """
-    context = {
-        'email': user.email,
-        'current_year': timezone.now().year
-    }
+    context = {"email": user.email, "current_year": timezone.now().year}
     send_email_to_users(
         users=[user],
-        subject='Welcome to Progress!',
-        template_base='emails/welcome_email',
+        subject="Welcome to Progress!",
+        template_base="emails/welcome_email",
         context=context,
         cc_admin=True,
     )
@@ -129,10 +135,12 @@ def kick_old_sessions(user, current_session_key=None):
     """
     Deletes all active sessions for a user except the current one.
     """
-    logger.info(f"[KICK OLD SESSIONS] User {user.id} logged in. Checking for old sessions.")
+    logger.info(
+        f"[KICK OLD SESSIONS] User {user.id} logged in. Checking for old sessions."
+    )
 
     try:
-        
+
         try:
             sessions = Session.objects.filter(expire_date__gte=timezone.now())
             logger.debug(f"[KICK OLD SESSIONS] Filtered sessions: {sessions}")
@@ -143,15 +151,17 @@ def kick_old_sessions(user, current_session_key=None):
         for session in sessions:
             try:
                 data = session.get_decoded()
-                #logger.debug(f"[KICK OLD SESSIONS] Session key: {session.session_key}, data: {data}")
-                #logger.debug(f"[KICK OLD SESSIONS] Session userid: {data.get('_auth_user_id')}")
+                # logger.debug(f"[KICK OLD SESSIONS] Session key: {session.session_key}, data: {data}")
+                # logger.debug(f"[KICK OLD SESSIONS] Session userid: {data.get('_auth_user_id')}")
 
-                if data.get('_auth_user_id') == str(user.id):
+                if data.get("_auth_user_id") == str(user.id):
                     if session.session_key != current_session_key:
-                        #logger.debug(f"[KICK OLD SESSIONS] Killing other sessions for user {user.id}. Session key: {session.session_key}")
+                        # logger.debug(f"[KICK OLD SESSIONS] Killing other sessions for user {user.id}. Session key: {session.session_key}")
                         session.delete()
             except Exception as e:
-                logger.error(f"[KICK OLD SESSIONS] Error processing session {session.session_key}: {e}")
+                logger.error(
+                    f"[KICK OLD SESSIONS] Error processing session {session.session_key}: {e}"
+                )
 
     except Exception as e:
         logger.error(f"[KICK OLD SESSIONS] Unexpected error: {e}")

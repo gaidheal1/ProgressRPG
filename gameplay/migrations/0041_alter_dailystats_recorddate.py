@@ -7,13 +7,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0040_alter_dailystats_recorddate'),
+        ("gameplay", "0040_alter_dailystats_recorddate"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dailystats',
-            name='recordDate',
+            model_name="dailystats",
+            name="recordDate",
             field=models.DateField(default=datetime.date(2025, 1, 1)),
         ),
     ]

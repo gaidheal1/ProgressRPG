@@ -8,21 +8,40 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0001_initial'),
+        ("users", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Player',
+            name="Player",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('bio', models.TextField(blank=True, max_length=1000)),
-                ('profile_picture', models.ImageField(blank=True, null=True, upload_to='users/profile_pics/')),
-                ('xp', models.IntegerField(default=0)),
-                ('level', models.IntegerField(default=0)),
-                ('total_time', models.IntegerField(default=0)),
-                ('total_activities', models.IntegerField(default=0)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("bio", models.TextField(blank=True, max_length=1000)),
+                (
+                    "profile_picture",
+                    models.ImageField(
+                        blank=True, null=True, upload_to="users/profile_pics/"
+                    ),
+                ),
+                ("xp", models.IntegerField(default=0)),
+                ("level", models.IntegerField(default=0)),
+                ("total_time", models.IntegerField(default=0)),
+                ("total_activities", models.IntegerField(default=0)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

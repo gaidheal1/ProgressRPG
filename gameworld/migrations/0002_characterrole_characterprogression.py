@@ -8,29 +8,60 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0057_character_backstory_character_dob_character_dod_and_more'),
-        ('gameworld', '0001_initial'),
+        ("gameplay", "0057_character_backstory_character_dob_character_dod_and_more"),
+        ("gameworld", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CharacterRole',
+            name="CharacterRole",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('description', models.TextField(blank=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField(blank=True)),
             ],
         ),
         migrations.CreateModel(
-            name='CharacterProgression',
+            name="CharacterProgression",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('experience', models.IntegerField(default=0)),
-                ('base_progression_rate', models.FloatField(default=0.1)),
-                ('player_acceleration_factor', models.FloatField(default=1.0)),
-                ('date_started', models.DateTimeField(default=django.utils.timezone.now)),
-                ('character', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='gameplay.character')),
-                ('role', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='gameworld.characterrole')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("experience", models.IntegerField(default=0)),
+                ("base_progression_rate", models.FloatField(default=0.1)),
+                ("player_acceleration_factor", models.FloatField(default=1.0)),
+                (
+                    "date_started",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
+                (
+                    "character",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="gameplay.character",
+                    ),
+                ),
+                (
+                    "role",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="gameworld.characterrole",
+                    ),
+                ),
             ],
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0011_character_current_quest'),
+        ("gameplay", "0011_character_current_quest"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='character',
-            name='name',
-            field=models.CharField(default='Nell', max_length=100),
+            model_name="character",
+            name="name",
+            field=models.CharField(default="Nell", max_length=100),
         ),
     ]

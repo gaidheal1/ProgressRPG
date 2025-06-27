@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0057_character_backstory_character_dob_character_dod_and_more'),
+        ("gameplay", "0057_character_backstory_character_dob_character_dod_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='character',
-            name='role',
+            model_name="character",
+            name="role",
         ),
     ]

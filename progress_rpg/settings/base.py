@@ -21,128 +21,120 @@ import logging, ssl
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 os.environ.setdefault("DEBUG", "True")
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+DEBUG = os.getenv("DEBUG", "True") == "True"
 
-dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
 load_dotenv(dotenv_path)
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', os.getenv('DJANGO_SETTINGS_MODULE', 'progress_rpg.settings.dev'))
+os.environ.setdefault(
+    "DJANGO_SETTINGS_MODULE",
+    os.getenv("DJANGO_SETTINGS_MODULE", "progress_rpg.settings.dev"),
+)
 
 TOKEN_MODEL = None
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'rest_framework',
-    'dj_rest_auth',
-    'rest_framework_simplejwt',
-
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'corsheaders',
-    'rest_framework_simplejwt.token_blacklist',
-    'rest_framework.authtoken',
-
-    'django.contrib.admin',
-    'django.contrib.sessions',
-    'django.contrib.sites',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django_celery_beat',
-    'django_extensions',
-    'channels',
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "rest_framework",
+    "dj_rest_auth",
+    "rest_framework_simplejwt",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "corsheaders",
+    "rest_framework_simplejwt.token_blacklist",
+    "rest_framework.authtoken",
+    "django.contrib.admin",
+    "django.contrib.sessions",
+    "django.contrib.sites",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django_celery_beat",
+    "django_extensions",
+    "channels",
     #'django-vite',
-    
-    'users',
-    'gameplay',
-    'character',
-    'gameworld',
-    'events',
-    'locations',
-    'payments',
-    'server_management',
-
-    'django_ratelimit',
-    'decouple',
+    "users",
+    "gameplay",
+    "character",
+    "gameworld",
+    "events",
+    "locations",
+    "payments",
+    "server_management",
+    "django_ratelimit",
+    "decouple",
 ]
 
 SITE_ID = 1
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = 'optional'  # or 'mandatory' if you want email confirmation
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = "optional"  # or 'mandatory' if you want email confirmation
+ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-
-    'corsheaders.middleware.CorsMiddleware',
-
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-
-    'django.middleware.csrf.CsrfViewMiddleware',
-
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    
-    'allauth.account.middleware.AccountMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     #'server_management.middleware.MaintenanceModeMiddleware',
     #'server_management.middleware.BlockBotMiddleware',
-
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'progress_rpg.urls'
+ROOT_URLCONF = "progress_rpg.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-#WSGI_APPLICATION = 'progress_rpg.wsgi.application'
+# WSGI_APPLICATION = 'progress_rpg.wsgi.application'
 ASGI_APPLICATION = "progress_rpg.asgi.application"
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer', #'rest_framework.renderers.BrowsableAPIRenderer',
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",  #'rest_framework.renderers.BrowsableAPIRenderer',
     ],
-    'DEFAULT_RENDERER_CLASSES_OPTIONS': {
-        'template_pack': 'rest_framework/vertical',
-        'DEFAULT_FORM_RENDERER': 'rest_framework.renderers.TemplateHTMLRenderer',
+    "DEFAULT_RENDERER_CLASSES_OPTIONS": {
+        "template_pack": "rest_framework/vertical",
+        "DEFAULT_FORM_RENDERER": "rest_framework.renderers.TemplateHTMLRenderer",
     },
-    
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         #'rest_framework.authentication.SessionAuthentication',
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
     ],
 }
 
 REST_AUTH_REGISTER_SERIALIZERS = {
-    'REGISTER_SERIALIZER': 'api.serializers.CustomRegisterSerializer',
+    "REGISTER_SERIALIZER": "api.serializers.CustomRegisterSerializer",
 }
 
-ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
+ACCOUNT_ADAPTER = "allauth.account.adapter.DefaultAccountAdapter"
 
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
@@ -156,74 +148,76 @@ REST_USE_JWT = True
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'users.auth_backends.EmailBackend',
-    'django.contrib.auth.backends.ModelBackend',  # fallback default
+    "users.auth_backends.EmailBackend",
+    "django.contrib.auth.backends.ModelBackend",  # fallback default
 ]
 
 
-AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = "users.CustomUser"
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-gb'
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = "en-gb"
+TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [Path(BASE_DIR / 'static')]
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_DIRS = [Path(BASE_DIR / "static")]
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # Email settings (host, port and password are at top)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'admin@progressrpg.com'
-DEFAULT_FROM_EMAIL = 'admin@progressrpg.com'
+EMAIL_HOST_USER = "admin@progressrpg.com"
+DEFAULT_FROM_EMAIL = "admin@progressrpg.com"
 
 # Optionally, configure for error emails
-ADMINS = [('Admin', 'admin@progressrpg.com')]  # The emails to receive error notifications
+ADMINS = [
+    ("Admin", "admin@progressrpg.com")
+]  # The emails to receive error notifications
 
 
-LOGIN_REDIRECT_URL = '/'  # Or wherever you want to go after login
-LOGIN_URL = '/login/'  # Customize the login URL
+LOGIN_REDIRECT_URL = "/"  # Or wherever you want to go after login
+LOGIN_URL = "/login/"  # Customize the login URL
 
 STRIPE_PUBLIC_KEY = "pk_test_51QNRgsGHaENuGVuPh70KmxNTGK3iQPJgjGO2gVcdE0dlRDG7LOZfY3zQxvEdR2hmXDKaEILIRKEnJdn69arGwKCi00bSZWzrzW"
 STRIPE_SECRET_KEY = "nope"
 
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_TASK_EAGER_PROPAGATES = False
 CELERY_ENABLE_UTC = True

@@ -6,7 +6,7 @@ Thank you for signing up to Progress RPG! We are excited to have you as part of 
 
 We recommend you complete your profile to get started with all the features available to you!
 
-Best regards,  
+Best regards,
 The Team
 
 © {{ current_year }} Progress RPG. All rights reserved.

@@ -4,4 +4,3 @@ export function initialiseTimers() {
   window.activitySelected = false;
   window.questSelected = false;
 }
-

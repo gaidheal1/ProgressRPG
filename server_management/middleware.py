@@ -6,8 +6,8 @@ from django.utils.timezone import now
 from django.http import HttpResponseRedirect
 
 
-
 BLOCKED_USER_AGENTS = ["bot", "crawler", "spider", "scraper", "wget", "curl"]
+
 
 class BlockBotMiddleware:
     def __init__(self, get_response):
@@ -20,11 +20,9 @@ class BlockBotMiddleware:
         return self.get_response(request)
 
 
-
-
 class MaintenanceModeMiddleware:
     """Middleware to restrict access during maintenance, allowing certain users/tests through."""
-    
+
     def __init__(self, get_response):
         self.get_response = get_response
 
@@ -34,18 +32,26 @@ class MaintenanceModeMiddleware:
 
         if active_window:
             user = request.user if hasattr(request, "user") else None
-            #print(f"User: {request.user}, Authenticated: {request.user.is_authenticated}, Staff: {request.user.is_staff}")
-            
+            # print(f"User: {request.user}, Authenticated: {request.user.is_authenticated}, Staff: {request.user.is_staff}")
+
             # Allow superusers or staff to bypass maintenance restrictions
             if user and request.user.is_authenticated and request.user.is_staff:
                 return self.get_response(request)
-            
-            
-            exempt_paths = ['/logout/', '/static/', '/admin/', '/healthcheck/', '/maintenance/']
-            if any(request.path.rstrip('/').startswith(exempt.rstrip('/')) for exempt in exempt_paths):
-                print (f"Successful exemption for  {request.path}")
+
+            exempt_paths = [
+                "/logout/",
+                "/static/",
+                "/admin/",
+                "/healthcheck/",
+                "/maintenance/",
+            ]
+            if any(
+                request.path.rstrip("/").startswith(exempt.rstrip("/"))
+                for exempt in exempt_paths
+            ):
+                print(f"Successful exemption for  {request.path}")
                 return self.get_response(request)
-            
-            return redirect('maintenance')
+
+            return redirect("maintenance")
 
         return self.get_response(request)

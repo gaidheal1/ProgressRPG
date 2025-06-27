@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0010_profile_is_premium_alter_profile_onboarding_step'),
+        ("users", "0010_profile_is_premium_alter_profile_onboarding_step"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='last_login',
+            model_name="profile",
+            name="last_login",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AddField(
-            model_name='profile',
-            name='login_streak',
+            model_name="profile",
+            name="login_streak",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

@@ -8,9 +8,9 @@ import math
 
 class Event(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('active', 'Active'),
-        ('completed', 'Completed'),
+        ("pending", "Pending"),
+        ("active", "Active"),
+        ("completed", "Completed"),
     ]
 
     name = models.CharField(max_length=255)
@@ -18,7 +18,7 @@ class Event(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     goal_seconds = models.PositiveIntegerField()  # Total time goal in seconds
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def all_goals_completed(self):
@@ -29,28 +29,27 @@ class Event(models.Model):
             self.complete()
 
     def complete(self):
-        pass        
+        pass
 
     def __str__(self):
         return f"Event: {self.name} - {self.status}"
 
 
-
 class EventGoal(models.Model):
     GOAL_TYPES = [
-        ('time', 'Time'),
+        ("time", "Time"),
     ]
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('active', 'Active'),
-        ('completed', 'Completed'),
+        ("pending", "Pending"),
+        ("active", "Active"),
+        ("completed", "Completed"),
     ]
 
-    event = models.ForeignKey(Event, related_name='goal', on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, related_name="goal", on_delete=models.CASCADE)
     goal_type = models.CharField(max_length=50, choices=GOAL_TYPES)
     goal_value = models.IntegerField()
     progress_value = models.IntegerField(default=0)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
 
     def is_completed(self):
         """Checks if goal has been completed"""
@@ -64,15 +63,18 @@ class EventGoal(models.Model):
             self.status = STATUS_CHOICES.completed
             self.event.check_completed()
         self.save()
-        
+
     def __str__(self):
         return f"Goal for {self.event.name}: {self.goal_type} {self.current_value}/{self.goal_value}"
 
 
-
 class EventContribution(models.Model):
-    profile = models.ForeignKey(Profile, related_name='contribution', on_delete=models.CASCADE)
-    event_goal = models.ForeignKey(EventGoal, related_name='contribution', on_delete=models.CASCADE)
+    profile = models.ForeignKey(
+        Profile, related_name="contribution", on_delete=models.CASCADE
+    )
+    event_goal = models.ForeignKey(
+        EventGoal, related_name="contribution", on_delete=models.CASCADE
+    )
     progress_value = models.IntegerField(default=0)  # User-specific progress
     last_updated = models.DateTimeField(auto_now=True)
 
@@ -81,5 +83,3 @@ class EventContribution(models.Model):
             self.progress_value += value
             self.save()
             self.event_goal.update_progress(value)
-
-

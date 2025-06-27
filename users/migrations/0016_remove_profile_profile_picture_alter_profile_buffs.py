@@ -6,18 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0034_appliedbuff_alter_quest_duration'),
-        ('users', '0015_profile_xp_modifier'),
+        ("gameplay", "0034_appliedbuff_alter_quest_duration"),
+        ("users", "0015_profile_xp_modifier"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='profile',
-            name='profile_picture',
+            model_name="profile",
+            name="profile_picture",
         ),
         migrations.AlterField(
-            model_name='profile',
-            name='buffs',
-            field=models.ManyToManyField(blank=True, related_name='profiles', to='gameplay.appliedbuff'),
+            model_name="profile",
+            name="buffs",
+            field=models.ManyToManyField(
+                blank=True, related_name="profiles", to="gameplay.appliedbuff"
+            ),
         ),
     ]

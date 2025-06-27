@@ -6,6 +6,7 @@ from django.shortcuts import redirect
 import logging
 from asgiref.sync import async_to_sync
 from gameplay.utils import send_group_message
+
 logger = logging.getLogger("django")
 
 
@@ -19,11 +20,10 @@ class MaintenanceWindow(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     def mark_tasks_scheduled(self):
         self.tasks_scheduled = True
         self.save()
-
 
     def schedule_tasks(self):
         """Schedules Celery tasks if not already scheduled."""
@@ -46,39 +46,42 @@ class MaintenanceWindow(models.Model):
         for minutes_until in times_to_schedule:
             message = f"Warning: maintenance is starting in {minutes_until} minute(s)!"
             send_warning.apply_async(
-                kwargs={"message": message}, 
-                eta=self.start_time - timezone.timedelta(minutes=minutes_until)
+                kwargs={"message": message},
+                eta=self.start_time - timezone.timedelta(minutes=minutes_until),
             )
-        logger.debug(f"[SCHEDULE TASKS] Scheduled {len(times_to_schedule)} maintenance warnings")
+        logger.debug(
+            f"[SCHEDULE TASKS] Scheduled {len(times_to_schedule)} maintenance warnings"
+        )
 
         activate_maintenance.apply_async(
-            kwargs={"window_id": self.id},
-            eta=self.start_time
+            kwargs={"window_id": self.id}, eta=self.start_time
         )
-        logger.debug(f"[SCHEDULE TASKS] Scheduled maintenance window to start at {self.start_time}")
+        logger.debug(
+            f"[SCHEDULE TASKS] Scheduled maintenance window to start at {self.start_time}"
+        )
 
         self.tasks_scheduled = True
         self.save()
         return True
-    
 
     def activate_maintenance(self):
         logger.info("[ACTIVATE MAINTENANCE] Activating maintenance mode...")
         now = timezone.now()
         subprocess.run(["python", "manage.py", "pause_timers"])
-        async_to_sync(send_group_message)("online_users", {"type": "action", "action": "refresh", "success": True})
-        
+        async_to_sync(send_group_message)(
+            "online_users", {"type": "action", "action": "refresh", "success": True}
+        )
+
         self.is_active = True
         self.save()
         # Add any additional activation logic here.
-        
+
     def deactivate_maintenance(self):
         logger.info("[DEACTIVATE MAINTENANCE] Deactivating maintenance mode...")
         print("Deactivating maintenance mode... wrapping up!")
         self.is_active = False
         self.save()
         # Add any additional activation logic here.
-
 
     # def delete_scheduled_tasks(self):
     #     """Deletes scheduled tasks if necessary."""

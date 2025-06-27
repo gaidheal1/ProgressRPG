@@ -9,7 +9,8 @@ def death_probability(age):
     """Calculate daily death probability based on age"""
     if age < 60:
         return 0
-    return ((age - 60) ** 2) /10000
+    return ((age - 60) ** 2) / 10000
+
 
 @shared_task
 def check_character_deaths():
@@ -26,6 +27,7 @@ def check_character_deaths():
             death_count += 1
 
     print(f"{death_count} people died of old age today.")
+
 
 # # @shared_task
 # def start_character_pregnancies():
@@ -52,6 +54,7 @@ def check_character_deaths():
 #                 partner1.start_pregnancy()
 #             else: partner2.start_pregnancy()
 
+
 @shared_task
 def check_character_pregnancies():
     today = timezone.now().date()
@@ -60,24 +63,23 @@ def check_character_pregnancies():
 
         if pregnancy_duration >= 260:
             # Pick a random day in following week for birth
-            birth_day = today + timezone.timedelta(days=random.randint(7,13))
+            birth_day = today + timezone.timedelta(days=random.randint(7, 13))
             # Pick a random time for birthday
             random_hour = random.randint(0, 23)
             random_minute = random.randint(0, 59)
             random_second = random.randint(0, 59)
             character.pregnancy_due_date = timezone.make_aware(
-                timezone.datetime.combine(birth_day, timezone.time(random_hour, random_minute, random_second))
+                timezone.datetime.combine(
+                    birth_day, timezone.time(random_hour, random_minute, random_second)
+                )
             )
             handle_birth.apply_async((character.id), eta=character.pregnancy_due_date)
         if random() < character.get_miscarriage_chance():
             character.handle_miscarriage()
+
 
 @shared_task
 def handle_birth(character_id):
     character = Character.objects.get(id=character_id)
     if character:
         character.handle_childbirth()
-    
-
-
-

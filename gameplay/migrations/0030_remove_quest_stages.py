@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0029_alter_quest_stages'),
+        ("gameplay", "0029_alter_quest_stages"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='quest',
-            name='stages',
+            model_name="quest",
+            name="stages",
         ),
     ]

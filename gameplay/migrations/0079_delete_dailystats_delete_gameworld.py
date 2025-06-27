@@ -6,14 +6,14 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0078_alter_activitytimer_status_alter_questtimer_status'),
+        ("gameplay", "0078_alter_activitytimer_status_alter_questtimer_status"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='DailyStats',
+            name="DailyStats",
         ),
         migrations.DeleteModel(
-            name='GameWorld',
+            name="GameWorld",
         ),
     ]

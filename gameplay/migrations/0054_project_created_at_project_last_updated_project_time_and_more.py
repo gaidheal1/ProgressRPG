@@ -7,33 +7,41 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0053_character_location_character_x_coordinate_and_more'),
+        ("gameplay", "0053_character_location_character_x_coordinate_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='created_at',
-            field=models.DateTimeField(default=datetime.datetime(2025, 2, 1, 14, 47, 37, 251685, tzinfo=datetime.timezone.utc)),
+            model_name="project",
+            name="created_at",
+            field=models.DateTimeField(
+                default=datetime.datetime(
+                    2025, 2, 1, 14, 47, 37, 251685, tzinfo=datetime.timezone.utc
+                )
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='last_updated',
-            field=models.DateTimeField(default=datetime.datetime(2025, 2, 1, 14, 47, 37, 251671, tzinfo=datetime.timezone.utc)),
+            model_name="project",
+            name="last_updated",
+            field=models.DateTimeField(
+                default=datetime.datetime(
+                    2025, 2, 1, 14, 47, 37, 251671, tzinfo=datetime.timezone.utc
+                )
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='time',
+            model_name="project",
+            name="time",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='project',
-            name='total_activities',
+            model_name="project",
+            name="total_activities",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='skill',
-            name='total_activities',
+            model_name="skill",
+            name="total_activities",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

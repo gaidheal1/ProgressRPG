@@ -6,18 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0087_alter_questcompletion_last_completed'),
+        ("gameplay", "0087_alter_questcompletion_last_completed"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='servermessage',
-            name='profile',
+            model_name="servermessage",
+            name="profile",
         ),
         migrations.AddField(
-            model_name='servermessage',
-            name='group',
-            field=models.CharField(default='', help_text='WebSocket group to send this message to.', max_length=50),
+            model_name="servermessage",
+            name="group",
+            field=models.CharField(
+                default="",
+                help_text="WebSocket group to send this message to.",
+                max_length=50,
+            ),
             preserve_default=False,
         ),
     ]

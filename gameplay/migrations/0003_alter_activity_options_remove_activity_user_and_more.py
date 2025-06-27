@@ -7,34 +7,52 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0002_initial'),
-        ('users', '0002_player'),
+        ("gameplay", "0002_initial"),
+        ("users", "0002_player"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='activity',
-            options={'ordering': ['-created_at']},
+            name="activity",
+            options={"ordering": ["-created_at"]},
         ),
         migrations.RemoveField(
-            model_name='activity',
-            name='user',
+            model_name="activity",
+            name="user",
         ),
         migrations.AddField(
-            model_name='activity',
-            name='player',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='activities', to='users.player'),
+            model_name="activity",
+            name="player",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="activities",
+                to="users.player",
+            ),
             preserve_default=False,
         ),
         migrations.CreateModel(
-            name='Skill',
+            name="Skill",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('time', models.PositiveIntegerField(default=0)),
-                ('xp', models.IntegerField(default=0)),
-                ('level', models.IntegerField(default=0)),
-                ('player', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='users.player')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("time", models.PositiveIntegerField(default=0)),
+                ("xp", models.IntegerField(default=0)),
+                ("level", models.IntegerField(default=0)),
+                (
+                    "player",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="users.player"
+                    ),
+                ),
             ],
         ),
     ]

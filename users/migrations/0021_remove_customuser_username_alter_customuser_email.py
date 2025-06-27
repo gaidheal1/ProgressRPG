@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0020_remove_profile_current_activity'),
+        ("users", "0020_remove_profile_current_activity"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='customuser',
-            name='username',
+            model_name="customuser",
+            name="username",
         ),
         migrations.AlterField(
-            model_name='customuser',
-            name='email',
+            model_name="customuser",
+            name="email",
             field=models.EmailField(max_length=254, unique=True),
         ),
     ]

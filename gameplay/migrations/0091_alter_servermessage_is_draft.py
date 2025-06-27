@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0090_alter_servermessage_data'),
+        ("gameplay", "0090_alter_servermessage_data"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='servermessage',
-            name='is_draft',
+            model_name="servermessage",
+            name="is_draft",
             field=models.BooleanField(default=True),
         ),
     ]

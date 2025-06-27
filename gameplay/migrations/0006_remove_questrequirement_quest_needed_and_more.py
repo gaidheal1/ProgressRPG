@@ -7,28 +7,37 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0005_quest_canrepeat_quest_levelmax_quest_levelmin_and_more'),
+        ("gameplay", "0005_quest_canrepeat_quest_levelmax_quest_levelmin_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='questrequirement',
-            name='quest_needed',
+            model_name="questrequirement",
+            name="quest_needed",
         ),
         migrations.AddField(
-            model_name='questrequirement',
-            name='prerequisite',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='required_for', to='gameplay.quest'),
+            model_name="questrequirement",
+            name="prerequisite",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="required_for",
+                to="gameplay.quest",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='questrequirement',
-            name='times_required',
+            model_name="questrequirement",
+            name="times_required",
             field=models.PositiveIntegerField(default=1),
         ),
         migrations.AlterField(
-            model_name='questrequirement',
-            name='quest',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='quest_requirements', to='gameplay.quest'),
+            model_name="questrequirement",
+            name="quest",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="quest_requirements",
+                to="gameplay.quest",
+            ),
         ),
     ]

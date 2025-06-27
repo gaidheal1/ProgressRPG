@@ -7,13 +7,13 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameworld', '0004_partnership'),
+        ("gameworld", "0004_partnership"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='characterprogression',
-            name='date_started',
+            model_name="characterprogression",
+            name="date_started",
             field=models.DateField(default=django.utils.timezone.now),
         ),
     ]

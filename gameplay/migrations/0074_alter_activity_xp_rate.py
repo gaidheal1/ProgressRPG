@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0072_remove_quest_default_duration_and_more'),
+        ("gameplay", "0072_remove_quest_default_duration_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='activity',
-            name='xp_rate',
+            model_name="activity",
+            name="xp_rate",
             field=models.IntegerField(default=1),
         ),
     ]

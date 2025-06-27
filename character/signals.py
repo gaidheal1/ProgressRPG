@@ -8,7 +8,6 @@ from .models import Character
 from gameplay.models import QuestTimer
 
 
-
 @receiver(post_save, sender=Character)
 def create_timer(sender, instance, created, **kwargs):
     """Create a quest timer for a new character"""

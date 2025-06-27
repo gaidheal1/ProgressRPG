@@ -7,10 +7,11 @@ from datetime import datetime, date
 import random, math
 import numpy as np
 
+
 # Don't think I actually need this after all!
 # I can use created_at fields which have time too
 class DailyStats(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True) #auto_now_add=True
+    created_at = models.DateTimeField(auto_now_add=True)  # auto_now_add=True
     newUsers = models.PositiveIntegerField(default=0)
     questsCompleted = models.PositiveIntegerField(default=0)
     activitiesCompleted = models.PositiveIntegerField(default=0)
@@ -22,6 +23,7 @@ class DailyStats(models.Model):
         return f"Daily Stats for {self.recordDate} \
             {self.newUsers} new users, "
 
+
 class GameWorld(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=100)
@@ -31,7 +33,7 @@ class GameWorld(models.Model):
     total_activity_num = models.PositiveIntegerField(default=0)
     total_activity_time = models.PositiveIntegerField(default=0)
     years_diff = models.IntegerField()
-    
+
     def convert_to_game_date(self, input_date):
         """Convert a date or datetime object to a chosen distance in the past."""
         if isinstance(input_date, datetime):
@@ -56,7 +58,7 @@ class GameWorld(models.Model):
             raise TypeError("Input must be a date or datetime object")
 
     def time_up(self):
-        return now()-self.created_at
+        return now() - self.created_at
 
     def update(self):
         profiles = Profile.objects.all()
@@ -87,14 +89,15 @@ class GameWorld(models.Model):
     def createDailyStats(self):
         ds = DailyStats.objects.create(
             name=f"DailyStats for world {self.name}",
-            
         )
 
     def __str__(self):
         return f"GameWorld {self.name}"
 
     def display(self):
-        return f"This game has been running for {self.time_up()} since {self.created_at}"
+        return (
+            f"This game has been running for {self.time_up()} since {self.created_at}"
+        )
 
 
 class Season(models.Model):
@@ -127,12 +130,13 @@ class Season(models.Model):
         }
         return SEASONAL_TEMPERATURE_RANGES[season_name]
 
+
 class WeatherType(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)
     min_temp_change = models.IntegerField()
     max_temp_change = models.IntegerField()
-    typical_duration = models.IntegerField(default=3) # default duration in days
+    typical_duration = models.IntegerField(default=3)  # default duration in days
     crop_growth_modifier = models.FloatField(default=1.0)
     travel_speed_modifier = models.FloatField(default=1.0)
     cleanliness_modifier = models.FloatField(default=1.0)
@@ -141,14 +145,19 @@ class WeatherType(models.Model):
         return self.name
 
 
-
 class WeatherEvent(models.Model):
     start = models.DateTimeField(null=True)
     end = models.DateTimeField(null=True)
-    weather_type = models.ForeignKey('WeatherType', on_delete=models.SET_NULL, null=True)
+    weather_type = models.ForeignKey(
+        "WeatherType", on_delete=models.SET_NULL, null=True
+    )
     base_temperature = models.IntegerField()
-    location = models.ForeignKey("locations.Location", on_delete=models.CASCADE, null=True, blank=True)
-    season = models.ForeignKey('Season', on_delete=models.CASCADE, null=True, blank=True)
+    location = models.ForeignKey(
+        "locations.Location", on_delete=models.CASCADE, null=True, blank=True
+    )
+    season = models.ForeignKey(
+        "Season", on_delete=models.CASCADE, null=True, blank=True
+    )
 
     def generate_hourly_temperatures(self, start_temperature=None):
         num_hours = int((self.end - self.start).total_seconds() // 3600)
@@ -166,7 +175,9 @@ class WeatherEvent(models.Model):
             if start_temperature is not None and hour == 0:
                 daily_temp_profile = start_temperature
             else:
-                daily_temp_profile = temperature_gradient[hour] + 5 * math.sin((hour_of_day - 6) * math.pi / 12)
+                daily_temp_profile = temperature_gradient[hour] + 5 * math.sin(
+                    (hour_of_day - 6) * math.pi / 12
+                )
 
             # Apply random variations
             random_variation = random.uniform(-1, 1)
@@ -182,12 +193,14 @@ class WeatherEvent(models.Model):
         return f"WeatherEvent. Starts {self.start}, ends {self.end}. Type: {self.weather_type.name}. Base temp: {self.base_temperature}"
 
 
-
-
 class Weather(models.Model):
     date = models.DateTimeField()
-    season = models.ForeignKey('Season', on_delete=models.CASCADE, null=True, blank=True)
-    weather_event = models.ForeignKey('WeatherEvent', on_delete=models.CASCADE, null=True, blank=True)
+    season = models.ForeignKey(
+        "Season", on_delete=models.CASCADE, null=True, blank=True
+    )
+    weather_event = models.ForeignKey(
+        "WeatherEvent", on_delete=models.CASCADE, null=True, blank=True
+    )
     temperature = models.IntegerField()
     crop_growth_modifier = models.FloatField(default=1.0)
     travel_speed_modifier = models.FloatField(default=1.0)
@@ -220,12 +233,18 @@ class Weather(models.Model):
             for s in Season.objects.all():
                 print(f"{s.name}, {s.start_date.year}")
             print(f"Current game date: {current_game_date.date()}")
-            current_season = Season.objects.filter(start_date__lte=current_game_date.date()).first()
+            current_season = Season.objects.filter(
+                start_date__lte=current_game_date.date()
+            ).first()
             print(f"Current season: {current_season.name}")
-            existing_event = WeatherEvent.objects.filter(start__lte=current_game_date.date(), end__gte=current_game_date.date()).first()
+            existing_event = WeatherEvent.objects.filter(
+                start__lte=current_game_date.date(), end__gte=current_game_date.date()
+            ).first()
 
             if not existing_event:
-                min_temp, max_temp = current_season.get_seasonal_temperature_range(current_season.name)
+                min_temp, max_temp = current_season.get_seasonal_temperature_range(
+                    current_season.name
+                )
                 base_temp = random.randint(min_temp, max_temp)
                 weather_type = random.choice(WeatherType.objects.all())
                 duration = random.randint(2, weather_type.typical_duration + 2)
@@ -243,7 +262,9 @@ class Weather(models.Model):
                 event = existing_event
 
             print("Event testing:", event)
-            hourly_temperatures = event.generate_hourly_temperatures(start_temperature=last_temperature)
+            hourly_temperatures = event.generate_hourly_temperatures(
+                start_temperature=last_temperature
+            )
 
             for hour_offset in range(len(hourly_temperatures)):
                 hour_timestamp = event.start + timedelta(hours=hour_offset)
@@ -256,7 +277,7 @@ class Weather(models.Model):
                     date=hour_timestamp,
                     season=cls.get_season_for_date(hour_timestamp),
                     weather_event=event,
-                    temperature=last_temperature
+                    temperature=last_temperature,
                 )
 
             current_date = event.end + timedelta(days=1)  # Move past this event
@@ -267,9 +288,10 @@ class Weather(models.Model):
         """Retrieve the weather forecast for the next X days"""
         today = now()
         game_today = gw.convert_to_game_date(today)
-        return cls.objects.filter(date__gte=game_today, date__lte=game_today + timedelta(days=days_ahead))
+        return cls.objects.filter(
+            date__gte=game_today, date__lte=game_today + timedelta(days=days_ahead)
+        )
 
-    
     @classmethod
     def get_season_for_dote(cls, date):
         month = date.month
@@ -284,7 +306,9 @@ class Weather(models.Model):
 
     def get_temperature(self):
         min_temp, max_temp = self.BASE_TEMPERATURES[self.season]
-        temperature_change = random.randint(self.weather_type.min_temp_change, self.weather_type.max_temp_change)
+        temperature_change = random.randint(
+            self.weather_type.min_temp_change, self.weather_type.max_temp_change
+        )
         new_temp = random.randint(min_temp, max_temp) + temperature_change
         return new_temp
 
@@ -295,11 +319,13 @@ class Weather(models.Model):
         end_of_day = start_of_day + timedelta(days=1)
 
         print(f"Start of day: {start_of_day}, End of day: {end_of_day}")
-    
-        # Query the Weather model for temperatures within the specified date range
-        weather_entries = cls.objects.filter(date__gte=start_of_day, date__lt=end_of_day).order_by('date')
 
-        #for w in weather_entries:
+        # Query the Weather model for temperatures within the specified date range
+        weather_entries = cls.objects.filter(
+            date__gte=start_of_day, date__lt=end_of_day
+        ).order_by("date")
+
+        # for w in weather_entries:
         #    print(w.display())
 
         # Extract the temperatures into a list
@@ -328,18 +354,6 @@ class Weather(models.Model):
         super().save(*args, **kwargs)
 
     def display(self):
-        return f"Weather. Date: {self.date}, season {self.season}, temp {self.temperature}"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return (
+            f"Weather. Date: {self.date}, season {self.season}, temp {self.temperature}"
+        )

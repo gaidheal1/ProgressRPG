@@ -6,20 +6,20 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0065_remove_quest_duration'),
+        ("gameplay", "0065_remove_quest_duration"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='character',
-            name='location',
+            model_name="character",
+            name="location",
         ),
         migrations.RemoveField(
-            model_name='character',
-            name='x_coordinate',
+            model_name="character",
+            name="x_coordinate",
         ),
         migrations.RemoveField(
-            model_name='character',
-            name='y_coordinate',
+            model_name="character",
+            name="y_coordinate",
         ),
     ]

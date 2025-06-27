@@ -7,9 +7,10 @@ logger = logging.getLogger("django")
 
 User = get_user_model()
 
+
 class EmailBackend:
     def authenticate(self, request, username=None, password=None, **kwargs):
-        email = username or kwargs.get('email')
+        email = username or kwargs.get("email")
         if not email or not password:
             logger.debug("Email or password not provided, returning None")
             return None
@@ -33,7 +34,7 @@ class EmailBackend:
         else:
             logger.debug(f"Incorrect password for user: {user}")
             return None
-    
+
     def get_user(self, user_id):
         try:
             return User.objects.get(pk=user_id)

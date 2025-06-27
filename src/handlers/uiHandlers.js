@@ -4,7 +4,7 @@ import { fetchInfo } from '../api/userApi.js';
 
 export function updateUI() {
   console.log("Updating UI");
-  
+
   // Update timer displays
   document.getElementById("activity-timer").textContent = window.activityTimer.elapsedTime;
   window.activityTimer.updateDisplay();

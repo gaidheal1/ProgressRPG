@@ -25,7 +25,7 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     opacity: 0;
     transform: translateY(-10px);
-    animation: fadeInUp 0.3s ease forwards, fadeOut 0.3s ease 3s forwards;    
+    animation: fadeInUp 0.3s ease forwards, fadeOut 0.3s ease 3s forwards;
 }
 
 @keyframes fadeInUp {
@@ -41,4 +41,3 @@
         transform: translateY(-10px);
     }
 }
-

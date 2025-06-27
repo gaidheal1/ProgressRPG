@@ -6,16 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0026_rename_stage_num_queststage_order_and_more'),
+        ("gameplay", "0026_rename_stage_num_queststage_order_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='quest',
-            name='stages',
-            field=models.JSONField(default={'duration': 0, 'stage_id': 1, 'text': 'Default stage text'}),
+            model_name="quest",
+            name="stages",
+            field=models.JSONField(
+                default={"duration": 0, "stage_id": 1, "text": "Default stage text"}
+            ),
         ),
         migrations.DeleteModel(
-            name='QuestStage',
+            name="QuestStage",
         ),
     ]

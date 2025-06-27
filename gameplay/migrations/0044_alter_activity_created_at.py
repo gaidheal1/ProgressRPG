@@ -7,13 +7,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0043_alter_activity_created_at_and_more'),
+        ("gameplay", "0043_alter_activity_created_at_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='activity',
-            name='created_at',
-            field=models.DateTimeField(default=datetime.datetime(2025, 1, 1, 22, 47, 47, 119505, tzinfo=datetime.timezone.utc)),
+            model_name="activity",
+            name="created_at",
+            field=models.DateTimeField(
+                default=datetime.datetime(
+                    2025, 1, 1, 22, 47, 47, 119505, tzinfo=datetime.timezone.utc
+                )
+            ),
         ),
     ]

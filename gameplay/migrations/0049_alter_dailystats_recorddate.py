@@ -7,13 +7,13 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0048_alter_dailystats_created_at'),
+        ("gameplay", "0048_alter_dailystats_created_at"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dailystats',
-            name='recordDate',
+            model_name="dailystats",
+            name="recordDate",
             field=models.DateField(default=django.utils.timezone.now),
         ),
     ]
