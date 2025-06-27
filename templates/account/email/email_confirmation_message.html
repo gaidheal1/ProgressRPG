@@ -1,0 +1,10 @@
+{% load i18n %}
+<p>{% blocktrans %}Please confirm your email address by clicking the link below:{% endblocktrans %}</p>
+
+<p>
+  <a href="{{ protocol }}://{{ domain }}/api/v1/auth/confirm-email/{{ key }}/">
+    {{ protocol }}://{{ domain }}/api/v1/auth/confirm-email/{{ key }}/
+  </a>
+</p>
+
+<p>{% blocktrans %}If you didn't request this, please ignore this email.{% endblocktrans %}</p>
