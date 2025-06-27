@@ -32,8 +32,8 @@ router.register(r'profile', ProfileViewSet, basename='profile')
 router.register(r'character', CharacterViewSet, basename='character')
 router.register(r'activities', ActivityViewSet, basename='activity')
 router.register(r'quests', QuestViewSet, basename='quest')
-router.register(r'activitytimers', ActivityTimerViewSet, basename='activitytimer')
-router.register(r'questtimers', QuestTimerViewSet, basename='questtimer')
+router.register(r'activity_timers', ActivityTimerViewSet, basename='activitytimer')
+router.register(r'quest_timers', QuestTimerViewSet, basename='questtimer')
 router.register(r'onboarding', OnboardingViewSet, basename='onboarding')
 
 
@@ -46,15 +46,11 @@ urlpatterns = [
     path('auth/', include('users.urls')),
 
     path('auth/jwt/create/', CustomTokenObtainPairView.as_view(), name='jwt_create'),
-    #path('auth/jwt/create/', TokenObtainPairView.as_view(), name='jwt_create'),
     path('auth/jwt/refresh/', TokenRefreshView.as_view(), name='jwt_refresh'),
     path('auth/jwt/verify/', TokenVerifyView.as_view(), name='jwt_verify'),
-    
-    #path('auth/registration/', include('dj_rest_auth.registration.urls')),
     path('auth/registration/', CustomRegisterView.as_view(), name='custom_register'),
     path('download_user_data/', DownloadUserDataAPIView.as_view(), name='api_download_user_data'),
     path('delete_account/', DeleteAccountAPIView.as_view(), name='api_delete_account'),
 
     path('auth/test_post/', test_post_view, name='test_post'),
-
 ]
