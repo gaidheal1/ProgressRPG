@@ -2,21 +2,22 @@
 from asgiref.sync import async_to_sync
 from datetime import datetime
 from django.conf import settings
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, get_user_model
 from django.core.mail import send_mail
 from django.db import DatabaseError, transaction
-from django.contrib.auth import get_user_model
-from django.http import Http404, JsonResponse, HttpResponseRedirect
+from django.http import Http404 #, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import escape
+from django.views.decorators.csrf import csrf_exempt
 from django_ratelimit.decorators import ratelimit
 
 from allauth.account import app_settings as allauth_settings
 from allauth.account.models import EmailConfirmationHMAC
 from allauth.account.utils import complete_signup
 from dj_rest_auth.registration.views import RegisterView
+
 from rest_framework import viewsets, permissions, serializers, status, mixins
 from rest_framework.decorators import api_view, permission_classes, action, authentication_classes
 from rest_framework.exceptions import ValidationError
@@ -24,11 +25,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
-import logging
+#from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.serializers import (
     ProfileSerializer, 
@@ -38,9 +37,8 @@ from api.serializers import (
     ActivityTimerSerializer, 
     QuestTimerSerializer,
     Step1Serializer,
-    Step2Serializer,
-    Step3Serializer,
-
+    #Step2Serializer,
+    #Step3Serializer,
     CustomTokenObtainPairSerializer,
 )
 
@@ -49,6 +47,7 @@ from gameplay.models import Activity, Quest, ActivityTimer, QuestTimer, ServerMe
 from gameplay.utils import check_quest_eligibility, send_group_message
 from users.models import Profile
 
+import logging
 logger = logging.getLogger("django")
 
 
@@ -81,13 +80,9 @@ def test_post_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me_view(request):
-    User = get_user_model()
-    user = request.user
-    return Response({
-        'id': user.id,
-        'email': user.email,
-        # Add more fields or use a serializer if needed
-    })
+    profile = request.user.profile
+    serializer = ProfileSerializer(profile)
+    return Response(serializer.data)
 
 
 
@@ -109,7 +104,7 @@ class CustomRegisterView(RegisterView):
 
     def get_response_data(self, user):
         # Override to avoid Token and return JWT tokens instead
-        from rest_framework_simplejwt.tokens import RefreshToken
+        
         refresh = RefreshToken.for_user(user)
         return {
             'refresh': str(refresh),
@@ -127,25 +122,31 @@ def confirm_email_and_redirect(request, key):
         confirmation.confirm(request)
         user = confirmation.email_address.user
 
-        # Log in the user
-        login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
+        # Create JWT tokens
+        refresh = RefreshToken.for_user(user)
+        access = str(refresh.access_token)
 
-        return redirect('create_profile')
+        return Response({
+            "message": "Email confirmed",
+            "access": access,
+            "refresh": str(refresh),
+        }, status=status.HTTP_200_OK)
 
     except Exception:
         raise Http404("Invalid confirmation link")
 
 
 
-class ProfileViewSet(viewsets.GenericViewSet,
-                        mixins.RetrieveModelMixin,
-                        mixins.UpdateModelMixin):
-    permission_classes = [IsAuthenticated]
+class ProfileViewSet(mixins.RetrieveModelMixin,
+                     mixins.UpdateModelMixin,
+                     viewsets.GenericViewSet):
+    queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    
-    def get_object(self):
-        return self.request.user.profile
+    permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        # Restrict access to only the logged-in user's profile
+        return Profile.objects.filter(user=self.request.user)
 
 
 class OnboardingViewSet(viewsets.ViewSet):
@@ -238,28 +239,28 @@ class FetchInfoAPIView(APIView):
 
 
 
-
 class CharacterViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Returns the Character linked to the authenticated user's profile.
+    Viewset for listing and retrieving characters.
+    Characters can be browsed by authenticated users — for example,
+    to view their history or find nearby players.
+
+    Modifications to characters should happen only via gameplay endpoints
+    (e.g. quest completion, XP gain), not through direct update.
     """
     serializer_class = CharacterSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+    queryset = Character.objects.all()
 
     def get_queryset(self):
-        profile = self.request.user.profile
-        try:
-            character = PlayerCharacterLink.get_character(profile)
-        except ValueError:
-            return Character.objects.none()  # or raise a 404 instead
-        return Character.objects.filter(id=character.id)
+        queryset = super().get_queryset()
+        user = self.request.user
 
-    def get_object(self):
-        # Avoid requiring a pk in the URL by returning the single object
-        queryset = self.get_queryset()
-        return queryset.first()
+        # Example: later you might filter by proximity or visibility
+        # location = user.profile.location
+        # queryset = queryset.filter(location__near=location)
 
-
+        return queryset
 
 
 
