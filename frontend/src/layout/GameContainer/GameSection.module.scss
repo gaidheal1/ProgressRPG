@@ -1,0 +1,25 @@
+@use '../two-columns' as tc;
+@use '../../styles/base/variables' as v;
+
+.gameSection {
+  //outline: 2px dashed blue;
+  @include tc.section-box;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: v.$spacing-sm;
+}
+
+.sectionStatus {
+  display: flex;
+  gap: v.$spacing-gap;
+}
+
+.sectionStatusHeader,
+.sectionStatusMessage {
+  font-size: v.$font-size-lg;
+  font-weight: v.$font-weight-base;
+}

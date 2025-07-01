@@ -1,0 +1,30 @@
+@use '../../../styles/base/variables' as v;
+
+.container {
+  padding: v.$padding-base;
+  gap: v.$spacing-gap;
+  align-self: stretch;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: v.$font-size-lg;
+  color: v.$color-text-primary;
+  margin-bottom: v.$spacing-sm;
+}
+
+.listWrapper {
+  background: v.$color-light;
+  border-radius: v.$border-radius;
+  padding: v.$padding-base;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  width: 100%;
+}
+
+.noProgress {
+  font-style: italic;
+  color: #777;
+  padding: v.$padding-base;
+}

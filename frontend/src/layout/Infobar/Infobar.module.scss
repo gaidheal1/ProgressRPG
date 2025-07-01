@@ -1,0 +1,7 @@
+@use '../two-columns' as tc;
+@use '../../styles/base/variables' as v;
+
+.infoBar {
+	border-radius: 0 0 v.$spacing-sm v.$spacing-sm;
+	@include tc.two-column-layout;
+}

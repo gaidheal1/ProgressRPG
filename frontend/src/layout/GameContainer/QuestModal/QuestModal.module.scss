@@ -1,0 +1,116 @@
+@use '../../../styles/base/variables' as v;
+
+/* Modal Background */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+
+    .modalContent {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: v.$color-light;
+        border-radius: v.$border-radius;
+        overflow: hidden;
+        display: flex;
+        flex-direction: row;
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.3);
+        width: 70vw;
+        height: 70vh;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+            width: 90vw;
+            height: 90vh;
+            min-width: 320px;
+        }
+    }
+}
+
+/* Close Button */
+.close-btn {
+    position: absolute;
+    top: v.$spacing-sm;
+    right: v.$spacing-sm;
+    font-size: v.$font-size-base;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Panes */
+.quest-pane,
+.details-pane {
+    flex: 1;
+    padding: v.$padding-base;
+    overflow-y: auto;
+}
+
+.quest-pane {
+    border-right: 1px solid #ddd;
+}
+
+/* Tabs */
+.quest-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$spacing-gap;
+    justify-content: center;
+    margin-bottom: v.$spacing-sm;
+}
+
+.tab {
+    padding: v.$padding-base;
+    border: 1px solid #ddd;
+    background: v.$color-light;
+    cursor: pointer;
+}
+
+.tab:hover {
+    background: #eee;
+}
+
+.tab.selected {
+    background: #ddd;
+    font-weight: bold;
+}
+
+/* Quest List */
+.quest-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+        padding: v.$padding-vertical;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+
+        &:hover {
+            background: #eee;
+        }
+
+        &.selected {
+            background: #ddd;
+        }
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+
+    .quest-pane {
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .quest-tabs {
+        gap: v.$spacing-gap;
+    }
+}
