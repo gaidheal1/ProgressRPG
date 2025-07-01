@@ -1,0 +1,86 @@
+@use '../../styles/utilities/mixins' as m;
+@use '../../styles/base/variables' as v;
+
+.gamePage {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	align-self: stretch;
+	gap: v.$spacing-gap;
+	width: 100%;
+	margin: 0 auto;
+
+	@include m.respond-to (small) {
+		max-width: 576px;
+	}
+
+	@include m.respond-to (big) {
+		max-width: 1400px;
+	}
+}
+
+
+.current-item {
+	order: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	gap: v.$spacing-gap;
+}
+
+#quest-list {
+	list-style-type:none;
+	padding: 0;
+	margin: 0;
+}
+
+#current-quest-section {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: v.$spacing-gap;
+	text-align: left;
+	width: 100%;
+  }
+
+  .quest-label {
+	font-size: v.$font-size-base;
+	font-weight: v.$font-weight-base;
+	margin: 0;
+  }
+
+  .quest-text {
+	font-size: v.$font-size-sm;
+	line-height: v.$line-height-base;
+	margin: 0;
+  }
+
+  #quest-stages {
+	display: flex;
+	flex-direction: column;
+	gap: v.$spacing-gap;
+	text-align: left;
+	width: 100%;
+	margin-top: v.$spacing-md;
+  }
+
+  .quest-stage-list {
+	list-style-type: disc;
+	padding-left: v.$spacing-md;
+	margin: 0;
+  }
+
+  .quest-stage {
+	font-size: v.$font-size-sm;
+	line-height: v.$line-height-base;
+
+	&.previous {
+	  color: #888;
+	}
+
+	&.current {
+	  font-weight: 500;
+	}
+  }
