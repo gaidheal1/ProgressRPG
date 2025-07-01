@@ -18,6 +18,7 @@ django.setup()
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from gameplay.routing import websocket_urlpatterns
+from django_channels_jwt.middleware import JwtAuthMiddlewareStack
 
 os.environ.setdefault(
     "DJANGO_SETTINGS_MODULE",
@@ -33,7 +34,7 @@ from django.core.asgi import get_asgi_application
 application = ProtocolTypeRouter(
     {
         "http": get_asgi_application(),  # Regular HTTP requests
-        "websocket": AuthMiddlewareStack(
+        "websocket": JwtAuthMiddlewareStack(
             URLRouter(websocket_urlpatterns),
         ),
     }

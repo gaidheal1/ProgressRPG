@@ -117,6 +117,17 @@ print("ALLOWED HOSTS:", ALLOWED_HOSTS)
 print("CORS:", CORS_ALLOWED_ORIGINS)
 
 
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEBUG,  # True in dev, False in prod
+        "dev_server_port": 5173,
+        "dev_server_host": "localhost",
+        "static_url_prefix": "static/",
+        "manifest_path": BASE_DIR / "frontend" / "dist" / "manifest.json",
+    }
+}
+
+
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 

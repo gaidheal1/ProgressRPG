@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "django_extensions",
     "channels",
-    #'django-vite',
+    "django_vite",
     "users",
     "gameplay",
     "character",
@@ -186,7 +186,8 @@ USE_TZ = True
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-STATICFILES_DIRS = [Path(BASE_DIR / "static")]
+# STATICFILES_DIRS = [Path(BASE_DIR / "static")] # Django static files
+STATICFILES_DIRS = [Path(BASE_DIR / "frontend" / "dist")]  # React static files
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
