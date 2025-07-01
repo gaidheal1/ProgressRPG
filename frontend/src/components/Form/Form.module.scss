@@ -1,0 +1,37 @@
+@use '../../styles/base/variables' as v;
+@use '../../styles/utilities/mixins' as m;
+@use 'sass:color';
+
+.formFrame {
+  max-width: 26rem;
+  margin: 0 auto;
+  padding: v.$spacing-lg;
+  border-radius: v.$border-radius;
+  background: #fff;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+
+  @include m.respond-to(sm) {
+    padding: 1.25rem;
+  }
+}
+
+.formTitle {
+
+  margin-bottom: v.$spacing-lg;
+  text-align: center;
+  color: v.$color-text-primary;
+  @include m.apply-text-style(v.$text-heading-2);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 17rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-top: v.$spacing-md;
+}
