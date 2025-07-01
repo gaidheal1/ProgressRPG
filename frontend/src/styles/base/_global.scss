@@ -1,0 +1,42 @@
+@use './variables' as *;
+@use '../utilities/mixins' as m;
+
+a {
+  text-decoration: none;
+  color: $color-primary;
+
+  &:hover {
+    color: $color-secondary;
+  }
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: $color-light;
+  font-family: $font-stack;
+  font-size: $font-size-base;
+  color: $color-text-primary;
+  line-height: 1.5;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 260px;
+
+  @include m.respond-to(small) {
+    max-width: 576px;
+  }
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: 100%;
+}
