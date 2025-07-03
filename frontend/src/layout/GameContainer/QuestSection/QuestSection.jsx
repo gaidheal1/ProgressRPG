@@ -4,39 +4,44 @@ import GameSection from '../GameSection';
 import CurrentQuestDisplay from './CurrentQuestDisplay';
 import QuestRewards from './QuestRewards';
 import QuestStagesList from './QuestStagesList';
-import { useTimer } from '../../../context/TimerContext';
+import { useGame } from '../../../context/GameContext';
 import Button from '../../../components/Button/Button';
+import ButtonFrame from '../../../components/Button/ButtonFrame';
 
 export default function QuestSection() {
-  const { questTimer } = useTimer();
+  const { questTimer, completeQuest } = useGame();
+  const { status, assignSubject } = questTimer;
   const quest = questTimer.subject;
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    if (questTimer.isComplete && questTimer.status === 'active') {
-      onCompleteQuest();
+    if (questTimer.isComplete && status === 'active') {
+      completeQuest();
     }
-  }, [questTimer.isComplete, questTimer.status]);
+  }, [questTimer.isComplete, status]);
 
   return (
     <GameSection type="Quest">
       <CurrentQuestDisplay quest={quest} />
       <QuestStagesList stages={[]} />
       <QuestRewards rewards={{ xp: 0, coins: 0 }}/>
-      <div className="button-frame">
+      <ButtonFrame>
         <Button
-          className="button-filled" id="show-quests-btn"
-          onClick={() => setModalOpen(true)}
+          className="primary"
+          onClick={() => {
+            console.log('Show quests button clicked');
+            setModalOpen(true);
+          }}
         >
           Show quests
         </Button>
-      </div>
+      </ButtonFrame>
       {modalOpen && (
         <QuestModal
           onClose={() => setModalOpen(false)}
-          onSelectQuest={(quest, duration) => {
-            timer.assignSubject(quest, duration * 60);
-            timer.start?.();
+          onChooseQuest={(quest, duration) => {
+            console.log('Quest selected:', quest.name, duration);
+            assignSubject(quest, duration);
             setModalOpen(false);
           }}
         />
