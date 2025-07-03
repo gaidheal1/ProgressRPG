@@ -4,16 +4,8 @@ import Button from "../Button/Button";
 import ButtonFrame from "../Button/ButtonFrame";
 import Input from "../Input/Input";
 import useCombinedTimers from "../../hooks/useCombinedTimers";
-
-function formatTime(seconds) {
-  const hrs = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-  if (hrs > 0) {
-    return `${hrs}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  }
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
-}
+import { formatDuration } from "../../../utils/formatUtils.js";
+import sharedStyles from "./Timer.module.scss";
 
 export function ActivityTimer() {
   const [activityText, setActivityText] = useState('');
@@ -27,7 +19,10 @@ export function ActivityTimer() {
     elapsedTime,
     assignSubject,
   } = activityTimer;
+  const displayTime = formatDuration(elapsedTime);
+
   const { submitActivity } = useCombinedTimers(activityTimer, questTimer);
+
   return (
     <div className="timer activity-timer">
       <Input
@@ -38,7 +33,9 @@ export function ActivityTimer() {
         placeholder="Enter activity"
       />
 
-      <div className="timer-display">{formatTime(elapsedTime)}</div>
+      <div className={sharedStyles.timerFrame>
+        <div className={sharedStyles.timerText>{displayTime}</div>
+      </div>
       <div className="timer-status">{status}</div>
       <ButtonFrame>
         <Button
@@ -47,10 +44,6 @@ export function ActivityTimer() {
         >
           Start Activity
         </Button>
-
-        {/* <Button onClick={pause} disabled={status !== "active"}>
-          Pause
-        </Button> */}
 
         {/* If you want to submit or complete the activity */}
         <Button

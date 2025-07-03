@@ -1,33 +1,28 @@
-import React from "react";
-import { useGame } from "../../context/GameContext";
-import Button from "../Button/Button";
-import { useCombinedTimers } from "../../hooks/useCombinedTimers.js";
+import React from 'react';
+import { useGame } from '../../context/GameContext';
+import styles from './QuestTimer.module.scss';
+import sharedStyles from './Timer.module.scss';
+import { formatDuration } from '../../../utils/formatUtils.js';
 
-function formatTime(seconds) {
-  const hrs = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-  if (hrs > 0) {
-    return `${hrs}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  }
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
-}
-
-export function QuestTimer() {
+export default function QuestTimer() {
   const { questTimer } = useGame();
-  const {
-    status,
-    elapsedTime,
-    remainingTime,
-    duration,
-  } = questTimer;
-
-  const { completeQuest } = useCombinedTimers();
+  const { subject: quest, status, remainingTime } = questTimer;
+  const displayTime = formatDuration(remainingTime);
+  const { title = 'None', intro = 'No active quest yet...', outro = '' } = quest || {};
 
   return (
-    <div className="timer quest-timer">
-      <div className="timer-display">{formatTime(remainingTime)}</div>
-      <div className="timer-status">{status}</div>
+    <div className={styles.timer}>
+      <p className={`${styles.questText} ${styles.questLabel}`}>
+        <strong>Current quest:</strong>{' '}
+        <span className={styles.currentQuestTitle}>{title}</span>
+      </p>
+      <p className={styles.questText}>{intro}</p>
+      <p className={styles.questText}>{outro}</p>
+
+      <div className={sharedStyles.timerFrame}>
+        <div className={sharedStyles.timerText}>{displayTime}</div>
+        <div className={styles.timerStatus}>Status: {status}</div>
+      </div>
     </div>
   );
 }
