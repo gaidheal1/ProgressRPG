@@ -20,7 +20,7 @@
 
 .leftLinks,
 .rightLinks {
-  display: flex;
+  display: none;
   flex-direction: row;
   align-items: center;
   align-self: stretch;
@@ -52,7 +52,7 @@
 //}
 
 .icons {
-  display: none; // Hidden by default for larger screens
+  display: flex; // Hidden by default for larger screens
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
@@ -77,17 +77,6 @@
 }
 
 @include m.respond-to(sm) {
-  .icons {
-    display: flex;
-  }
-
-  .leftLinks,
-  .rightLinks {
-    display: none;
-  }
-}
-
-@include m.respond-to(lg) {
   .leftLinks,
   .rightLinks {
     display: flex;
