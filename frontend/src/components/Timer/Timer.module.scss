@@ -23,19 +23,3 @@
 
 	color: v.$color-dark;
 }
-
-
-
-.button-frame {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: v.$spacing-sm;
-  width: 100%;
-  flex-grow: 0;
-
-  @include respond-to(small) {
-    flex-direction: column;
-    align-items: stretch; // buttons fill width on small screens
-  }
-}
