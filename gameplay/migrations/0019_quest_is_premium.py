@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0018_questcompletion_last_completed_and_more'),
+        ("gameplay", "0018_questcompletion_last_completed_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='quest',
-            name='is_premium',
+            model_name="quest",
+            name="is_premium",
             field=models.BooleanField(default=True),
         ),
     ]

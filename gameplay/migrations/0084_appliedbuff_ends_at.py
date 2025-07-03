@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0083_alter_servermessage_type'),
+        ("gameplay", "0083_alter_servermessage_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='appliedbuff',
-            name='ends_at',
+            model_name="appliedbuff",
+            name="ends_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

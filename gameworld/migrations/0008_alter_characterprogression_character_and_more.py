@@ -7,34 +7,52 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('character', '0002_migrate_character_data'),
-        ('gameworld', '0007_delete_location'),
+        ("character", "0002_migrate_character_data"),
+        ("gameworld", "0007_delete_location"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='characterprogression',
-            name='character',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='character.character'),
+            model_name="characterprogression",
+            name="character",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE, to="character.character"
+            ),
         ),
         migrations.AlterField(
-            model_name='characterrelationship',
-            name='character1',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='relationship_as_char1', to='character.character'),
+            model_name="characterrelationship",
+            name="character1",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="relationship_as_char1",
+                to="character.character",
+            ),
         ),
         migrations.AlterField(
-            model_name='characterrelationship',
-            name='character2',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='relationship_as_char2', to='character.character'),
+            model_name="characterrelationship",
+            name="character2",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="relationship_as_char2",
+                to="character.character",
+            ),
         ),
         migrations.AlterField(
-            model_name='partnership',
-            name='partner1',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='partner1_relationships', to='character.character'),
+            model_name="partnership",
+            name="partner1",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="partner1_relationships",
+                to="character.character",
+            ),
         ),
         migrations.AlterField(
-            model_name='partnership',
-            name='partner2',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='partner2_relationships', to='character.character'),
+            model_name="partnership",
+            name="partner2",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="partner2_relationships",
+                to="character.character",
+            ),
         ),
     ]

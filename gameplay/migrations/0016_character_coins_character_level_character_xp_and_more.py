@@ -6,28 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0015_alter_character_profile'),
+        ("gameplay", "0015_alter_character_profile"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='character',
-            name='coins',
+            model_name="character",
+            name="coins",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='character',
-            name='level',
+            model_name="character",
+            name="level",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='character',
-            name='xp',
+            model_name="character",
+            name="xp",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AlterField(
-            model_name='character',
-            name='name',
+            model_name="character",
+            name="name",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
     ]

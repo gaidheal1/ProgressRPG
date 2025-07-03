@@ -6,14 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0032_buff_rename_rewards_questresults_dynamic_rewards_and_more'),
-        ('users', '0013_profile_login_streak_max'),
+        ("gameplay", "0032_buff_rename_rewards_questresults_dynamic_rewards_and_more"),
+        ("users", "0013_profile_login_streak_max"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='buffs',
-            field=models.ManyToManyField(blank=True, related_name='profiles', to='gameplay.buff'),
+            model_name="profile",
+            name="buffs",
+            field=models.ManyToManyField(
+                blank=True, related_name="profiles", to="gameplay.buff"
+            ),
         ),
     ]

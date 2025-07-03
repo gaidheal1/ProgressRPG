@@ -7,18 +7,18 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('character', '0003_characterrelationship_characterrole_and_more'),
+        ("character", "0003_characterrelationship_characterrole_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='characterrelationship',
-            name='created_at',
+            model_name="characterrelationship",
+            name="created_at",
             field=models.DateTimeField(default=django.utils.timezone.now),
         ),
         migrations.AddField(
-            model_name='characterrelationship',
-            name='last_updated',
+            model_name="characterrelationship",
+            name="last_updated",
             field=models.DateTimeField(default=django.utils.timezone.now),
         ),
     ]

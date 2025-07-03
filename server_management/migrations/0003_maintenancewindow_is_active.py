@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('server_management', '0002_maintenancewindow_tasks_scheduled'),
+        ("server_management", "0002_maintenancewindow_tasks_scheduled"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='maintenancewindow',
-            name='is_active',
+            model_name="maintenancewindow",
+            name="is_active",
             field=models.BooleanField(default=False),
         ),
     ]

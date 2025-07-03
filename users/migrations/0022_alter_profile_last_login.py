@@ -7,13 +7,13 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0021_remove_customuser_username_alter_customuser_email'),
+        ("users", "0021_remove_customuser_username_alter_customuser_email"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='profile',
-            name='last_login',
+            model_name="profile",
+            name="last_login",
             field=models.DateTimeField(default=django.utils.timezone.now),
         ),
     ]

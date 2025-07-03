@@ -7,20 +7,35 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0023_customuser_delete_at_customuser_pending_delete'),
-        ('gameplay', '0080_alter_questrequirement_unique_together'),
+        ("users", "0023_customuser_delete_at_customuser_pending_delete"),
+        ("gameplay", "0080_alter_questrequirement_unique_together"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PendingNotification',
+            name="PendingNotification",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('notification_type', models.CharField(max_length=50)),
-                ('data', models.JSONField()),
-                ('delivered', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pending_notifications', to='users.profile')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("notification_type", models.CharField(max_length=50)),
+                ("data", models.JSONField()),
+                ("delivered", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "profile",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="pending_notifications",
+                        to="users.profile",
+                    ),
+                ),
             ],
         ),
     ]

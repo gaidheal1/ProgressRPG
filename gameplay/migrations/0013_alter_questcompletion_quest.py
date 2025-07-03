@@ -7,13 +7,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0012_alter_character_name'),
+        ("gameplay", "0012_alter_character_name"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='questcompletion',
-            name='quest',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='quest_completions', to='gameplay.quest'),
+            model_name="questcompletion",
+            name="quest",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="quest_completions",
+                to="gameplay.quest",
+            ),
         ),
     ]

@@ -6,13 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0020_activitytimer_activity_alter_activitytimer_profile'),
+        ("gameplay", "0020_activitytimer_activity_alter_activitytimer_profile"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='quest',
-            name='frequency',
-            field=models.CharField(choices=[('NONE', "Doesn't repeat"), ('DAY', 'Daily'), ('WEEK', 'Weekly'), ('MONTH', 'Monthly')], default='NONE', max_length=6),
+            model_name="quest",
+            name="frequency",
+            field=models.CharField(
+                choices=[
+                    ("NONE", "Doesn't repeat"),
+                    ("DAY", "Daily"),
+                    ("WEEK", "Weekly"),
+                    ("MONTH", "Monthly"),
+                ],
+                default="NONE",
+                max_length=6,
+            ),
         ),
     ]

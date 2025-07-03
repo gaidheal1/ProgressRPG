@@ -1,0 +1,15 @@
+Welcome to Progress RPG!
+
+Hello {{ user.email }},
+
+Thank you for signing up to Progress RPG! We are excited to have you as part of our community.
+
+To activate your account, please click the link below:
+{{ protocol }}://{{ domain }}/api/v1/auth/confirm-email/{{ key }}/
+
+We recommend you complete your profile to get started with all the features available to you!
+
+Best regards,
+The Team
+
+© 2025 Progress RPG. All rights reserved.

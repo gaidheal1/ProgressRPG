@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0079_delete_dailystats_delete_gameworld'),
+        ("gameplay", "0079_delete_dailystats_delete_gameworld"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='questrequirement',
-            unique_together={('quest', 'prerequisite')},
+            name="questrequirement",
+            unique_together={("quest", "prerequisite")},
         ),
     ]

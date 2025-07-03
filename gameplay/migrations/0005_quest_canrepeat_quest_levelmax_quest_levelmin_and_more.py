@@ -7,51 +7,86 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0004_rename_player_activity_profile_and_more'),
+        ("gameplay", "0004_rename_player_activity_profile_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='quest',
-            name='canRepeat',
+            model_name="quest",
+            name="canRepeat",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='quest',
-            name='levelMax',
+            model_name="quest",
+            name="levelMax",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='quest',
-            name='levelMin',
+            model_name="quest",
+            name="levelMin",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='quest',
-            name='number_stages',
+            model_name="quest",
+            name="number_stages",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='quest',
-            name='xpReward',
+            model_name="quest",
+            name="xpReward",
             field=models.IntegerField(default=0),
         ),
         migrations.CreateModel(
-            name='QuestRequirement',
+            name="QuestRequirement",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('quest', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='quest', to='gameplay.quest')),
-                ('quest_needed', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='quest_needed', to='gameplay.quest')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "quest",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="quest",
+                        to="gameplay.quest",
+                    ),
+                ),
+                (
+                    "quest_needed",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="quest_needed",
+                        to="gameplay.quest",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='QuestStage',
+            name="QuestStage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('stage_num', models.IntegerField(default=0)),
-                ('stage_time', models.IntegerField(default=0)),
-                ('stage_text', models.TextField(default='Stage default text')),
-                ('quest', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='gameplay.quest')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("stage_num", models.IntegerField(default=0)),
+                ("stage_time", models.IntegerField(default=0)),
+                ("stage_text", models.TextField(default="Stage default text")),
+                (
+                    "quest",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="gameplay.quest"
+                    ),
+                ),
             ],
         ),
     ]

@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-        
+
     const gameplayContainer = document.getElementById("gameplay-container");
     const profileId = gameplayContainer?.dataset.profileId;
 
@@ -17,4 +17,3 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
   });
-

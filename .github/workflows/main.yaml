@@ -14,7 +14,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-        
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
@@ -23,10 +23,10 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: 3.12
-        
+
     - name: Clear pip cache
       run: pip cache purge
-      
+
     - name: Install Dependencies
       run: |
         pip install --upgrade pip
@@ -46,7 +46,7 @@ jobs:
             POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
             POSTGRES_DB: ${{ secrets.DB_NAME }}
           options: --health-cmd="bash -c 'timeout 30s bash -c \"until pg_isready -h localhost -U $POSTGRES_USER; do sleep 1; done\"'" --health-timeout=5s --health-retries=5
-     
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -73,7 +73,7 @@ jobs:
     - name: Run tests
       run: |
         python manage.py test
-  
+
   deploy:
     needs: build
     runs-on: ubuntu-latest

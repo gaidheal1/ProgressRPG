@@ -1,6 +1,6 @@
 # ProgressRPG
 ## What the game's about
-Need to get stuff done, or want more active leisure time? Spending time on difficult stuff is difficult! 
+Need to get stuff done, or want more active leisure time? Spending time on difficult stuff is difficult!
 Get help spending that time in this body-doubling multiplayer RPG.
 - Get matched with a character who does quests in the game while you do your thing
 - Choose your character's path: will they become a tradesperson, adventurer or lord in their mediaeval-like world?

@@ -6,18 +6,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0003_alter_activity_options_remove_activity_user_and_more'),
+        ("gameplay", "0003_alter_activity_options_remove_activity_user_and_more"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='activity',
-            old_name='player',
-            new_name='profile',
+            model_name="activity",
+            old_name="player",
+            new_name="profile",
         ),
         migrations.RenameField(
-            model_name='skill',
-            old_name='player',
-            new_name='profile',
+            model_name="skill",
+            old_name="player",
+            new_name="profile",
         ),
     ]

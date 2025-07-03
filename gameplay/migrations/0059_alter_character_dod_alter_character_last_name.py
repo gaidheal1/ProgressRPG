@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0058_remove_character_role'),
+        ("gameplay", "0058_remove_character_role"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='character',
-            name='dod',
+            model_name="character",
+            name="dod",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='character',
-            name='last_name',
-            field=models.CharField(blank=True, default='', max_length=50, null=True),
+            model_name="character",
+            name="last_name",
+            field=models.CharField(blank=True, default="", max_length=50, null=True),
         ),
     ]

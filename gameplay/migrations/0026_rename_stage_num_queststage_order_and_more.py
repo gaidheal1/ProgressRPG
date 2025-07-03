@@ -7,37 +7,41 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0025_remove_quest_xpreward_character_role_questresults'),
+        ("gameplay", "0025_remove_quest_xpreward_character_role_questresults"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='queststage',
-            old_name='stage_num',
-            new_name='order',
+            model_name="queststage",
+            old_name="stage_num",
+            new_name="order",
         ),
         migrations.RemoveField(
-            model_name='quest',
-            name='number_stages',
+            model_name="quest",
+            name="number_stages",
         ),
         migrations.AddField(
-            model_name='queststage',
-            name='is_active',
+            model_name="queststage",
+            name="is_active",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='queststage',
-            name='is_completed',
+            model_name="queststage",
+            name="is_completed",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='queststage',
-            name='unlock_time',
+            model_name="queststage",
+            name="unlock_time",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AlterField(
-            model_name='queststage',
-            name='quest',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stages', to='gameplay.quest'),
+            model_name="queststage",
+            name="quest",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="stages",
+                to="gameplay.quest",
+            ),
         ),
     ]

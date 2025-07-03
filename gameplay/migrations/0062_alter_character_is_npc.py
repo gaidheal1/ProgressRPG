@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0061_character_is_pregnant_character_parents_and_more'),
+        ("gameplay", "0061_character_is_pregnant_character_parents_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='character',
-            name='is_npc',
+            model_name="character",
+            name="is_npc",
             field=models.BooleanField(default=True),
         ),
     ]

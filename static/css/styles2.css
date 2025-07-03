@@ -83,7 +83,7 @@ nav {
     border-radius: 4px;
     overflow: hidden;
 
-    
+
 }
 
 .nav-text {
@@ -124,7 +124,7 @@ nav {
 
 header a:hover {
     color: var(--color-brand-primary);
-    
+
 }
 
 header button a {

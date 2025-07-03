@@ -27,7 +27,7 @@ services:
 # database data between container restarts. The `db-password` secret is used
 # to set the database password. You must create `db/password.txt` and add
 # a password of your choosing to it before running `docker compose up`.
-  web:  
+  web:
     image: progress_rpg
     depends_on:
       db:
@@ -42,7 +42,7 @@ services:
     image: postgres
     restart: always
     user: postgres
-    
+
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
@@ -58,5 +58,3 @@ services:
       retries: 5
 volumes:
   db-data:
-
-

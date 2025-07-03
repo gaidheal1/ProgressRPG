@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0008_alter_quest_description_alter_quest_number_stages'),
+        ("gameplay", "0008_alter_quest_description_alter_quest_number_stages"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='character',
-            old_name='user',
-            new_name='profile',
+            model_name="character",
+            old_name="user",
+            new_name="profile",
         ),
         migrations.AlterField(
-            model_name='activity',
-            name='duration',
+            model_name="activity",
+            name="duration",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

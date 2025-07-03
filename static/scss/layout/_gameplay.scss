@@ -9,11 +9,11 @@
 	gap: 0.5rem;
 	width: 100%;
 	margin: 0 auto;
-		
+
 	@include respond-to (small) {
 		max-width: 576px;
 	}
-	
+
 	@include respond-to (big) {
 		max-width: 1400px;
 	}

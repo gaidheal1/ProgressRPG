@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0023_customuser_delete_at_customuser_pending_delete'),
+        ("users", "0023_customuser_delete_at_customuser_pending_delete"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='total_logins',
+            model_name="profile",
+            name="total_logins",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

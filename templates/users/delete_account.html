@@ -11,9 +11,9 @@
             <button type="submit">Yes, delete my account</button>
         </div>
     </form>
-    
+
     <a href="{% url 'profile' %}">Cancel</a>
-    
+
     <div>
 
         <div>
@@ -22,7 +22,7 @@
         <div>
         {% if user.is_staff %}
                 <a href="/admin/">Go to Admin Panel</a>
-            
+
         {% endif %}
         </div>
         <div>
@@ -30,6 +30,6 @@
                 <a href="{% url 'logout' %}">Log out</a>
             </p>
         </div>
-    </div>  
+    </div>
 
 {% endblock %}

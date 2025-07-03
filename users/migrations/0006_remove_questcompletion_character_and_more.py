@@ -6,22 +6,22 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0005_character_questcompletion_and_more'),
+        ("users", "0005_character_questcompletion_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='questcompletion',
-            name='character',
+            model_name="questcompletion",
+            name="character",
         ),
         migrations.RemoveField(
-            model_name='questcompletion',
-            name='quest',
+            model_name="questcompletion",
+            name="quest",
         ),
         migrations.DeleteModel(
-            name='Character',
+            name="Character",
         ),
         migrations.DeleteModel(
-            name='QuestCompletion',
+            name="QuestCompletion",
         ),
     ]

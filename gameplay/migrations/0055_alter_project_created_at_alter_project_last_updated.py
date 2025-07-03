@@ -6,18 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0054_project_created_at_project_last_updated_project_time_and_more'),
+        (
+            "gameplay",
+            "0054_project_created_at_project_last_updated_project_time_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='project',
-            name='created_at',
+            model_name="project",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='last_updated',
+            model_name="project",
+            name="last_updated",
             field=models.DateTimeField(auto_now=True),
         ),
     ]

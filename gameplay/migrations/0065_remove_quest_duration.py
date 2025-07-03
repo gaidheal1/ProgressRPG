@@ -6,12 +6,15 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0064_quest_duration_choices_alter_quest_default_duration_and_more'),
+        (
+            "gameplay",
+            "0064_quest_duration_choices_alter_quest_default_duration_and_more",
+        ),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='quest',
-            name='duration',
+            model_name="quest",
+            name="duration",
         ),
     ]

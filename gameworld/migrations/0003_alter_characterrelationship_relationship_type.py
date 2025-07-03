@@ -6,13 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameworld', '0002_characterrole_characterprogression'),
+        ("gameworld", "0002_characterrole_characterprogression"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='characterrelationship',
-            name='relationship_type',
-            field=models.CharField(choices=[('friend', 'Friend'), ('rival', 'Rival'), ('mentor', 'Mentor'), ('enemy', 'Enemy'), ('ally', 'Ally'), ('romantic', 'Romantic'), ('spouse', 'Spouse'), ('parent', 'Parent'), ('child', 'Child'), ('sibling', 'Sibling'), ('cousin', 'Cousin')], max_length=20),
+            model_name="characterrelationship",
+            name="relationship_type",
+            field=models.CharField(
+                choices=[
+                    ("friend", "Friend"),
+                    ("rival", "Rival"),
+                    ("mentor", "Mentor"),
+                    ("enemy", "Enemy"),
+                    ("ally", "Ally"),
+                    ("romantic", "Romantic"),
+                    ("spouse", "Spouse"),
+                    ("parent", "Parent"),
+                    ("child", "Child"),
+                    ("sibling", "Sibling"),
+                    ("cousin", "Cousin"),
+                ],
+                max_length=20,
+            ),
         ),
     ]
