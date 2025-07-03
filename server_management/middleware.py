@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.shortcuts import redirect
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from server_management.models import MaintenanceWindow
 from django.utils.timezone import now
-from django.http import HttpResponseRedirect
+from django.urls import resolve
 
 
 BLOCKED_USER_AGENTS = ["bot", "crawler", "spider", "scraper", "wget", "curl"]
