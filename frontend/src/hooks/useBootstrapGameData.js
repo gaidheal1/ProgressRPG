@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../utils/api';
+import useTimers from './useTimers';
+import useCombinedTimers from './useCombinedTimers';
 
 export function useBootstrapGameData() {
+  const activityTimer = useTimers({ mode: "activity" });
+  const questTimer = useTimers({ mode: "quest"});
+  const {
+    submitActivity,
+    completeQuest
+  } = useCombinedTimers(activityTimer, questTimer);
+
   const [player, setPlayer] = useState(null);
   const [character, setCharacter] = useState(null);
   const [quests, setQuests] = useState([]);
@@ -27,7 +36,7 @@ export function useBootstrapGameData() {
           apiFetch('/quests/eligible/'),
           apiFetch(`/activities/?date=${formattedDate}`)
         ]);
-
+        console.log('Character data:', info.character);
         setPlayer(info.profile);
         setCharacter(info.character);
         setQuests(questsData);
@@ -49,8 +58,12 @@ export function useBootstrapGameData() {
   return {
     player,
     character,
-    quests,
     activities,
+    quests,
+    activityTimer,
+    questTimer,
+    submitActivity,
+    completeQuest,
     loading,
     error
   };
