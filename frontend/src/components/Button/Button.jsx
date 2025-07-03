@@ -5,24 +5,21 @@ import styles from './Button.module.scss';
 export default function Button({
   children,
   variant = 'primary', // or 'secondary', 'ghost', etc.
-  //fullWidth = false,
   icon = null,
   as = 'button', // can be 'a' or 'button'
   href,
   onClick,
   className,
-  frameClass,
   ...props
 }) {
   const Component = as === 'a' ? 'a' : 'button';
 
   return (
-    <div className={classNames(styles.frame, frameClass)}>
+    <div className={classNames(styles.frame)}>
       <Component
         className={classNames(
           styles.button,
           styles[variant],
-          // { [styles.fullWidth]: fullWidth },
           className
         )}
         href={as === 'a' ? href : undefined}
