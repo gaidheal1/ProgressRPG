@@ -1,8 +1,9 @@
 import React, { useState} from "react";
-import { useTimer } from "../../context/TimerContext";
+import { useGame } from "../../context/GameContext";
 import Button from "../Button/Button";
-import Input from "../Input/Input";
 import ButtonFrame from "../Button/ButtonFrame";
+import Input from "../Input/Input";
+import useCombinedTimers from "../../hooks/useCombinedTimers";
 
 function formatTime(seconds) {
   const hrs = Math.floor(seconds / 3600);
@@ -20,15 +21,13 @@ export function ActivityTimer() {
     setActivityText(value); // record every change
   };
 
-  const { activityTimer } = useTimer();
+  const { activityTimer, questTimer } = useGame();
   const {
     status,
     elapsedTime,
-    start,
-    pause,
-    reset,
+    assignSubject,
   } = activityTimer;
-
+  const { submitActivity } = useCombinedTimers(activityTimer, questTimer);
   return (
     <div className="timer activity-timer">
       <Input
@@ -42,13 +41,16 @@ export function ActivityTimer() {
       <div className="timer-display">{formatTime(elapsedTime)}</div>
       <div className="timer-status">{status}</div>
       <ButtonFrame>
-        <Button onClick={start} disabled={status === "active"}>
+        <Button
+          onClick={assignSubject}
+          disabled={status !== "empty"}
+        >
           Start Activity
         </Button>
 
-        <Button onClick={pause} disabled={status !== "active"}>
+        {/* <Button onClick={pause} disabled={status !== "active"}>
           Pause
-        </Button>
+        </Button> */}
 
         {/* If you want to submit or complete the activity */}
         <Button
@@ -56,8 +58,9 @@ export function ActivityTimer() {
             /* submit or complete handler */
             console.log("Submit activity:", activityText);
             setActivityText('');
+            submitActivity();
           }}
-          disabled={status !== "empty"}
+          disabled={status === "empty"}
           >
           Submit Activity
         </Button>
