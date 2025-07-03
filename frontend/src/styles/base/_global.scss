@@ -28,7 +28,7 @@ body {
   align-items: stretch;
   min-width: 260px;
 
-  @include m.respond-to(small) {
+  @include m.respond-to(sm) {
     max-width: 576px;
   }
 }
