@@ -70,16 +70,16 @@ export default function useTimers({ mode }) {
 
   // Complete timer
   const complete = useCallback(() => {
-    console.log([useTimers] Complete');
+    console.log('[useTimers] Complete quest');
     clearInterval(intervalRef.current);
     setStatus("complete");
     setDuration(0);
-    setSubject(null);
   }, []);
 
   // Reset timer
   const reset = useCallback(() => {
     console.log('[useTimers] Reset');
+    setSubject(null);
     setStatus("empty");
     setElapsed(0);
     startTimeRef.current = null;
