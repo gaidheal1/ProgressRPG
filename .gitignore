@@ -3,6 +3,7 @@ venv
 venv-windows
 venv-linux
 __pycache__/
+.venv
 .env
 env.env
 env
