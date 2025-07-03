@@ -3,7 +3,6 @@ import ToastManager from '../../components/Toast/ToastManager';
 import ProfileSocketListener from '../../components/ProfileSocketListener';
 import { useGame } from '../../context/GameContext';
 import styles from './Game.module.scss';
-import Infobar from '../../layout/Infobar/Infobar';
 import GameContainer from '../../layout/GameContainer/GameContainer';
 
 export default function Game() {
