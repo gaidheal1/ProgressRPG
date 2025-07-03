@@ -45,6 +45,7 @@ export default function LoginPage() {
       {error && <p className={styles.error}>{error}</p>}
       <input
         type="email"
+        name="email"
         placeholder="Email"
         autoComplete='email'
         value={email}
@@ -53,6 +54,7 @@ export default function LoginPage() {
       />
       <input
         type="password"
+        name="password"
         placeholder="Password"
         autoComplete='current-password'
         value={password}
