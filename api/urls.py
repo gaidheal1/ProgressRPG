@@ -7,6 +7,7 @@ from rest_framework_simplejwt.views import (
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from django_channels_jwt.views import AsgiValidateTokenView
 
 from .views import (
     me_view,
@@ -45,6 +46,7 @@ urlpatterns = [
         confirm_email_and_redirect,
         name="account_confirm_email",
     ),
+    path("ws_auth/", AsgiValidateTokenView.as_view(), name="ws_auth"),
     path("auth/", include(auth_urls)),
     path("auth/", include("users.urls")),
     path("auth/jwt/create/", CustomTokenObtainPairView.as_view(), name="jwt_create"),

@@ -1,0 +1,15 @@
+@use '../../styles/utilities/mixins' as m;
+
+.buttonFrame {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  flex-grow: 0;
+
+  @include m.respond-to(small) {
+    flex-direction: column;
+    align-items: stretch; // buttons fill width on small screens
+  }
+}

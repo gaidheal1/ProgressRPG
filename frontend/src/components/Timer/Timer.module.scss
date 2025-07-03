@@ -1,0 +1,41 @@
+@use '../../styles/base/variables' as v;
+@use '../../styles/utilities/mixins' as m;
+
+.timer-frame {
+	box-sizing: border-box;
+
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	padding: v.$spacing-xs, v.$spacing-sm;
+	gap: v.$spacing-sm;
+
+	border: 1px solid #007A33;
+	border-radius: v.$border-radius;
+}
+
+.timer-text {
+	@include m.apply-text-style(v.$text-body);
+	display: flex;
+	align-items: center;
+	text-align: center;
+
+	color: v.$color-dark;
+}
+
+
+
+.button-frame {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: v.$spacing-sm;
+  width: 100%;
+  flex-grow: 0;
+
+  @include respond-to(small) {
+    flex-direction: column;
+    align-items: stretch; // buttons fill width on small screens
+  }
+}

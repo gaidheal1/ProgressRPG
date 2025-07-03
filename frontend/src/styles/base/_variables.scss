@@ -1,0 +1,142 @@
+@use 'sass:color';
+
+$breakpoints: (
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1440px
+);
+
+// Colors
+$color-primary: #007a32;
+$color-secondary: #e7fff1;
+$color-text-primary: #1e1e1e;
+$color-text-invert: #fbfbfb;
+$color-light: #ffffff;
+$color-dark: #2c3e50;
+$color-accent: #ff8800;
+
+$color-bg: $color-light;
+$color-bg-invert: $color-dark;
+
+$color-border: rgba(0, 0, 0, 0.15);
+
+$color-light-hover: color.adjust($color-light, $lightness: -5%);
+$color-dark-hover: color.adjust($color-dark, $lightness: 5%);
+
+$color-primary-hover: color.adjust($color-primary, $lightness: 5%);
+$color-primary-active: color.adjust($color-primary, $lightness: -5%);
+
+$color-secondary-hover: color.adjust($color-secondary, $lightness: -3%);
+$color-secondary-active: color.adjust($color-secondary, $lightness: -6%);
+
+$color-accent-hover: color.adjust($color-accent, $lightness: 5%);
+$color-accent-active: color.adjust($color-accent, $lightness: -5%);
+
+
+
+// Spacing
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 2rem;
+$spacing-xl: 4rem;
+$spacing-2xl: 6rem;
+$spacing-3xl: 8rem;
+
+$spacing-gap: $spacing-sm;
+
+$padding-vertical: $spacing-sm;
+$padding-horizontal: $spacing-md;
+
+$padding-base: $padding-vertical $padding-horizontal;
+
+
+$z-index-base: 1;
+$z-indexdropdown: 10;
+$z-index-header: 50;
+$z-index-modal: 100;
+$z-index-toast:200;
+$z-index-tooltip: 300;
+$z-index-overlay: 999;
+
+$border-radius: $spacing-sm;
+$button-padding: $spacing-sm $spacing-md;
+$button-radius: $border-radius;
+$content-padding: $spacing-lg;
+
+
+// Animations
+
+$duration-fast: 150ms;
+$duration-base: 250ms;
+$duration-slow: 400ms;
+$easing-standard: ease-in-out;
+
+// Typography
+$font-stack: 'Roboto', sans-serif;
+$font-size-base: 16px;
+$font-size-xs: 0.625rem;
+$font-size-sm: 0.75rem;
+$font-size-lg: 1.25rem;
+$font-size-xl: 1.5rem;
+$font-size-2xl: 2rem;
+
+$font-weight-light: 400;
+$font-weight-base: 500;
+$font-weight-bold: 600;
+$font-weight-extrabold: 700;
+
+$line-height-base: 1.5;
+$line-height-heading: 1.2;
+
+// Text styles
+
+// Body
+$text-body: (
+  base: (
+    font-size: $font-size-base,
+    font-weight: $font-weight-base,
+    line-height: $line-height-base
+  ),
+  md: (
+    font-size: 1.125rem
+  )
+);
+
+// Heading 1
+$text-heading-1: (
+  base: (
+    font-size: $font-size-2xl,
+    font-weight: $font-weight-bold,
+    line-height: $line-height-heading
+  ),
+  md: (
+    font-size: 2.25rem
+  ),
+  xl: (
+    font-size: 2.75rem
+  )
+);
+
+// Heading 2
+$text-heading-2: (
+  base: (
+    font-size: $font-size-xl,
+    font-weight: $font-weight-bold,
+    line-height: $line-height-heading
+  ),
+  lg: (
+    font-size: 2rem
+  )
+);
+
+// Caption
+$text-caption: (
+  base: (
+    font-size: $font-size-xs,
+    font-weight: $font-weight-base,
+    line-height: 1.4
+  )
+);

@@ -1,0 +1,44 @@
+@use '../../styles/base/variables' as v;
+@use '../../styles/utilities/mixins' as m;
+
+
+.listSection {
+  padding: v.$spacing-xs  0;
+  gap: v.$spacing-sm;
+  align-self: stretch;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  margin: 0;
+  gap: v.$spacing-xs;
+  width: 100%;
+  list-style: none;
+}
+
+.list li {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: v.$spacing-sm;
+  width: 100%;
+  padding: v.$spacing-xs v.$spacing-sm;
+  border-radius: v.$border-radius;
+  background-color: v.$color-light;
+  @include m.apply-text-style(v.$text-body);
+}
+
+.selectable li:hover {
+  background-color: v.$color-light-hover;
+  cursor: pointer;
+}
+
+.selected {
+  color: v.$color-light;
+  background-color: v.$color-text-primary;
+  font-weight:v.$font-weight-bold;
+}

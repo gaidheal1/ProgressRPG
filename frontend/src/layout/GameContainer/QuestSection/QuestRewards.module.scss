@@ -1,0 +1,17 @@
+@use '../../../styles/base/variables' as v;
+
+.container {
+  padding: v.$spacing-sm v.$spacing-md;
+  background-color: v.$color-light;
+  border-radius: v.$border-radius;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.header {
+  font-size: v.$font-size-lg;
+  font-weight: v.$font-weight-bold;
+  color: v.$color-primary;
+  margin-bottom: v.$spacing-sm;
+}

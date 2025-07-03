@@ -1,0 +1,25 @@
+/* ActivityPanel.module.scss */
+@use '../../../styles/base/variables' as v;
+
+.listSectionHeader {
+  font-weight: v.$font-weight-bold;
+  font-size: v.$font-size-lg;
+  margin-bottom: v.$spacing-sm;
+  color: v.$color-text-primary;
+  text-align: center;
+}
+
+.activity-totals {
+  display: flex;
+  justify-content: space-between;
+  font-size: v.$font-size-sm;
+  margin-bottom: v.$spacing-sm;
+  color: #555;
+  gap: v.$spacing-gap;
+
+  span {
+    &:first-child {
+      font-weight: v.$font-weight-bold;
+    }
+  }
+}

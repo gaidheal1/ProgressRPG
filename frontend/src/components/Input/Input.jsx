@@ -1,0 +1,54 @@
+import styles from './Input.module.scss';
+
+export default function Input({
+  id,
+  label,
+  type = 'text',
+  value,
+  onChange,
+  placeholder = '',
+  helpText = '',
+  error = '',
+  required = false,
+}) {
+  return (
+    <div className={styles.inputGroup}>
+      {label && (
+        <label htmlFor={id} className={styles.label}>
+          {label} {required && <span className={styles.required}>*</span>}
+        </label>
+      )}
+
+      <input
+        id={id}
+        type={type}
+        className={`${styles.inputField} ${error ? styles.errorInput : ''}`}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        aria-invalid={!!error}
+        required={required}
+      />
+
+      {helpText && !error && (
+        <p className={styles.helpText}>{helpText}</p>
+      )}
+      {error && <p className={styles.errorText}>{error}</p>}
+    </div>
+  );
+}
+
+/* EXAMPLE USAGE
+
+import Input from './Input';
+
+<Input
+  id="display-name"
+  label="Display Name"
+  value={formData.display_name}
+  onChange={(val) => setFormData({ ...formData, display_name: val })}
+  placeholder="Enter your display name"
+  helpText="This will be visible to others"
+  error={formData.display_name === '' ? 'Name is required' : ''}
+/>
+ */

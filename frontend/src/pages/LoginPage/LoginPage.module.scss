@@ -1,0 +1,34 @@
+@use '../../styles/base/variables' as v;
+
+.form {
+  gap: v.$spacing-gap;
+
+  input {
+    padding: v.$spacing-sm;
+    border-radius: v.$border-radius;
+    border: 1px solid #ccc;
+    font-size: v.$font-size-base;
+  }
+}
+
+.error {
+  color: red;
+  font-size: v.$font-size-sm;
+  margin-bottom: v.$spacing-sm;
+  text-align: center;
+}
+
+.footer {
+  font-size: v.$font-size-sm;
+  text-align: center;
+
+  a {
+    color: v.$color-text-primary;
+    font-weight: v.$font-weight-bold;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

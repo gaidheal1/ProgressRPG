@@ -1,0 +1,99 @@
+@use '../../styles/base/variables' as v;
+@use '../../styles/utilities/mixins' as m;
+
+.header {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+}
+
+.navbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: v.$spacing-sm v.$spacing-md;
+  width: 100%;
+  max-width: 100%;
+  background: v.$color-light;
+}
+
+.leftLinks,
+.rightLinks {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-self: stretch;
+  gap: v.$spacing-md;
+  margin: 0 v.$spacing-sm;
+  font-size: v.$font-size-lg;
+}
+
+.leftLinks {
+  justify-content: flex-start;
+}
+
+.rightLinks {
+  justify-content: flex-end;
+}
+
+.buttonFilled {
+  a {
+    color: v.$color-light;
+    text-decoration: none;
+    margin: 0 v.$spacing-sm;
+    font-size: v.$font-size-lg;
+    align-self: center;
+  }
+}
+
+//.account {
+  // Reserved for future use (icons, dropdowns, etc.)
+//}
+
+.icons {
+  display: none; // Hidden by default for larger screens
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: v.$spacing-md;
+  width: 100%;
+  max-width: 100%;
+
+  a {
+    display: flex;
+    align-items: center;
+
+    .icon {
+      width: 36px;
+      min-width: 36px;
+      height: 36px;
+      background-size: cover;
+      background-repeat: no-repeat;
+      display: inline-block;
+      align-items: center;
+    }
+  }
+}
+
+@include m.respond-to(small) {
+  .icons {
+    display: flex;
+  }
+
+  .leftLinks,
+  .rightLinks {
+    display: none;
+  }
+}
+
+@include m.respond-to(big) {
+  .leftLinks,
+  .rightLinks {
+    display: flex;
+  }
+
+  .icons {
+    display: none;
+  }
+}

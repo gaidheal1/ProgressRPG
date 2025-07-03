@@ -1,0 +1,30 @@
+@use '../../../styles/base/variables' as v;
+
+.currentQuestSection {
+  display: flex;
+  flex-direction: column;
+  gap: v.$spacing-gap;
+  padding: v.$spacing-sm v.$spacing-md;
+  background-color: #f0f9f5;
+  border-radius: v.$border-radius;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.questText {
+  font-size: v.$font-size-base;
+  color: v.$color-primary;
+  margin: 0;
+}
+
+.questLabel {
+  font-weight: v.$font-weight-bold;
+  color: v.$color-primary;
+}
+
+.currentQuestTitle {
+  font-weight: v.$font-weight-bold;
+  font-style: italic;
+  color: v.$color-primary;
+}

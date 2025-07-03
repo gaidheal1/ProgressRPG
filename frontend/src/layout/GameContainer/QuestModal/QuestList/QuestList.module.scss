@@ -1,0 +1,31 @@
+/* Pane */
+.questPane {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  border-right: 1px solid #ddd;
+}
+
+/* Tabs */
+.questTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: #f9f9f9;
+  cursor: pointer;
+
+  &.selected {
+    background: #ddd;
+  }
+
+  &:hover {
+    background: #eee;
+  }
+}
