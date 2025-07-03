@@ -1,49 +1,81 @@
-import React, { useState, useEffect } from 'react';
-import Game from './pages/Game/Game';
+import React from 'react';
+import { AuthProvider } from './context/AuthContext';
+import { GameProvider } from './context/GameContext';
+import Navbar from './layout/Navbar/Navbar';
+
 import Home from './pages/Home/Home';
 import LoginPage from './pages/LoginPage/LoginPage';
 import LogoutPage from './pages/LogoutPage/LogoutPage';
-import Navbar from './layout/Navbar/Navbar';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import OnboardingPage from './pages/OnboardingPage';
+import Game from './pages/Game/Game';
+
+import { useAuth } from './context/AuthContext';
+
 import {
   HashRouter,
   Routes,
   Route,
   Navigate
 } from 'react-router-dom';
-import OnboardingPage from './pages/OnboardingPage';
-import { GameProvider } from './context/GameContext';
 
 // import Profile from './pages/Profile'; // for future routes
 // import NotFound from './pages/NotFound'; // optional 404
 
-function App() {
-  const { isAuthenticated } = useAuth();
 
+function PrivateRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>; // or spinner
+  }
+
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
+function AppRoutes() {
+  return (
+    <>
+      <Navbar />
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/logout" element={<LogoutPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* Protected routes */}
+          <Route
+            path="/onboarding"
+            element={
+              <PrivateRoute>
+                <OnboardingPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/game"
+            element={
+              <PrivateRoute>
+                <Game />
+              </PrivateRoute>
+            }
+          />
+
+          <Route path="*" element={<h2>404: Page Not Found</h2>} />
+        </Routes>
+      </main>
+    </>
+  );
+}
+
+function App() {
   return (
     <AuthProvider>
       <GameProvider>
         <HashRouter>
           <div className="app-container">
-            <header>
-              <Navbar />
-            </header>
-            <main>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/logout" element={<LogoutPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/onboarding" element={
-                  isAuthenticated ? <OnboardingPage /> : <Navigate to="/login" replace />
-                } />
-                <Route path="/game" element={
-                  isAuthenticated ? <Game /> : <Navigate to="/login" replace />
-                } />
-                <Route path="*" element={<h2>404: Page Not Found</h2>} />
-              </Routes>
-            </main>
+            <AppRoutes />
             <footer style={{ marginTop: '2rem', textAlign: 'center' }}>
               <small>&copy; 2025 Progress RPG</small>
             </footer>
