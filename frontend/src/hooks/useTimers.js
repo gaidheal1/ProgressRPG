@@ -1,41 +1,10 @@
 // hooks/useTimer.js
 import { useState, useRef, useEffect, useCallback } from "react";
 
-const loadFromServer = useCallback((serverData) => {
-  if (!serverData) return;
 
-  const { status, elapsed_time, duration, activity, quest } = serverData;
-
-  setStatus(status || 'empty');
-  setElapsed(elapsed_time || 0);
-
-  if (mode === 'activity' && activity) {
-    setSubject(activity); // assume you added `subject` via useState
-    setDuration(elapsed_time); // or duration from the activity object if preferred
-  }
-
-  if (mode === 'quest' && quest) {
-    setSubject(quest);
-    setDuration(duration || 0);
-  }
-}, [mode]);
-
-return {
-  status,
-  elapsed,
-  duration,
-  start,
-  pause,
-  reset,
-  remainingTime: mode === "quest" ? Math.max(duration - elapsed, 0) : null,
-  subject,
-  setSubject,
-  loadFromServer, // 👈 expose it
-};
-
-export default function useTimers({ mode, initialDuration = 0 }) {
+export default function useTimers({ mode }) {
   const [status, setStatus] = useState("empty"); // "empty", "active", "waiting", "completed"
-  const [duration, setDuration] = useState(initialDuration); // total seconds for timer base
+  const [duration, setDuration] = useState(0); // total seconds for timer base
   const [elapsed, setElapsed] = useState(0); // seconds elapsed (activity) or elapsed for quest
   const [subject, setSubject] = useState(null); // the current activity or quest
 
@@ -68,7 +37,7 @@ export default function useTimers({ mode, initialDuration = 0 }) {
   const start = useCallback(() => {
     if (status === "active") return;
     if (!subject) return;
-
+    console.log('[useTimers] Start')
     setStatus("active");
     startTimeRef.current = Date.now();
     pausedTimeRef.current = elapsed;
@@ -80,6 +49,7 @@ export default function useTimers({ mode, initialDuration = 0 }) {
   const pause = useCallback(() => {
     if (status === "completed") return;
     if (!startTimeRef.current) return;
+    console.log('[useTimers] Pause')
 
     const now = Date.now();
     const secondsPassed = Math.round((now - startTimeRef.current) / 1000);
@@ -97,19 +67,28 @@ export default function useTimers({ mode, initialDuration = 0 }) {
     setElapsed(0);
   }, [mode, status]);
 
-  // Reset timer
-  const reset = useCallback(() => {
+
+  // Complete timer
+  const complete = useCallback(() => {
+    console.log([useTimers] Complete');
     clearInterval(intervalRef.current);
-    setStatus("empty");
-    setElapsed(0);
+    setStatus("complete");
     setDuration(0);
     setSubject(null);
+  }, []);
+
+  // Reset timer
+  const reset = useCallback(() => {
+    console.log('[useTimers] Reset');
+    setStatus("empty");
+    setElapsed(0);
     startTimeRef.current = null;
     pausedTimeRef.current = 0;
   }, []);
 
   // Assign subject to timer
   const assignSubject = useCallback((newSubject, newDuration = 0, newStatus = "waiting", newElapsed = 0) => {
+    console.log('[useTimers] Assign subject')
     setSubject(newSubject);
     setStatus(newStatus);
     setElapsed(newElapsed);
@@ -126,15 +105,35 @@ export default function useTimers({ mode, initialDuration = 0 }) {
     return () => clearInterval(intervalRef.current);
   }, []);
 
+  const loadFromServer = useCallback((serverData) => {
+    if (!serverData) return;
+
+    const { status, elapsed_time, duration, activity, quest } = serverData;
+
+    setStatus(status || 'empty');
+    setElapsed(elapsed_time || 0);
+
+    if (mode === 'activity' && activity) {
+      setSubject(activity);
+      setDuration(elapsed_time); // or activity.duration if preferred
+    }
+
+    if (mode === 'quest' && quest) {
+      setSubject(quest);
+      setDuration(duration || 0);
+    }
+  }, [mode]);
+
   return {
     status,
     elapsed,
     duration,
     start,
     pause,
+    complete,
     reset,
     assignSubject,
-    // For quest timer, expose remaining time for UI convenience
     remainingTime: mode === "quest" ? Math.max(duration - elapsed, 0) : null,
+    loadFromServer,
   };
 }
