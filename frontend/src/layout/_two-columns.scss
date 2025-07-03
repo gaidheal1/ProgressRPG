@@ -8,10 +8,10 @@
   gap: v.$spacing-gap;
   width: 100%;
   max-width: 100vw;
-  flex-direction: row;
+  flex-direction: column;
 
-  @include m.respond-to(small) {
-    flex-direction: column;
+  @include m.respond-to(sm) {
+    flex-direction: row;
   }
 
 }
@@ -21,19 +21,17 @@
   flex-direction: column;
   align-items: flex-start;
   gap: v.$spacing-gap;
-  padding: v.$spacing-sm v.$spacing-md;
+  padding: v.$padding-base;
   background: v.$color-secondary;
   border: 1px solid rgba(0, 0, 0, 0.45);
   border-radius: v.$border-radius;
   align-self: stretch;
   max-width: 100%;
 
-  @include m.respond-to(small) {
-    flex: 1 1 100%;
-    width: 100%;
-  }
+  width: 100%;
 
-  @include m.respond-to(big) {
+
+  @include m.respond-to(sm) {
     flex: 1 1 50%;
     width: 50%;
   }
