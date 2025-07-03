@@ -76,7 +76,7 @@
   }
 }
 
-@include m.respond-to(small) {
+@include m.respond-to(sm) {
   .icons {
     display: flex;
   }
@@ -87,7 +87,7 @@
   }
 }
 
-@include m.respond-to(big) {
+@include m.respond-to(lg) {
   .leftLinks,
   .rightLinks {
     display: flex;

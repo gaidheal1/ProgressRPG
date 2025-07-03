@@ -11,11 +11,11 @@
   margin: 0 auto;
   //outline: 2px dotted green;
 
-  @include m.respond-to(small) {
+  @include m.respond-to(sm) {
     max-width: 576px;
   }
 
-  @include m.respond-to(big) {
+  @include m.respond-to(lg) {
     max-width: 1400px;
   }
 }
