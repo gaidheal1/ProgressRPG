@@ -8,9 +8,7 @@ export default function ActivitySection() {
   return (
       <GameSection type="Activity">
         <ActivityTimer />
-        <div className="section-row current-item">
-          <ActivityPanel />
-        </div>
+        <ActivityPanel />
       </GameSection>
   );
 }
