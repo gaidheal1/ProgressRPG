@@ -1,23 +1,22 @@
-// QuestList.jsx
+import React from 'react';
 import styles from './QuestList.module.scss';
 import Button from '../../../../components/Button/Button';
 
-export default function QuestList({ quests, selectedQuest, setSelectedQuest, setSelectedDuration }) {
+export default function QuestList({ quests, selectedQuest, onSelect }) {
   return (
-    <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-      {quests.map((q, i) => (
-        <li key={i}>
-          <Button
-            onClick={() => {
-              setSelectedQuest(q);
-              setSelectedDuration(q.duration_options?.[0] ?? 60);
-            }}
-
-          >
-            {q.name}
-          </Button>
-        </li>
-      ))}
-    </ul>
+    <nav className={styles.questList}>
+      <ul>
+        {quests?.map((quest) => (
+          <li key={quest.id ?? quest.name}>
+            <Button
+              className={selectedQuest?.id === quest.id ? styles.selected : ''}
+              onClick={() => onSelect(quest)}
+            >
+              {quest.name}
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }

@@ -1,5 +1,30 @@
-.detailsPane {
-  flex: 1;
-  padding: 1rem;
-  overflow-y: auto;
+@use '../../../../styles/base/variables' as v;
+@use '../../../two-columns' as tc;
+
+.questDetail {
+  padding: v.$padding-base;
+  display: flex;
+  flex-direction: column;
+  @include tc.section-box;
+}
+
+.durationSelector {
+  margin-top: v.$spacing-md;
+  display: flex;
+  flex-direction: column;
+  max-width: 200px;
+}
+
+.durationSelector label {
+  //margin-bottom: 0.25rem;
+  font-weight: v.$font-weight-bold;
+}
+
+.durationSelector select {
+  padding: v.$spacing-xs;
+}
+
+.placeholder {
+  font-style: italic;
+  color: #666;
 }

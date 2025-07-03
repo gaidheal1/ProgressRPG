@@ -1,31 +1,23 @@
-/* Pane */
-.questPane {
-  flex: 1;
+@use '../../../../styles/base/variables' as v;
+@use '../../../two-columns' as tc;
+
+.questList {
+  width: 35%;
+  border-right: 1px solid #eee;
   padding: 1rem;
   overflow-y: auto;
-  border-right: 1px solid #ddd;
+  @include tc.section-box;
 }
 
-/* Tabs */
-.questTabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-bottom: 0.5rem;
+.questList ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.tab {
-  padding: 0.5rem 1rem;
-  border: 1px solid #ddd;
-  background: #f9f9f9;
-  cursor: pointer;
 
-  &.selected {
-    background: #ddd;
-  }
-
-  &:hover {
-    background: #eee;
-  }
+.questList .selected {
+  background-color: v.$color-secondary;
+  color: v.$color-primary;
+  font-weight: v.$font-weight-bold;
 }
