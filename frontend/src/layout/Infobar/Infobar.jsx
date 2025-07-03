@@ -14,15 +14,17 @@ export default function Infobar() {
         title={player.name}
         columns={[
           [
+            { label: 'Player', value: player.name },
             { label: 'Level', value: player.level },
             { label: 'XP', value: `${player.xp}/${player.xp_next_level}` },
           ],
         ]}
       />
       <Infobox
-        title={character.firstname}
+        title={character.first_name}
         columns={[
           [
+            { label: 'Character', value: character.first_name },
             { label: 'Level', value: character.level },
             { label: 'XP', value: `${character.xp}/${character.xp_next_level}` },
           ],
