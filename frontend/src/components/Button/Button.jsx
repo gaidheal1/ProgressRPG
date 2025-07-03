@@ -5,7 +5,7 @@ import styles from './Button.module.scss';
 export default function Button({
   children,
   variant = 'primary', // or 'secondary', 'ghost', etc.
-  fullWidth = false,
+  //fullWidth = false,
   icon = null,
   as = 'button', // can be 'a' or 'button'
   href,
@@ -22,7 +22,7 @@ export default function Button({
         className={classNames(
           styles.button,
           styles[variant],
-          { [styles.fullWidth]: fullWidth },
+          // { [styles.fullWidth]: fullWidth },
           className
         )}
         href={as === 'a' ? href : undefined}
