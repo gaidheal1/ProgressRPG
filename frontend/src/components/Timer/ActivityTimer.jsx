@@ -33,8 +33,8 @@ export function ActivityTimer() {
         placeholder="Enter activity"
       />
 
-      <div className={sharedStyles.timerFrame>
-        <div className={sharedStyles.timerText>{displayTime}</div>
+      <div className={sharedStyles.timerFrame}>
+        <div className={sharedStyles.timerText}>{displayTime}</div>
       </div>
       <div className="timer-status">{status}</div>
       <ButtonFrame>
