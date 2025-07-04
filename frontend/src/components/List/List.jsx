@@ -29,7 +29,7 @@ export default function List({
               })}
               onClick={() => selectable && onSelect?.(item)}
             >
-              {renderItem ? renderItem(item) : item}
+              {renderItem ? renderItem(item, index) : item}
             </li>
           );
         })}

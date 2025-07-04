@@ -2,6 +2,7 @@ import React from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { GameProvider } from './context/GameContext';
 import Navbar from './layout/Navbar/Navbar';
+import Footer from './layout/Footer/Footer';
 
 import Home from './pages/Home/Home';
 import LoginPage from './pages/LoginPage/LoginPage';
@@ -76,9 +77,7 @@ function App() {
           <div className="app-container">
             <Navbar />
             <AppRoutes />
-            <footer style={{ marginTop: '2rem', textAlign: 'center' }}>
-              <small>&copy; 2025 Progress RPG</small>
-            </footer>
+            <Footer />
           </div>
         </HashRouter>
       </GameProvider>

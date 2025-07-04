@@ -10,18 +10,16 @@
 	box-sizing: border-box;
 
 	display: flex;
-	justify-content: center;
+	justify-content: space-between;
 	align-items: center;
-	//padding: v.$padding-base;
 	gap: v.$spacing-gap;
 
-	//border: 1px solid v.$color-primary;
 	border-radius: v.$border-radius;
 }
 
 .timerStatus {
-  margin-right: 0.5rem;
-  font-weight: bold;
+  margin-right: v.$spacing-sm;
+  font-weight: v.$font-weight-bold;
 }
 
 
@@ -40,4 +38,5 @@
 
 	color: v.$color-dark;
 	@include m.apply-text-style(v.$text-body);
+	 & {font-weight: v.$font-weight-bold;}
 }

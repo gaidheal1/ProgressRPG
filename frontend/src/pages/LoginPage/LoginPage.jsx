@@ -21,7 +21,7 @@ export default function LoginPage() {
     setError('');
 
     const result = await loginWithJwt(email, password);
-
+    console.log('LoginPage login result:', result);
     if (result.success) {
       try {
         await login(result.tokens.access, result.tokens.refresh);

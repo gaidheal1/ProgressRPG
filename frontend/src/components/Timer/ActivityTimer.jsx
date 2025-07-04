@@ -14,7 +14,7 @@ export function ActivityTimer() {
     setActivityText(value); // record every change
   };
 
-  const { activityTimer, questTimer } = useGame();
+  const { activityTimer } = useGame();
   const {
     status,
     elapsed,
@@ -24,7 +24,8 @@ export function ActivityTimer() {
 
   const { submitActivity } = useCombinedTimers();
 
-  console.log("Activity timer displayTime:", displayTime);
+  // console.log("Activity timer displayTime:", displayTime);
+
   return (
     <section className={styles.activityRow}>
       <TimerDisplay

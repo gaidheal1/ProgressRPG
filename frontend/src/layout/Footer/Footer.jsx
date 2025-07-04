@@ -1,19 +1,20 @@
 import React from 'react';
-import { useAuth } from '../hooks/useAuth'; // or however you access user data
+import { useAuth } from '../../context/AuthContext';
 import styles from './Footer.module.scss';
 import { Link } from 'react-router-dom'; // assuming React Router
 
 export default function Footer() {
-  const { user } = useAuth(); // make sure this hook gives you `user.is_staff`
+  const { user, isAuthenticated } = useAuth();
+  const now = new Date;
 
   return (
     <footer className={styles.footer}>
-      {user?.is_staff && (
-        <Link to="/admin" className={styles.adminLink}>
+      {user?.is_staff && isAuthenticated && (
+        <a href="http://localhost:8000/admin" target="_blank" rel="noopener noreferrer">
           Admin Panel
-        </Link>
+        </a>
       )}
-      <p>&copy; 2025 Progress RPG</p>
+      <p>&copy; {now.getFullYear()} Progress RPG</p>
     </footer>
   );
 }

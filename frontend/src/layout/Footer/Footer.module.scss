@@ -5,18 +5,18 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: v.$spacing-md v.$spacing-xl;
+  padding: v.$padding-base;
   gap: v.$spacing-lg;
   margin-top: v.$spacing-md;
   width: 100%;
   background: v.$color-light;
-  color: $color-primary;
+  color: v.$color-primary;
 
   a {
-    color: $color-primary;
+    color: v.$color-primary;
     margin: 0 v.$spacing-sm;
     text-decoration: none;
-    font-size: $font-size-base;
+    font-size: v.$font-size-base;
 
     &:hover {
       text-decoration: underline;

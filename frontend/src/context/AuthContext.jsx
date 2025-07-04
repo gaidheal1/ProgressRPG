@@ -53,6 +53,7 @@ export function AuthProvider({ children }) {
     // Fetch user info after login
     try {
       const userData = await apiFetch('/me/');
+      console.log('AuthProv userData:', userData);
       setUser(userData);
       setIsAuthenticated(true);
     } catch (err) {

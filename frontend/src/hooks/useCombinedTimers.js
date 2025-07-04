@@ -23,10 +23,10 @@ export default function useCombinedTimers() {
 
   // Auto-start both if both are ready
   useEffect(() => {
-    console.log('[COMBINED TIMERS] effect check (both ready)');
-    const bothReady =
-    activityTimer.status === "waiting" &&
-    questTimer.status === "waiting";
+    console.log('[COMBINED TIMERS] effect (both ready)');
+
+    const isReady = (status) => ["waiting", "paused"].includes(status);
+    const bothReady = isReady(activityTimer.status) && isReady(questTimer.status);
 
     if (bothReady) {
       console.log('[COMBINED TIMERS] Both ready!');

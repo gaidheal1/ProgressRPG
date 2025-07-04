@@ -29,20 +29,17 @@ export default function useTimers({ mode }) {
     } else {
       // activity mode counts elapsed up
       setElapsed(newElapsed);
-      console.log("Tick, newElapsed:", newElapsed);
     }
-    console.log("Tick, elapsed:", elapsed);
   }, [duration, mode]);
 
   // Start timer
   const start = useCallback(() => {
     if (status === "active") return;
     if (!subject) return;
-    console.log('[useTimers] Start')
+    console.log(`[useTimers] Start ${mode}`);
     setStatus("active");
     startTimeRef.current = Date.now();
     pausedTimeRef.current = elapsed;
-    console.log('pausedTimeRef:', pausedTimeRef);
     clearInterval(intervalRef.current);
     intervalRef.current = setInterval(tick, 1000);
   }, [elapsed, status, tick]);
@@ -53,16 +50,13 @@ export default function useTimers({ mode }) {
       status === "paused" ||
       status === "waiting"
     ) return;
-
     if (!startTimeRef.current) return;
-    console.log(`[useTimers] Pause ${mode}`);
 
+    console.log(`[useTimers] Pause ${mode}`);
     const now = Date.now();
     const secondsPassed = Math.round((now - startTimeRef.current) / 1000);
 
     if (mode === "activity") {
-      console.log('Activity elapsed before:', elapsed);
-      console.log('Seconds passed:', secondsPassed);
       setDuration((prev) => prev + secondsPassed);
     } else if (mode === "quest") {
       setDuration((prev) => prev - secondsPassed);
@@ -97,7 +91,7 @@ export default function useTimers({ mode }) {
 
   // Assign subject to timer
   const assignSubject = useCallback((newSubject, newDuration = 0, newStatus = "waiting", newElapsed = 0) => {
-    console.log('[useTimers] Assign subject')
+    console.log(`[useTimers] Assign ${mode}`);
     setSubject(newSubject);
     setStatus(newStatus);
     setElapsed(newElapsed);
@@ -137,12 +131,13 @@ export default function useTimers({ mode }) {
     status,
     elapsed,
     duration,
+    subject,
+    remainingTime: mode === "quest" ? Math.max(duration - elapsed, 0) : null,
     start,
     pause,
     complete,
     reset,
     assignSubject,
-    remainingTime: mode === "quest" ? Math.max(duration - elapsed, 0) : null,
     loadFromServer,
   };
 }
