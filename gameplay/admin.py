@@ -24,23 +24,26 @@ class QuestAdmin(admin.ModelAdmin):
     fields = [
         "name",
         "description",
-        ("canRepeat", "is_premium"),
+        ("intro_text", "outro_text"),
+        ("canRepeat", "is_premium", "frequency"),
         ("levelMin", "levelMax"),
         "duration_choices",
         "created_at",
-        "frequency",
-        ("intro_text", "outro_text"),
         "stages",
     ]
     list_display = [
         "name",
-        "is_premium",
+        # "is_premium",
         "created_at",
+        "levelMin",
+        "levelMax",
     ]
     list_filter = [
         "created_at",
-        "is_premium",
-        "frequency",
+        # "is_premium",
+        # "frequency",
+        "levelMin",
+        "levelMax",
     ]
 
     readonly_fields = [

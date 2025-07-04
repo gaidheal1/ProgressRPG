@@ -34,6 +34,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return super().validate(attrs)
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "email",
+            "is_staff",
+        ]
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile

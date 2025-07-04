@@ -36,6 +36,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.serializers import (
+    UserSerializer,
     ProfileSerializer,
     CharacterSerializer,
     ActivitySerializer,
@@ -87,8 +88,8 @@ def test_post_view(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def me_view(request):
-    profile = request.user.profile
-    serializer = ProfileSerializer(profile)
+    user = request.user
+    serializer = UserSerializer(user)
     return Response(serializer.data)
 
 
