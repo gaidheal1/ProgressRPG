@@ -3,6 +3,7 @@
 
 .timer {
 	display: flex;
+	flex-direction: column;
 }
 
 .timerFrame {
@@ -11,17 +12,31 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	padding: v.$spacing-xs, v.$spacing-sm;
-	gap: v.$spacing-sm;
+	//padding: v.$padding-base;
+	gap: v.$spacing-gap;
 
-	border: 1px solid v.$color-primary;
+	//border: 1px solid v.$color-primary;
 	border-radius: v.$border-radius;
 }
+
+.timerStatus {
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
 
 .timerText {
 	display: flex;
 	align-items: center;
 	text-align: center;
+	justify-content: center;
+	padding: v.$padding-base;
+	gap: v.$spacing-gap;
+
+	min-width: max-content;
+	width: 8rem;
+	border: 1px solid v.$color-primary;
+	border-radius: v.$border-radius;
 
 	color: v.$color-dark;
 	@include m.apply-text-style(v.$text-body);

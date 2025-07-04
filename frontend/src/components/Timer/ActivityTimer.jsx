@@ -5,7 +5,8 @@ import ButtonFrame from "../Button/ButtonFrame";
 import Input from "../Input/Input";
 import useCombinedTimers from "../../hooks/useCombinedTimers";
 import { formatDuration } from "../../../utils/formatUtils.js";
-import sharedStyles from "./Timer.module.scss";
+import TimerDisplay from "./TimerDisplay.jsx";
+import styles from "./ActivityTimer.module.scss";
 
 export function ActivityTimer() {
   const [activityText, setActivityText] = useState('');
@@ -16,15 +17,21 @@ export function ActivityTimer() {
   const { activityTimer, questTimer } = useGame();
   const {
     status,
-    elapsedTime,
+    elapsed,
     assignSubject,
   } = activityTimer;
-  const displayTime = formatDuration(elapsedTime);
+  const displayTime = formatDuration(elapsed);
 
-  const { submitActivity } = useCombinedTimers(activityTimer, questTimer);
+  const { submitActivity } = useCombinedTimers();
 
+  console.log("Activity timer displayTime:", displayTime);
   return (
-    <div className="timer activity-timer">
+    <section className={styles.activityRow}>
+      <TimerDisplay
+        label="Activity"
+        status={status}
+        time={displayTime}
+      />
       <Input
         id="activity-input"
         label="Activity"
@@ -32,11 +39,6 @@ export function ActivityTimer() {
         onChange={handleInputChange}
         placeholder="Enter activity"
       />
-
-      <div className={sharedStyles.timerFrame}>
-        <div className={sharedStyles.timerText}>{displayTime}</div>
-      </div>
-      <div className="timer-status">{status}</div>
       <ButtonFrame>
         <Button
           onClick={assignSubject}
@@ -58,6 +60,6 @@ export function ActivityTimer() {
           Submit Activity
         </Button>
       </ButtonFrame>
-    </div>
+    </section>
   );
 }

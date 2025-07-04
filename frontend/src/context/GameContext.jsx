@@ -1,10 +1,15 @@
-// GameContext.js
+// GameContext.jsx
 import { createContext, useContext } from 'react';
 import { useBootstrapGameData } from '../hooks/useBootstrapGameData';
 
 const GameContext = createContext();
 
-export const useGame = () => useContext(GameContext);
+export const useGame = () => {
+
+  const context = useContext(GameContext);
+  //console.log('useGame called, context:', context);
+  return context;
+}
 
 export const GameProvider = ({ children }) => {
   const gameData = useBootstrapGameData();

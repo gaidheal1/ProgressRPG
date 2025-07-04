@@ -1,15 +1,10 @@
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../utils/api';
 import useTimers from './useTimers';
-import useCombinedTimers from './useCombinedTimers';
 
 export function useBootstrapGameData() {
   const activityTimer = useTimers({ mode: "activity" });
   const questTimer = useTimers({ mode: "quest"});
-  const {
-    submitActivity,
-    completeQuest
-  } = useCombinedTimers(activityTimer, questTimer);
 
   const [player, setPlayer] = useState(null);
   const [character, setCharacter] = useState(null);
@@ -62,8 +57,6 @@ export function useBootstrapGameData() {
     quests,
     activityTimer,
     questTimer,
-    submitActivity,
-    completeQuest,
     loading,
     error
   };

@@ -36,7 +36,6 @@ function PrivateRoute({ children }) {
 function AppRoutes() {
   return (
     <>
-      <Navbar />
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -75,6 +74,7 @@ function App() {
       <GameProvider>
         <HashRouter>
           <div className="app-container">
+            <Navbar />
             <AppRoutes />
             <footer style={{ marginTop: '2rem', textAlign: 'center' }}>
               <small>&copy; 2025 Progress RPG</small>

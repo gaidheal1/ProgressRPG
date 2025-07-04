@@ -1,8 +1,9 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import styles from './QuestTimer.module.scss';
-import sharedStyles from './Timer.module.scss';
 import { formatDuration } from '../../../utils/formatUtils.js';
+import TimerDisplay from './TimerDisplay.jsx';
+
 
 export default function QuestTimer() {
   const { questTimer } = useGame();
@@ -12,6 +13,11 @@ export default function QuestTimer() {
 
   return (
     <div className={styles.timer}>
+      <TimerDisplay
+        label="Quest"
+        status={status}
+        time={displayTime}
+      />
       <p className={`${styles.questText} ${styles.questLabel}`}>
         <strong>Current quest:</strong>{' '}
         <span className={styles.currentQuestTitle}>{title}</span>
@@ -19,10 +25,7 @@ export default function QuestTimer() {
       <p className={styles.questText}>{intro}</p>
       <p className={styles.questText}>{outro}</p>
 
-      <div className={sharedStyles.timerFrame}>
-        <div className={sharedStyles.timerText}>{displayTime}</div>
-        <div className={styles.timerStatus}>Status: {status}</div>
-      </div>
+
     </div>
   );
 }

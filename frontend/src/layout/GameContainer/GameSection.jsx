@@ -12,8 +12,8 @@ export default function GameSection({
       {/* Header */}
       <div className={styles.sectionHeader}>
         <div className={styles.sectionStatus}>
-          <span className={styles.sectionStatusHeader}>{type}:</span>
-          <span className={styles.sectionStatusMessage}>{status}</span>
+          <span className={styles.sectionStatusHeader}>{type}</span>
+          {/* <span className={styles.sectionStatusMessage}>{status}</span> */}
         </div>
       </div>
 

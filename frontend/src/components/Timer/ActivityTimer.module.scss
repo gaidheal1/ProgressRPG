@@ -1,5 +1,5 @@
 @use '../../styles/base/variables' as v;
-
+@use '../../layout/two-columns' as tc;
 
 .currentQuestSection {
   display: flex;
@@ -28,4 +28,8 @@
   font-weight: v.$font-weight-bold;
   font-style: italic;
   color: v.$color-primary;
+}
+
+.activityRow {
+  @include tc.bodyRow;
 }

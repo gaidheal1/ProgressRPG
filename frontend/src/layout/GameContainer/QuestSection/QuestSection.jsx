@@ -11,7 +11,7 @@ import QuestTimer from '../../../components/Timer/QuestTimer';
 
 
 export default function QuestSection() {
-  const { questTimer, completeQuest } = useGame();
+  const { questTimer } = useGame();
   const { status, assignSubject } = questTimer;
   const quest = questTimer.subject;
   const [modalOpen, setModalOpen] = useState(false);

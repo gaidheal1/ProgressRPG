@@ -1,7 +1,6 @@
 // hooks/useTimer.js
 import { useState, useRef, useEffect, useCallback } from "react";
 
-
 export default function useTimers({ mode }) {
   const [status, setStatus] = useState("empty"); // "empty", "active", "waiting", "completed"
   const [duration, setDuration] = useState(0); // total seconds for timer base
@@ -22,15 +21,17 @@ export default function useTimers({ mode }) {
       const remaining = duration - newElapsed;
       if (remaining <= 0) {
         setElapsed(duration);
-        setStatus("completed");
-        clearInterval(intervalRef.current);
+        complete();
+
       } else {
         setElapsed(newElapsed);
       }
     } else {
       // activity mode counts elapsed up
       setElapsed(newElapsed);
+      console.log("Tick, newElapsed:", newElapsed);
     }
+    console.log("Tick, elapsed:", elapsed);
   }, [duration, mode]);
 
   // Start timer
@@ -41,20 +42,27 @@ export default function useTimers({ mode }) {
     setStatus("active");
     startTimeRef.current = Date.now();
     pausedTimeRef.current = elapsed;
+    console.log('pausedTimeRef:', pausedTimeRef);
     clearInterval(intervalRef.current);
     intervalRef.current = setInterval(tick, 1000);
   }, [elapsed, status, tick]);
 
   // Pause timer
   const pause = useCallback(() => {
-    if (status === "completed") return;
+    if (
+      status === "paused" ||
+      status === "waiting"
+    ) return;
+
     if (!startTimeRef.current) return;
-    console.log('[useTimers] Pause')
+    console.log(`[useTimers] Pause ${mode}`);
 
     const now = Date.now();
     const secondsPassed = Math.round((now - startTimeRef.current) / 1000);
 
     if (mode === "activity") {
+      console.log('Activity elapsed before:', elapsed);
+      console.log('Seconds passed:', secondsPassed);
       setDuration((prev) => prev + secondsPassed);
     } else if (mode === "quest") {
       setDuration((prev) => prev - secondsPassed);
@@ -64,21 +72,22 @@ export default function useTimers({ mode }) {
     clearInterval(intervalRef.current);
     startTimeRef.current = null;
     pausedTimeRef.current = 0;
-    setElapsed(0);
+    //setElapsed(0);
   }, [mode, status]);
 
 
   // Complete timer
   const complete = useCallback(() => {
-    console.log('[useTimers] Complete quest');
+    console.log(`[useTimers] Complete ${mode}`);
+    if (status === "complete") return;
     clearInterval(intervalRef.current);
     setStatus("complete");
-    setDuration(0);
   }, []);
 
   // Reset timer
   const reset = useCallback(() => {
-    console.log('[useTimers] Reset');
+    console.log(`[useTimers] Reset ${mode}`);
+    setDuration(0);
     setSubject(null);
     setStatus("empty");
     setElapsed(0);
