@@ -62,7 +62,7 @@ export async function apiFetch(path, options = {}) {
         Authorization: `Bearer ${newAccessToken}`,
       };
 
-      response = await fetch(fullPath, { ...options, headers: newHeaders });
+      const response = await fetch(fullPath, { ...options, headers: newHeaders });
     } else {
       // Refresh failed, clear tokens and redirect to login
       clearAuthAndRedirect();

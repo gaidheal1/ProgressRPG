@@ -1,8 +1,9 @@
 // hooks/useTimer.js
 import { useState, useRef, useEffect, useCallback } from "react";
-
+import { apiFetch } from "../../utils/api.js";
 
 export default function useTimers({ mode }) {
+  const [id, setId] = useState(0);
   const [status, setStatus] = useState("empty"); // "empty", "active", "waiting", "completed"
   const [duration, setDuration] = useState(0); // total seconds for timer base
   const [elapsed, setElapsed] = useState(0); // seconds elapsed (activity) or elapsed for quest
@@ -22,8 +23,8 @@ export default function useTimers({ mode }) {
       const remaining = duration - newElapsed;
       if (remaining <= 0) {
         setElapsed(duration);
-        setStatus("completed");
-        clearInterval(intervalRef.current);
+        complete();
+
       } else {
         setElapsed(newElapsed);
       }
@@ -37,7 +38,10 @@ export default function useTimers({ mode }) {
   const start = useCallback(() => {
     if (status === "active") return;
     if (!subject) return;
-    console.log('[useTimers] Start')
+    console.log(`[useTimers] Start ${mode}`);
+    const data = await apiFetch(`/${mode}_timers/${id}/start/`, {
+      method: 'POST',
+    });
     setStatus("active");
     startTimeRef.current = Date.now();
     pausedTimeRef.current = elapsed;
@@ -47,10 +51,16 @@ export default function useTimers({ mode }) {
 
   // Pause timer
   const pause = useCallback(() => {
-    if (status === "completed") return;
+    if (
+      status === "paused" ||
+      status === "waiting"
+    ) return;
     if (!startTimeRef.current) return;
-    console.log('[useTimers] Pause')
 
+    console.log(`[useTimers] Pause ${mode}`);
+    const data = await apiFetch(`/${mode}_timers/${id}/pause/`, {
+      method: 'POST',
+    });
     const now = Date.now();
     const secondsPassed = Math.round((now - startTimeRef.current) / 1000);
 
@@ -64,21 +74,26 @@ export default function useTimers({ mode }) {
     clearInterval(intervalRef.current);
     startTimeRef.current = null;
     pausedTimeRef.current = 0;
-    setElapsed(0);
+    //setElapsed(0);
   }, [mode, status]);
 
 
   // Complete timer
   const complete = useCallback(() => {
-    console.log('[useTimers] Complete quest');
+    console.log(`[useTimers] Complete ${mode}`);
+    if (status === "complete") return;
     clearInterval(intervalRef.current);
     setStatus("complete");
-    setDuration(0);
   }, []);
 
   // Reset timer
   const reset = useCallback(() => {
-    console.log('[useTimers] Reset');
+    if (status === "empty") return;
+    console.log(`[useTimers] Reset ${mode}`);
+    const data = await apiFetch(`/${mode}_timers/${id}/reset/`, {
+      method: 'POST',
+    });
+    setDuration(0);
     setSubject(null);
     setStatus("empty");
     setElapsed(0);
@@ -88,7 +103,7 @@ export default function useTimers({ mode }) {
 
   // Assign subject to timer
   const assignSubject = useCallback((newSubject, newDuration = 0, newStatus = "waiting", newElapsed = 0) => {
-    console.log('[useTimers] Assign subject')
+    console.log(`[useTimers] Assign ${mode}`);
     setSubject(newSubject);
     setStatus(newStatus);
     setElapsed(newElapsed);
@@ -105,11 +120,13 @@ export default function useTimers({ mode }) {
     return () => clearInterval(intervalRef.current);
   }, []);
 
+
   const loadFromServer = useCallback((serverData) => {
     if (!serverData) return;
 
-    const { status, elapsed_time, duration, activity, quest } = serverData;
+    const { id, status, elapsed_time, duration, activity, quest } = serverData;
 
+    setId(id || 0);
     setStatus(status || 'empty');
     setElapsed(elapsed_time || 0);
 
@@ -128,12 +145,13 @@ export default function useTimers({ mode }) {
     status,
     elapsed,
     duration,
+    subject,
+    remainingTime: mode === "quest" ? Math.max(duration - elapsed, 0) : null,
     start,
     pause,
     complete,
     reset,
     assignSubject,
-    remainingTime: mode === "quest" ? Math.max(duration - elapsed, 0) : null,
     loadFromServer,
   };
 }

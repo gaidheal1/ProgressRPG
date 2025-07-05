@@ -5,7 +5,6 @@ import { apiFetch } from '../../utils/api';
 export default function useLogin() {
   const login = useCallback(async (email, password) => {
     try {
-
       const data = await apiFetch('/auth/jwt/create/', {
         method: 'POST',
         headers: {
@@ -20,7 +19,21 @@ export default function useLogin() {
       return { success: true, tokens: data };
     } catch (error) {
       console.error('[useLogin] Error logging in:', error);
-      return { success: false, error: 'Network error. Try again.' };
+
+      const message =
+        typeof error === 'string'
+          ? error.toLowerCase()
+          : error?.message?.toLowerCase?.() || '';
+
+
+      if (message.includes('no active account')) {
+        return { success: false, error: 'Invalid email or password; please try again.' };
+      } else {
+        return {
+          success: false,
+          error: 'Login failed. Please try again.'
+        };
+      }
     }
   }, []);
 

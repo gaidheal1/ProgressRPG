@@ -18,20 +18,29 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    setError('');
+
     const result = await loginWithJwt(email, password);
-    setSubmitting(false);
-
+    console.log('LoginPage login result:', result);
     if (result.success) {
-      login(result.tokens.access, result.tokens.refresh);
+      try {
+        await login(result.tokens.access, result.tokens.refresh);
 
-      if (result.onboarding_step && result.onboarding_step < 4) {
-        navigate('/onboarding');
-      } else {
-        navigate('/game');
+        if (result.onboarding_step && result.onboarding_step < 4) {
+          navigate('/onboarding');
+        } else {
+          navigate('/game');
+        }
+
+      } catch (err) {
+        setError("Login succeeded but failed to fetch user info.");
+        console.error('Post-login user fetch failed:', err);
       }
     } else {
       setError(result.error || 'Login failed');
     }
+
+    setSubmitting(false);
   };
 
   return (

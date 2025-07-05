@@ -9,10 +9,12 @@
   gap: v.$spacing-gap;
   width: 100%;
   margin: 0 auto;
+
+  //max-width: 400px;
   //outline: 2px dotted green;
 
   @include m.respond-to(sm) {
-    max-width: 576px;
+    max-width: 100%;
   }
 
   @include m.respond-to(lg) {

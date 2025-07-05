@@ -1,7 +1,10 @@
 import React from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { GameProvider } from './context/GameContext';
+import { ErrorBoundary } from 'react-error-boundary';
+import ErrorFallback from './components/ErrorFallback';
 import Navbar from './layout/Navbar/Navbar';
+import Footer from './layout/Footer/Footer';
 
 import Home from './pages/Home/Home';
 import LoginPage from './pages/LoginPage/LoginPage';
@@ -9,6 +12,8 @@ import LogoutPage from './pages/LogoutPage/LogoutPage';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
 import OnboardingPage from './pages/OnboardingPage';
 import Game from './pages/Game/Game';
+import ProfilePage from './pages/Profile/Profile';
+// import NotFound from './pages/NotFound'; // optional 404
 
 import { useAuth } from './context/AuthContext';
 
@@ -18,9 +23,6 @@ import {
   Route,
   Navigate
 } from 'react-router-dom';
-
-// import Profile from './pages/Profile'; // for future routes
-// import NotFound from './pages/NotFound'; // optional 404
 
 
 function PrivateRoute({ children }) {
@@ -36,7 +38,7 @@ function PrivateRoute({ children }) {
 function AppRoutes() {
   return (
     <>
-      <Navbar />
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -57,7 +59,19 @@ function AppRoutes() {
             path="/game"
             element={
               <PrivateRoute>
-                <Game />
+		<ErrorBoundary FallbackComponent={ErrorFallback}>
+                  <Game />
+		</ErrorBoundary>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+		<ErrorBoundary FallbackComponent={ErrorFallback}>
+                  <Profile />
+		</ErrorBoundary>
               </PrivateRoute>
             }
           />
@@ -65,6 +79,7 @@ function AppRoutes() {
           <Route path="*" element={<h2>404: Page Not Found</h2>} />
         </Routes>
       </main>
+      </ErrorBoundary>
     </>
   );
 }
@@ -75,10 +90,9 @@ function App() {
       <GameProvider>
         <HashRouter>
           <div className="app-container">
+            <Navbar />
             <AppRoutes />
-            <footer style={{ marginTop: '2rem', textAlign: 'center' }}>
-              <small>&copy; 2025 Progress RPG</small>
-            </footer>
+            <Footer />
           </div>
         </HashRouter>
       </GameProvider>

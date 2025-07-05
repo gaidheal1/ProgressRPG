@@ -36,6 +36,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.serializers import (
+    UserSerializer,
     ProfileSerializer,
     CharacterSerializer,
     ActivitySerializer,
@@ -59,14 +60,31 @@ logger = logging.getLogger("django")
 
 
 class IsOwnerProfile(permissions.BasePermission):
+    owner_attr = "profile"
+
     def has_object_permission(self, request, view, obj):
         profile = getattr(request.user, "profile", None)
+        if profile is None:
+            return False
 
+        # Check if object has 'profile' attribute and compare
         if hasattr(obj, "profile"):
             return obj.profile == profile
 
+        return False
+
+
+class IsOwnerCharacter(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        profile = getattr(request.user, "profile", None)
+        if profile is None:
+            return False
+
+        # Check if the object's character is linked to the profile and active
         if hasattr(obj, "character"):
-            return PlayerCharacterLink.get_profile(obj.character)
+            return PlayerCharacterLink.objects.filter(
+                profile=profile, character=obj.character, is_active=True
+            ).exists()
 
         return False
 
@@ -74,21 +92,20 @@ class IsOwnerProfile(permissions.BasePermission):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-
-@csrf_exempt
-@api_view(["POST"])
-def test_post_view(request):
-    permission_classes = [IsAuthenticated]
-    return Response(
-        {"status": "ok", "message": f"Hello {request.user.email}! POST successful!"}
-    )
+    @csrf_exempt
+    @api_view(["POST"])
+    def test_post_view(request):
+        permission_classes = [IsAuthenticated]
+        return Response(
+            {"status": "ok", "message": f"Hello {request.user.email}! POST successful!"}
+        )
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def me_view(request):
-    profile = request.user.profile
-    serializer = ProfileSerializer(profile)
+    user = request.user
+    serializer = UserSerializer(user)
     return Response(serializer.data)
 
 
@@ -544,8 +561,71 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
 
-class ActivityTimerViewSet(viewsets.ReadOnlyModelViewSet):
+class BaseTimerViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Abstract base class for timer viewsets. Assumes each timer
+    is linked to a profile, and enforces IsAuthenticated + IsOwnerProfile.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Default queryset logic (override if needed)
+        return self.queryset.filter(profile=self.request.user.profile)
+
+    def handle_related_object(self, related_model, related_id, related_name="object"):
+        """
+        Generic helper to fetch a related model instance and return a DRF Response on failure.
+        """
+        try:
+            return related_model.objects.get(id=related_id), None
+        except related_model.DoesNotExist:
+            return None, Response(
+                {"error": f"{related_name.capitalize()} not found."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def control_timer(self, request, pk, command):
+        timer = self.get_object()
+
+        # Map commands to timer methods
+        commands_map = {
+            "start": timer.start,
+            "pause": timer.pause,
+            "complete": timer.complete,
+            "reset": timer.reset,
+        }
+
+        if command not in commands_map:
+            return Response({"error": "Invalid command"}, status=400)
+
+        try:
+            commands_map[command]()
+            serializer = self.get_serializer(timer)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+
+    @action(detail=True, methods=["post"])
+    def start(self, request, pk=None):
+        return self.control_timer(request, pk, "start")
+
+    @action(detail=True, methods=["post"])
+    def pause(self, request, pk=None):
+        return self.control_timer(request, pk, "pause")
+
+    @action(detail=True, methods=["post"])
+    def reset(self, request, pk=None):
+        return self.control_timer(request, pk, "reset")
+
+    @action(detail=True, methods=["post"])
+    def complete(self, request, pk=None):
+        return self.control_timer(request, pk, "complete")
+
+
+class ActivityTimerViewSet(BaseTimerViewSet):
     serializer_class = ActivityTimerSerializer
+    queryset = ActivityTimer.objects.all()
     permission_classes = [IsAuthenticated, IsOwnerProfile]
 
     def get_queryset(self):
@@ -556,33 +636,28 @@ class ActivityTimerViewSet(viewsets.ReadOnlyModelViewSet):
         timer = self.get_object()
         activity_id = request.data.get("activity_id")
 
-        try:
-            activity = Activity.objects.get(id=activity_id)
-        except Activity.DoesNotExist:
-            return Response(
-                {"error": "Activity not found."}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Optional: validate activity belongs to user, if needed
+        activity, error_response = self.handle_related_object(
+            Activity, activity_id, "activity"
+        )
+        if error_response:
+            return error_response
 
         timer.new_activity(activity)
         serializer = self.get_serializer(timer)
         return Response(serializer.data)
 
 
-class QuestTimerViewSet(viewsets.ReadOnlyModelViewSet):
+class QuestTimerViewSet(BaseTimerViewSet):
     serializer_class = QuestTimerSerializer
-    permission_classes = [IsAuthenticated, IsOwnerProfile]
+    queryset = QuestTimer.objects.all()
+    permission_classes = [IsAuthenticated, IsOwnerCharacter]
 
     def get_queryset(self):
         profile = self.request.user.profile
-
-        # Get all active linked characters for this profile
         active_character_ids = PlayerCharacterLink.objects.filter(
             profile=profile, is_active=True
         ).values_list("character_id", flat=True)
 
-        # Filter quest timers by characters linked to this profile
         return QuestTimer.objects.filter(character_id__in=active_character_ids)
 
     @action(detail=True, methods=["post"])
@@ -591,14 +666,10 @@ class QuestTimerViewSet(viewsets.ReadOnlyModelViewSet):
         quest_id = request.data.get("quest_id")
         duration = request.data.get("duration")
 
-        try:
-            quest = Quest.objects.get(id=quest_id)
-        except Quest.DoesNotExist:
-            return Response(
-                {"error": "Quest not found."}, status=status.HTTP_400_BAD_REQUEST
-            )
+        quest, error_response = self.handle_related_object(Quest, quest_id, "quest")
+        if error_response:
+            return error_response
 
-        # Optional: validate quest belongs to character, if necessary
         if not isinstance(duration, int):
             return Response(
                 {"error": "Duration must be an integer."},

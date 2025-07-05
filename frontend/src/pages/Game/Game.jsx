@@ -51,7 +51,7 @@ export default function Game() {
   };
 
   if (loading) return <p>Loading game data...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (error) return <p>Error: {error}. Please refresh the page!</p>;
 
   return (
     <div className={styles.gamePage}>

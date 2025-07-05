@@ -36,3 +36,10 @@
     width: 50%;
   }
 }
+
+
+@mixin bodyRow {
+  display: flex;
+  flex-direction: column;
+  gap: v.$spacing-gap;
+}

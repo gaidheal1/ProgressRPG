@@ -1,5 +1,5 @@
 
-export function formatDuration(duration: number): string {
+export function formatDuration(duration) {
   const hours = Math.floor(duration / 3600);
   const mins = Math.floor((duration % 3600) / 60);
   const secs = duration % 60;

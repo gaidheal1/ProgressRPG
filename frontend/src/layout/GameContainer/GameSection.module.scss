@@ -25,5 +25,13 @@
 }
 
 .sectionBody {
-  font-size: v.$font-weight-base;
+  display: flex;
+  flex-direction: column;
+  font-size: v.$font-size-base;
+  width: 100%;
+  gap: v.$spacing-gap;
+}
+
+.sectionRow {
+  gap: v.$spacing-gap;
 }

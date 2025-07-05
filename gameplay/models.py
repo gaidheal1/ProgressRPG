@@ -73,10 +73,10 @@ class Quest(models.Model):
     results: Optional["QuestResults"] = None
 
     # Eligibility criteria
-    is_premium = models.BooleanField(default=True)
+    is_premium = models.BooleanField(default=False)
     levelMin = models.IntegerField(default=0)
     levelMax = models.IntegerField(default=0)
-    canRepeat = models.BooleanField(default=False)
+    canRepeat = models.BooleanField(default=True)
     quest_requirements: QuerySet["QuestRequirement"]
     quest_completions: QuerySet["QuestCompletion"]
 

@@ -2,12 +2,18 @@
 import { useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 
-export default function useCombinedTimers(activityTimer, questTimer) {
-  // const { activityTimer, questTimer } = useGame();
+export default function useCombinedTimers() {
+  const game = useGame();
+
+  if (!game) {
+    throw new Error("useCombinedTimers must be used within a GameProvider");
+  }
+
+  const { activityTimer, questTimer } = useGame();
 
   // Auto-pause activity when quest completes
   useEffect(() => {
-    if (questTimer.status === "completed" && activityTimer.status === "active") {
+    if (questTimer.status === "complete" && activityTimer.status === "active") {
       activityTimer.pause();
     }
   }, [
@@ -17,12 +23,10 @@ export default function useCombinedTimers(activityTimer, questTimer) {
 
   // Auto-start both if both are ready
   useEffect(() => {
-    console.log('[COMBINED TIMERS] effect check (both ready)');
-    const bothReady =
-    activityTimer.status === "waiting" &&
-    questTimer.status === "waiting" &&
-    activityTimer.elapsed === 0 &&
-    questTimer.elapsed === 0;
+    console.log('[COMBINED TIMERS] effect (both ready)');
+
+    const isReady = (status) => ["waiting", "paused"].includes(status);
+    const bothReady = isReady(activityTimer.status) && isReady(questTimer.status);
 
     if (bothReady) {
       console.log('[COMBINED TIMERS] Both ready!');
@@ -36,26 +40,26 @@ export default function useCombinedTimers(activityTimer, questTimer) {
     questTimer.elapsed
   ]);
 
-  // Helpers for external use
+  // Helper for external use
   const submitActivity = () => {
     console.log('[COMBINED TIMERS] Submit activity');
     activityTimer.complete();
     activityTimer.reset();
-    if (questTimer.status === "active") {
-        questTimer.pause();
-    }
-};
+    questTimer.pause();
+  };
 
-const completeQuest = () => {
+  useEffect(() => {
     console.log('[COMBINED TIMERS] Complete quest');
-    questTimer.complete();
-    if (activityTimer.status === "active") {
+    if (
+      questTimer.status === "active" &&
+      questTimer.remaining >= questTimer.duration
+    ) {
+      questTimer.complete();
       activityTimer.pause();
     }
-  };
+  }, [questTimer.elapsed, questTimer.status]);
 
   return {
     submitActivity,
-    completeQuest,
   };
 }

@@ -24,7 +24,7 @@ from .views import (
     DownloadUserDataAPIView,
     DeleteAccountAPIView,
     CustomTokenObtainPairView,
-    test_post_view,
+    # test_post_view,
 )
 
 router = DefaultRouter()
@@ -49,7 +49,7 @@ urlpatterns = [
     path("ws_auth/", AsgiValidateTokenView.as_view(), name="ws_auth"),
     path("auth/", include(auth_urls)),
     path("auth/", include("users.urls")),
-    path("auth/jwt/create/", CustomTokenObtainPairView.as_view(), name="jwt_create"),
+    path("auth/jwt/create/", TokenObtainPairView.as_view(), name="jwt_create"),
     path("auth/jwt/refresh/", TokenRefreshView.as_view(), name="jwt_refresh"),
     path("auth/jwt/verify/", TokenVerifyView.as_view(), name="jwt_verify"),
     path("auth/registration/", CustomRegisterView.as_view(), name="custom_register"),
@@ -59,5 +59,5 @@ urlpatterns = [
         name="api_download_user_data",
     ),
     path("delete_account/", DeleteAccountAPIView.as_view(), name="api_delete_account"),
-    path("auth/test_post/", test_post_view, name="test_post"),
+    # path("auth/test_post/", test_post_view, name="test_post"),
 ]

@@ -43,17 +43,25 @@ export function AuthProvider({ children }) {
     verifyUser();
   }, []);
 
-  const login = (access, refresh) => {
+  const login = async (access, refresh) => {
     localStorage.setItem('accessToken', access);
     localStorage.setItem('refreshToken', refresh);
     setAccessToken(access);
     setRefreshToken(refresh);
-    setIsAuthenticated(true);
+    setLoading(true);
 
     // Fetch user info after login
-    apiFetch('/me/')
-      .then(setUser)
-      .catch(() => setUser(null));
+    try {
+      const userData = await apiFetch('/me/');
+      console.log('AuthProv userData:', userData);
+      setUser(userData);
+      setIsAuthenticated(true);
+    } catch (err) {
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = () => {
