@@ -1,7 +1,9 @@
 // hooks/useTimer.js
 import { useState, useRef, useEffect, useCallback } from "react";
+import { apiFetch } from "../../utils/api.js";
 
 export default function useTimers({ mode }) {
+  const [id, setId] = useState(0);
   const [status, setStatus] = useState("empty"); // "empty", "active", "waiting", "completed"
   const [duration, setDuration] = useState(0); // total seconds for timer base
   const [elapsed, setElapsed] = useState(0); // seconds elapsed (activity) or elapsed for quest
@@ -37,6 +39,9 @@ export default function useTimers({ mode }) {
     if (status === "active") return;
     if (!subject) return;
     console.log(`[useTimers] Start ${mode}`);
+    const data = await apiFetch(`/${mode}_timers/${id}/start/`, {
+      method: 'POST',
+    });
     setStatus("active");
     startTimeRef.current = Date.now();
     pausedTimeRef.current = elapsed;
@@ -53,6 +58,9 @@ export default function useTimers({ mode }) {
     if (!startTimeRef.current) return;
 
     console.log(`[useTimers] Pause ${mode}`);
+    const data = await apiFetch(`/${mode}_timers/${id}/pause/`, {
+      method: 'POST',
+    });
     const now = Date.now();
     const secondsPassed = Math.round((now - startTimeRef.current) / 1000);
 
@@ -80,7 +88,11 @@ export default function useTimers({ mode }) {
 
   // Reset timer
   const reset = useCallback(() => {
+    if (status === "empty") return;
     console.log(`[useTimers] Reset ${mode}`);
+    const data = await apiFetch(`/${mode}_timers/${id}/reset/`, {
+      method: 'POST',
+    });
     setDuration(0);
     setSubject(null);
     setStatus("empty");
@@ -108,11 +120,13 @@ export default function useTimers({ mode }) {
     return () => clearInterval(intervalRef.current);
   }, []);
 
+
   const loadFromServer = useCallback((serverData) => {
     if (!serverData) return;
 
-    const { status, elapsed_time, duration, activity, quest } = serverData;
+    const { id, status, elapsed_time, duration, activity, quest } = serverData;
 
+    setId(id || 0);
     setStatus(status || 'empty');
     setElapsed(elapsed_time || 0);
 
