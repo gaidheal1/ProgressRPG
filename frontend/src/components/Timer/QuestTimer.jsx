@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useGame } from '../../context/GameContext';
 import styles from './QuestTimer.module.scss';
 import { formatDuration } from '../../../utils/formatUtils.js';
@@ -8,12 +8,24 @@ import List from '../List/List.jsx';
 
 export default function QuestTimer() {
   const { questTimer } = useGame();
-  const { subject: quest, status, elapsed, remainingTime } = questTimer;
+  const { subject: quest, status, duration, elapsed, remainingTime } = questTimer;
   const displayTime = formatDuration(remainingTime);
   const { name = 'None', intro_text = 'No active quest yet...', outro_text = '', stages } = quest || {};
 
-  console.log('Stages:', stages);
-  console.log('Elapsed:', elapsed);
+  function shuffle(array) {
+    return array.sort(() => Math.random() - 0.5);
+  }
+
+  let stageDuration = 3
+  const maxStages = Math.floor(duration / stageDuration);
+
+  // If there aren't enough stages given stageDuration, divide quest duration into number of stages
+  if (maxStages > stages.length) {
+    stageDuration = Math.floor(duration / stages.length);
+  }
+  const shuffledStages = useMemo(() => shuffle([...stages]), []);
+  const questStages = shuffledStages.slice(0, maxStages);
+  const currentStageIndex = Math.floor(elapsed / stageDuration);
 
   return (
     <div className={styles.questRow}>
@@ -31,12 +43,11 @@ export default function QuestTimer() {
         <p className={styles.questText}>{intro_text}</p>
 
         <List
-          items={stages}
+          items={questStages}
           renderItem={(stage, index) => {
-            const isCompleted = stage.endTime <= elapsed;
-            const isCurrent = elapsed < stage.endTime && (
-              index === 0 || elapsed >= stages[index - 1].endTime
-            );
+
+            const isCurrent = index === currentStageIndex;
+            const isCompleted = index < currentStageIndex;
 
             let className;
             if (isCompleted) className = styles.completedStage;
