@@ -113,24 +113,6 @@ def start_server_timers(act_timer: ActivityTimer, quest_timer: QuestTimer):
         f"[START SERVER TIMERS] Quest timer status/duration/elapsed/remaining: {qt.status}/{qt.duration}/{qt.get_elapsed_time()}/{qt.get_remaining_time()}"
     )
 
-    # if act_timer.status != "empty" and act_timer.activity is None:
-    #     logger.error(f"[START SERVER TIMERS] Timer status is {act_timer.status} but activity empty ({act_timer.activity})")
-    #     await sync_to_async(act_timer.reset)()
-
-    #  This scenario shouldn't happen. Just in case though...
-    if bool(act_timer.is_active()) ^ bool(quest_timer.is_active()):
-        logger.info(
-            "[TIMER CHECK] One timer is active while the other is paused. Pausing both"
-        )
-        logger.debug(
-            f"[TIMER CHECK] Activity Timer: {act_timer.is_active()}, Quest Timer: {quest_timer.is_active()}"
-        )
-        success = pause_server_timers(act_timer, quest_timer)
-        if not success:
-            result_text = "[START SERVER TIMERS] Failed to pause timers"
-            logger.warning(result_text)
-            return False, result_text
-
     if act_timer.status in ["active", "paused", "waiting"] and quest_timer.status in [
         "active",
         "paused",
