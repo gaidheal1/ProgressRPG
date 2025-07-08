@@ -12,34 +12,11 @@ function shuffle(array) {
 
 export default function QuestTimer() {
   const { questTimer } = useGame();
-  const { subject: quest, status, duration, elapsed, remainingTime } = questTimer;
-  const displayTime = formatDuration(remainingTime);
-  const { name = 'None', intro_text = 'No active quest yet...', outro_text = '', stages } = quest || {};
+  const { subject: quest, status, duration, elapsed, remaining, processedStages, globalStageIndex } = questTimer;
+  const displayTime = formatDuration(remaining);
+  const { name = 'None', intro_text = 'No active quest yet...', outro_text = '' } = quest || {};
 
-  let stagesEd = stages;
-
-  // Calculate total duration of stages
-  const totalStagesDuration = stages.reduce((sum, stage) => {
-    const duration = stage.duration ?? stage.endTime;
-    return duration ? sum + duration : sum;
-  }, 0);
-  console.log(`Total stages duration: ${totalDuration} seconds`);
-
-  // Shuffle stages
-  if (!quest.stagesFixed) {
-    console.log("Quest stages are random!");
-    stagesEd = useMemo(() => shuffle([...stagesEd]), []);    
-  }
-
-  // Loop stages if necessary
-  if (duration > totalStagesDuration) {
-    const numLoops = Math.ceil(duration / totalStagesDuration);
-    stagesEd = (stages, numLoops) => Array(numLoops).fill().flatMap(() => stagesEd);
-  }
-
-  // This no longer works
-  const currentStageIndex = Math.floor(elapsed / stageDuration);
-
+  console.log(`[Quest Timer] processedStages: ${processedStages}`);
   return (
     <div className={styles.questRow}>
       <TimerDisplay
@@ -56,18 +33,19 @@ export default function QuestTimer() {
         <p className={styles.questText}>{intro_text}</p>
 
         <List
-          items={stagesEd}
-          renderItem={(stage, index) => {
+          items={processedStages}
+          renderItem={({ stage, globalIndex }, index) => {
 
-            const isCurrent = index === currentStageIndex;
-            const isCompleted = index < currentStageIndex;
+            const isCompleted = globalIndex < globalStageIndex;
+            const isCurrent = globalIndex === globalStageIndex;
+            const isFuture = globalIndex > globalStageIndex;
 
             let className;
             if (isCompleted) className = styles.completedStage;
             else if (isCurrent) className = styles.currentStage;
             else className = styles.futureStage;
 
-            return <div className={className}>{stage.text}</div>;
+            return <div className={className} key={index}>{stage.text}</div>;
           }}
           className={styles.list}
           sectionClass={styles.listSection}
@@ -82,4 +60,3 @@ export default function QuestTimer() {
     </div>
   );
 }
-

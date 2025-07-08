@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../utils/api';
 import useTimers from './useTimers';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export function useBootstrapGameData() {
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
   const activityTimer = useTimers({ mode: "activity" });
   const questTimer = useTimers({ mode: "quest"});
 
@@ -14,13 +17,13 @@ export function useBootstrapGameData() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading || !isAuthenticated) return;
+
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
     const dd = String(today.getDate()).padStart(2, '0');
-
     const formattedDate = `${yyyy}-${mm}-${dd}`;
-
 
     const fetchGameData = async () => {
       try {
@@ -31,7 +34,6 @@ export function useBootstrapGameData() {
           apiFetch('/quests/eligible/'),
           apiFetch(`/activities/?date=${formattedDate}`)
         ]);
-        console.log('Character data:', info.character);
         setPlayer(info.profile);
         setCharacter(info.character);
         setQuests(questsData);
@@ -48,7 +50,7 @@ export function useBootstrapGameData() {
     };
 
     fetchGameData();
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   return {
     player,

@@ -42,22 +42,19 @@ export function ActivityTimer() {
       />
       <ButtonFrame>
         <Button
-          onClick={assignSubject}
+          onClick={() => assignSubject(activityText)}
           disabled={status !== "empty"}
         >
           Start Activity
         </Button>
 
-        {/* If you want to submit or complete the activity */}
         <Button
           onClick={() => {
-            /* submit or complete handler */
-            console.log("Submit activity:", activityText);
             setActivityText('');
             submitActivity();
           }}
           disabled={status === "empty"}
-          >
+        >
           Submit Activity
         </Button>
       </ButtonFrame>

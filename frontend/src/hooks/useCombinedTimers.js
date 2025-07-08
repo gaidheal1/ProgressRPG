@@ -1,61 +1,57 @@
 // hooks/useCombinedTimers.js
-import { useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 
 export default function useCombinedTimers() {
-  const game = useGame();
-
-  if (!game) {
-    throw new Error("useCombinedTimers must be used within a GameProvider");
-  }
-
   const { activityTimer, questTimer } = useGame();
-
-  // Auto-pause activity when quest completes
-  useEffect(() => {
-    if (questTimer.status === "complete" && activityTimer.status === "active") {
-      activityTimer.pause();
-    }
-  }, [
-    questTimer.status,
-    activityTimer.status
-  ]);
+  const timersRunningRef = useRef(false);
 
   // Auto-start both if both are ready
   useEffect(() => {
-    console.log('[COMBINED TIMERS] effect (both ready)');
-
     const isReady = (status) => ["waiting", "paused"].includes(status);
     const bothReady = isReady(activityTimer.status) && isReady(questTimer.status);
 
-    if (bothReady) {
+    if (bothReady && !timersRunningRef.current) {
       console.log('[COMBINED TIMERS] Both ready!');
-      activityTimer.start();
-      questTimer.start();
+      timersRunningRef.current = true;
+
+      (async () => {
+        if (activityTimer.status === "waiting" || activityTimer.status === "paused") {
+          await activityTimer.start();
+        }
+        if (questTimer.status === "waiting" || questTimer.status === "paused") {
+          await questTimer.start();
+        }
+      })();
     }
   }, [
     activityTimer.status,
     questTimer.status,
-    activityTimer.elapsed,
-    questTimer.elapsed
   ]);
 
-  // Helper for external use
-  const submitActivity = () => {
+  // Submit activity
+  const submitActivity = async () => {
     console.log('[COMBINED TIMERS] Submit activity');
-    activityTimer.complete();
-    activityTimer.reset();
-    questTimer.pause();
+    console.log('Activity:', activityTimer.subject);
+
+    timersRunningRef.current = false;
+
+    await activityTimer.complete();
+    await activityTimer.reset();
+    if (questTimer.status !== "complete") questTimer.pause();
   };
 
+  // Quest auto-complete
   useEffect(() => {
     console.log('[COMBINED TIMERS] Complete quest');
+
     if (
       questTimer.status === "active" &&
-      questTimer.remaining >= questTimer.duration
+      questTimer.remaining <= 0
     ) {
       questTimer.complete();
       activityTimer.pause();
+      timersRunningRef.current = false;
     }
   }, [questTimer.elapsed, questTimer.status]);
 
