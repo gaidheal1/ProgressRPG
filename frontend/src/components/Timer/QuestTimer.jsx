@@ -6,25 +6,38 @@ import TimerDisplay from './TimerDisplay.jsx';
 import List from '../List/List.jsx';
 
 
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
 export default function QuestTimer() {
   const { questTimer } = useGame();
   const { subject: quest, status, duration, elapsed, remainingTime } = questTimer;
   const displayTime = formatDuration(remainingTime);
   const { name = 'None', intro_text = 'No active quest yet...', outro_text = '', stages } = quest || {};
 
-  function shuffle(array) {
-    return array.sort(() => Math.random() - 0.5);
+  let stagesEd = stages;
+
+  // Calculate total duration of stages
+  const totalStagesDuration = stages.reduce((sum, stage) => {
+    const duration = stage.duration ?? stage.endTime;
+    return duration ? sum + duration : sum;
+  }, 0);
+  console.log(`Total stages duration: ${totalDuration} seconds`);
+
+  // Shuffle stages
+  if (!quest.stagesFixed) {
+    console.log("Quest stages are random!");
+    stagesEd = useMemo(() => shuffle([...stagesEd]), []);    
   }
 
-  let stageDuration = 3
-  const maxStages = Math.floor(duration / stageDuration);
-
-  // If there aren't enough stages given stageDuration, divide quest duration into number of stages
-  if (maxStages > stages.length) {
-    stageDuration = Math.floor(duration / stages.length);
+  // Loop stages if necessary
+  if (duration > totalStagesDuration) {
+    const numLoops = Math.ceil(duration / totalStagesDuration);
+    stagesEd = (stages, numLoops) => Array(numLoops).fill().flatMap(() => stagesEd);
   }
-  const shuffledStages = useMemo(() => shuffle([...stages]), []);
-  const questStages = shuffledStages.slice(0, maxStages);
+
+  // This no longer works
   const currentStageIndex = Math.floor(elapsed / stageDuration);
 
   return (
@@ -43,7 +56,7 @@ export default function QuestTimer() {
         <p className={styles.questText}>{intro_text}</p>
 
         <List
-          items={questStages}
+          items={stagesEd}
           renderItem={(stage, index) => {
 
             const isCurrent = index === currentStageIndex;
@@ -69,3 +82,4 @@ export default function QuestTimer() {
     </div>
   );
 }
+

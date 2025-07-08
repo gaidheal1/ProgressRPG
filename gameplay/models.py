@@ -62,6 +62,7 @@ class Quest(models.Model):
     end_date = models.DateTimeField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     stages: Any = models.JSONField(default=list)
+    stagesFixed = models.BooleanField(default=False)
 
     class Category(models.TextChoices):
         NONE = "NONE", "No category"

@@ -59,9 +59,9 @@ function AppRoutes() {
             path="/game"
             element={
               <PrivateRoute>
-		<ErrorBoundary FallbackComponent={ErrorFallback}>
+		            <ErrorBoundary FallbackComponent={ErrorFallback}>
                   <Game />
-		</ErrorBoundary>
+		            </ErrorBoundary>
               </PrivateRoute>
             }
           />
@@ -69,9 +69,9 @@ function AppRoutes() {
             path="/profile"
             element={
               <PrivateRoute>
-		<ErrorBoundary FallbackComponent={ErrorFallback}>
-                  <Profile />
-		</ErrorBoundary>
+		            <ErrorBoundary FallbackComponent={ErrorFallback}>
+                  <ProfilePage />
+		            </ErrorBoundary>
               </PrivateRoute>
             }
           />

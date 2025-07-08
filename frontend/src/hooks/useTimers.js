@@ -8,8 +8,15 @@ export default function useTimers({ mode }) {
   const [duration, setDuration] = useState(0); // total seconds for timer base
   const [elapsed, setElapsed] = useState(0); // seconds elapsed (activity) or elapsed for quest
   const [subject, setSubject] = useState(null); // the current activity or quest
+  const [stages, setStages] = useState([]);
 
-  const intervalRef = useRef(null);
+  const [currentStageIndex, setCurrentStageIndex] = useState(0);
+  const [stageTimeRemaining, setStageTimeRemaining] = useState(
+    stages[0]?.duration ?? stages[0]?.endTime ?? 0
+  );
+
+  const timerRef = useRef(null);
+  const stageTimerRef = useRef(null);
   const startTimeRef = useRef(null);
   const pausedTimeRef = useRef(0);
 
@@ -18,19 +25,22 @@ export default function useTimers({ mode }) {
     const now = Date.now();
     const secondsPassed = Math.round((now - startTimeRef.current) / 1000);
     const newElapsed = pausedTimeRef.current + secondsPassed;
-
+    
+    setElapsed(newElapsed);
+    
     if (mode === "quest") {
       const remaining = duration - newElapsed;
       if (remaining <= 0) {
         setElapsed(duration);
         complete();
-
-      } else {
-        setElapsed(newElapsed);
       }
-    } else {
-      // activity mode counts elapsed up
-      setElapsed(newElapsed);
+
+      const stageRemaining = stages[currentStageIndex].duration - (stageTimeRemaining + secondsPassed);
+      console.log('New stageRemaining:', stageRemaining);
+      setStageTimeRemaining(stageRemaining);
+      if (stageRemaining <=0) {
+        setCurrentStageIndex(currentStageIndex + 1);
+      }
     }
   }, [duration, mode]);
 
@@ -39,14 +49,18 @@ export default function useTimers({ mode }) {
     if (status === "active") return;
     if (!subject) return;
     console.log(`[useTimers] Start ${mode}`);
-    const data = await apiFetch(`/${mode}_timers/${id}/start/`, {
+    const data = apiFetch(`/${mode}_timers/${id}/start/`, {
       method: 'POST',
     });
     setStatus("active");
     startTimeRef.current = Date.now();
     pausedTimeRef.current = elapsed;
-    clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(tick, 1000);
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(tick, 1000);
+    
+    clearInterval(stageTimerRef.current);
+    stageTimerRef.current = setInterval(tick, stageTimeRemaining);
+
   }, [elapsed, status, tick]);
 
   // Pause timer
@@ -58,7 +72,7 @@ export default function useTimers({ mode }) {
     if (!startTimeRef.current) return;
 
     console.log(`[useTimers] Pause ${mode}`);
-    const data = await apiFetch(`/${mode}_timers/${id}/pause/`, {
+    const data = apiFetch(`/${mode}_timers/${id}/pause/`, {
       method: 'POST',
     });
     const now = Date.now();
@@ -71,7 +85,8 @@ export default function useTimers({ mode }) {
     }
 
     setStatus("waiting");
-    clearInterval(intervalRef.current);
+    clearInterval(timerRef.current);
+    clearInterval(stageTimerRef);
     startTimeRef.current = null;
     pausedTimeRef.current = 0;
     //setElapsed(0);
@@ -82,7 +97,8 @@ export default function useTimers({ mode }) {
   const complete = useCallback(() => {
     console.log(`[useTimers] Complete ${mode}`);
     if (status === "complete") return;
-    clearInterval(intervalRef.current);
+    clearInterval(timerRef.current);
+    clearInterval(stageTimerRef.current);
     setStatus("complete");
   }, []);
 
@@ -90,7 +106,7 @@ export default function useTimers({ mode }) {
   const reset = useCallback(() => {
     if (status === "empty") return;
     console.log(`[useTimers] Reset ${mode}`);
-    const data = await apiFetch(`/${mode}_timers/${id}/reset/`, {
+    const data = apiFetch(`/${mode}_timers/${id}/reset/`, {
       method: 'POST',
     });
     setDuration(0);
@@ -117,7 +133,7 @@ export default function useTimers({ mode }) {
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => clearInterval(intervalRef.current);
+    return () => clearInterval(timerRef.current);
   }, []);
 
 
@@ -125,6 +141,8 @@ export default function useTimers({ mode }) {
     if (!serverData) return;
 
     const { id, status, elapsed_time, duration, activity, quest } = serverData;
+    console.log('quest.stages:', quest.stages);
+    //setStages(quest.stages || []);
 
     setId(id || 0);
     setStatus(status || 'empty');
@@ -132,7 +150,7 @@ export default function useTimers({ mode }) {
 
     if (mode === 'activity' && activity) {
       setSubject(activity);
-      setDuration(elapsed_time); // or activity.duration if preferred
+      setDuration(elapsed_time);
     }
 
     if (mode === 'quest' && quest) {
