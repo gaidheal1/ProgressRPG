@@ -597,7 +597,7 @@ class BaseTimerViewSet(viewsets.ReadOnlyModelViewSet):
         }
 
         if command not in commands_map:
-            return Response({"error": "Invalid command"}, status=400)
+            return Response({"error": "Invalid timer command"}, status=400)
 
         try:
             commands_map[command]()
@@ -615,12 +615,12 @@ class BaseTimerViewSet(viewsets.ReadOnlyModelViewSet):
         return self.control_timer(request, pk, "pause")
 
     @action(detail=True, methods=["post"])
-    def reset(self, request, pk=None):
-        return self.control_timer(request, pk, "reset")
-
-    @action(detail=True, methods=["post"])
     def complete(self, request, pk=None):
         return self.control_timer(request, pk, "complete")
+
+    @action(detail=True, methods=["post"])
+    def reset(self, request, pk=None):
+        return self.control_timer(request, pk, "reset")
 
 
 class ActivityTimerViewSet(BaseTimerViewSet):
