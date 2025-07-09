@@ -10,6 +10,7 @@ export default function List({
   selectable = false,
   className,
   sectionClass,
+  getItemClassName,
 }) {
   return (
     <section className={classNames(styles.listSection, sectionClass)}>
@@ -20,12 +21,15 @@ export default function List({
       >
         {items.map((item, index) => {
           const isSelected = item === selectedItem;
+          const isHidden = item.isHidden;
+          const itemClass = getItemClassName?.(item, index);
 
           return (
             <li
               key={item.id || index}
-              className={classNames({
+              className={classNames(itemClass, {
                 [styles.selected]: isSelected,
+                [styles.hidden]: isHidden,
               })}
               onClick={() => selectable && onSelect?.(item)}
             >
@@ -37,6 +41,8 @@ export default function List({
     </section>
   );
 }
+
+
 // EXAMPLE USAGE
 /*
 const items = ['Apples', 'Bananas', 'Cherries'];

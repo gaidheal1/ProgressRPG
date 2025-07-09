@@ -44,13 +44,12 @@
 }
 
 .currentStage {
-  display: flex;
-  font-weight: v.$font-weight-bold;
+  //font-weight: v.$font-weight-bold;
   background-color: v.$color-secondary;
   border-left: 4px solid #ffc107;
-  padding-left: 0.5rem;
+  padding-left: v.$spacing-sm;
 }
 
 .futureStage {
-  display: none;
+  color: v.$color-primary;
 }

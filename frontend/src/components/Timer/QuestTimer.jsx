@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useGame } from '../../context/GameContext';
 import styles from './QuestTimer.module.scss';
 import { formatDuration } from '../../../utils/formatUtils.js';
@@ -6,17 +6,32 @@ import TimerDisplay from './TimerDisplay.jsx';
 import List from '../List/List.jsx';
 
 
-function shuffle(array) {
-  return array.sort(() => Math.random() - 0.5);
-}
-
 export default function QuestTimer() {
   const { questTimer } = useGame();
-  const { subject: quest, status, duration, elapsed, remaining, processedStages, globalStageIndex } = questTimer;
+  const {
+    subject: quest,
+    status,
+    remaining,
+    processedStages,
+    globalStageIndex
+  } = questTimer;
+  const {
+    name = 'None',
+    intro_text = 'No active quest yet...',
+    outro_text = ''
+  } = quest || {};
   const displayTime = formatDuration(remaining);
-  const { name = 'None', intro_text = 'No active quest yet...', outro_text = '' } = quest || {};
 
-  console.log(`[Quest Timer] processedStages: ${processedStages}`);
+  console.log(`[Quest Timer] questTimer:`, questTimer);
+  console.log(`[Quest Timer] processedStages:`, processedStages);
+
+  const visibleStages = useMemo(() => {
+  return processedStages.map((item, index) => ({
+      ...item,
+      isHidden: index !== globalStageIndex,
+    }));
+  }, [processedStages, globalStageIndex]);
+
   return (
     <div className={styles.questRow}>
       <TimerDisplay
@@ -33,19 +48,12 @@ export default function QuestTimer() {
         <p className={styles.questText}>{intro_text}</p>
 
         <List
-          items={processedStages}
-          renderItem={({ stage, globalIndex }, index) => {
-
-            const isCompleted = globalIndex < globalStageIndex;
-            const isCurrent = globalIndex === globalStageIndex;
-            const isFuture = globalIndex > globalStageIndex;
-
-            let className;
-            if (isCompleted) className = styles.completedStage;
-            else if (isCurrent) className = styles.currentStage;
-            else className = styles.futureStage;
-
-            return <div className={className} key={index}>{stage.text}</div>;
+          items={visibleStages}
+          renderItem={({ stage }) => stage?.text}
+          getItemClassName={({ globalIndex }) => {
+            if (globalIndex < globalStageIndex) return styles.completedStage;
+            if (globalIndex === globalStageIndex) return styles.currentStage;
+          return styles.futureStage;
           }}
           className={styles.list}
           sectionClass={styles.listSection}

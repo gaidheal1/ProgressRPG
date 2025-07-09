@@ -30,6 +30,10 @@
   border-radius: v.$border-radius;
   background-color: v.$color-light;
   @include m.apply-text-style(v.$text-body);
+
+  &.hidden {
+    display: none !important;
+  }
 }
 
 .selectable li:hover {

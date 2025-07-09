@@ -203,23 +203,27 @@ export default function useTimers({ mode }) {
 
 
       // Loop stages if necessary
-      if (quest.stagesFixed && newDuration > totalStagesDuration) {
+      if (newDuration > totalStagesDuration) {
         const numLoops = Math.ceil(newDuration / totalStagesDuration);
-        flattened = Array(numLoops).fill().flatMap((_, loopIndex) =>
+        stagesEd = Array(numLoops).fill().flatMap((_, loopIndex) =>
           stagesEd.map((stage, stageIndex) => ({
             stage,
             globalIndex: loopIndex * stagesEd.length + stageIndex,
           }))
         );
-        stagesEd = flattened;
+      } else {
+        stagesEd = stagesEd.map((stage, index) => ({
+          stage,
+          globalIndex: index,
+        }));
       }
       console.log('stagesEd:', stagesEd);
 
       setProcessedStages(stagesEd);
       setGlobalStageIndex(0);
       console.log(`Duration? ${stagesEd[0].duration} ... or endTime? ${stagesEd[0].endTime}`);
-      setStageTimeRemaining(stagesEd[0].duration ?? 0);
-      console.log('stagetimeremaining:', stageTimeRemaining);
+      setStageTimeRemaining(stagesEd[0].duration ?? stagesEd[0].endTime ?? 0);
+      console.log('stageTimeRemaining:', stageTimeRemaining);
     } else if (mode === "activity") {
       setDuration(newDuration);
     }
