@@ -1,31 +1,30 @@
-@use '../../styles/base/variables' as *;
-@use '../../styles/base/typography' as *;
+@use '../../styles/base/variables' as v;
 
 /* Navigation Drawer */
 .nav-drawer {
     position: fixed;
     top: 0;
-    left: -250px;
+    left: -16rem;
     /* Hidden by default */
-    width: 250px;
+    width: 16rem;
     height: 100%;
-    background: #ffffff;
+    background: v.$color-light;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
     overflow-y: auto;
     transition: transform 0.3s ease-out;
-    z-index: 1000;
+    z-index: v.$z-index-overlay + 1;
     display: flex;
     flex-direction: column;
 }
 
 .nav-drawer.open {
-    transform: translateX(250px);
+    transform: translateX(16rem);
     /* Slides in */
 }
 
 .nav-drawer-header {
-    padding: 16px;
-    background: $color-secondary;
+    padding: v.$spacing-3xl;
+    background: v.$color-secondary;
     //color: white;
     display: flex;
     justify-content: flex-end;
@@ -39,13 +38,13 @@
 }
 
 .nav-drawer-links li {
-    padding: 16px;
+    padding: v.$spacing-3xl;
     border-bottom: 1px solid #ddd;
 }
 
 .nav-drawer-links a {
     text-decoration: none;
-    color: #333;
+    color: v.$color-dark;
 }
 
 /* Overlay */
@@ -56,7 +55,7 @@
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.4);
-    z-index: 999;
+    z-index: v.$z-index-overlay;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease-out;

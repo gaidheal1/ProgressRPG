@@ -6,7 +6,7 @@
   flex-direction: column;
   gap: v.$spacing-gap;
   padding: v.$spacing-sm v.$spacing-md;
-  background-color: #f0f9f5;
+  background-color: v.$color-light;
   border-radius: v.$border-radius;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
   width: 100%;
@@ -37,7 +37,7 @@
 }
 
 .completedStage {
-  color: grey;
+  color: v.$color-disabled;
   font-style: italic;
   //opacity: 0.8;
   //text-decoration: line-through;
@@ -46,7 +46,7 @@
 .currentStage {
   //font-weight: v.$font-weight-bold;
   background-color: v.$color-secondary;
-  border-left: 4px solid #ffc107;
+  border-left: v.$spacing-xs solid v.$color-accent;
   padding-left: v.$spacing-sm;
 }
 

@@ -29,10 +29,10 @@
 
   &:disabled {
     cursor: not-allowed;
-    background-color: grey;
+    background-color: v.$color-disabled;
     &:hover {
       box-shadow: none;
-      background-color: grey;
+      background-color: v.$color-disabled;
     }
   }
 

@@ -8,7 +8,7 @@
 	display: flex;
 	flex-direction: column;
 	align-self: auto;
-	gap: 0.25rem;
+	gap: v.$spacing-gap;
 	flex: 1 1 45%;
 
 	&.left {
@@ -28,15 +28,15 @@
 	flex-direction: row;
 	align-items: center;
 	align-self: auto;
-	gap: 0.5rem;
+	gap: v.$spacing-gap;
 }
 
 .name-disp,
 .level-disp {
 	display: flex;
 	align-items: center;
-	color: #000000;
-	letter-spacing: 0.4px;
+	color: v.$color-text-primary;
+	//letter-spacing: 0.4px;
 
 	white-space: normal;
 	word-break: break-word;
@@ -44,10 +44,10 @@
 }
 
 .label {
-  font-weight: bold;
+  font-weight: v.$font-weight-bold;
   color: #333;
 }
 
 .value {
-  color: #111;
+  color: v.$color-text-primary;
 }

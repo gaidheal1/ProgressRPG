@@ -1,11 +1,12 @@
-@use '../../styles/utilities/mixins' as m;
+@use '@/styles/utilities/mixins' as m;
+@use '@/styles/base/variables' as m;
 
 .buttonFrame {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   justify-content: stretch;
-  gap: 0.5rem;
+  gap: v.$spacing-gap;
   width: 100%;
   flex-grow: 0;
 

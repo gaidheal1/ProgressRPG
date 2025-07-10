@@ -1,20 +1,22 @@
+@use '@/styles/base/variables' as v;
+
 .progressBarWrapper {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: v.$spacing-gap;
   width: 100%;
 }
 
 .label {
   font-size: 12px;
-  color: #333;
+  color: v.$color-text-primary;
 }
 
 .progressTrack {
   width: 100%;
-  height: 8px;
-  background-color: #eee;
-  border-radius: 4px;
+  height: v.$spacing-sm;
+  background-color: v.$color-light;
+  border-radius: v.$border-radius;
   overflow: hidden;
 }
 
@@ -24,7 +26,7 @@
 }
 
 .default {
-  background-color: #4caf50;
+  background-color: v.$color-primary;
 }
 
 .warning {

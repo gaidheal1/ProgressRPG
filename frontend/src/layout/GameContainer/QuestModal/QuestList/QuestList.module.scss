@@ -4,7 +4,7 @@
 .questList {
   width: 35%;
   border-right: 1px solid #eee;
-  padding: 1rem;
+  padding: v.$padding-base;
   overflow-y: auto;
   @include tc.section-box;
 }

@@ -6,7 +6,7 @@
   flex-direction: column;
   gap: v.$spacing-gap;
   padding: v.$spacing-sm v.$spacing-md;
-  background-color: #f0f9f5;
+  background-color: v.$color-light;
   border-radius: v.$border-radius;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
   width: 100%;
