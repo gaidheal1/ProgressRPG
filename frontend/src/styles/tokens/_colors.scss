@@ -1,0 +1,81 @@
+@use 'sass:color';
+
+// Colors
+$color-primary: #007a32;
+$color-secondary: #e7fff1;
+
+$color-light: $grey-100;
+$color-dark: #2c3e50;
+$color-accent: #ff8800;
+
+$color-bg: $color-light;
+$color-bg-invert: $color-dark;
+
+$color-border: rgba(0, 0, 0, 0.15);
+
+
+// Colour scales
+// Access like this:
+// background-color: map.get($primary-scale, 300);
+
+
+$primary-scale: (
+  050: color.adjust($color-primary, $lightness: +40%),
+  100: color.adjust($color-primary, $lightness: +30%),
+  200: color.adjust($color-primary, $lightness: +20%),
+  300: color.adjust($color-primary, $lightness: +10%),
+  400: color.adjust($color-primary, $lightness: +5%),
+  500: $color-primary,
+  600: color.adjust($color-primary, $lightness: -5%),
+  700: color.adjust($color-primary, $lightness: -10%),
+  800: color.adjust($color-primary, $lightness: -15%),
+  900: color.adjust($color-primary, $lightness: -20%),
+);
+
+$secondary-scale: (
+  050: color.adjust($color-secondary, $lightness: +10%),
+  100: $color-secondary,
+  200: color.adjust($color-secondary, $lightness: -5%),
+  300: color.adjust($color-secondary, $lightness: -10%),
+  400: color.adjust($color-secondary, $lightness: -15%),
+  500: color.adjust($color-secondary, $lightness: -20%),
+);
+
+$accent-scale: (
+  050: color.adjust($color-accent, $lightness: +20%),
+  100: color.adjust($color-accent, $lightness: +10%),
+  200: $color-accent,
+  300: color.adjust($color-accent, $lightness: -10%),
+  400: color.adjust($color-accent, $lightness: -15%),
+  500: color.adjust($color-accent, $lightness: -20%),
+);
+
+$light-scale: (
+  050: #ffffff,
+  100: color.adjust($color-light, $lightness: -3%),
+  200: color.adjust($color-light, $lightness: -6%),
+  300: color.adjust($color-light, $lightness: -9%),
+  400: color.adjust($color-light, $lightness: -12%),
+);
+
+$neutral-scale: (
+  000: #ffffff,
+  100: #f5f5f5,
+  200: #e0e0e0,
+  300: #c2c2c2,
+  400: #9e9e9e,
+  500: #707070,
+  600: #4d4d4d,
+  700: #2c2c2c,
+  800: #1a1a1a,
+  900: #0a0a0a,
+);
+
+$dark-scale: (
+  50: color.adjust($color-dark, $lightness: +20%),
+  100: color.adjust($color-dark, $lightness: +10%),
+  200: $color-dark,
+  300: color.adjust($color-dark, $lightness: -10%),
+  400: color.adjust($color-dark, $lightness: -20%),
+  500: color.adjust($color-dark, $lightness: -30%),
+);

@@ -1,0 +1,16 @@
+@use '../tokens/colors' as *;
+
+$color-text-primary: #1e1e1e;
+$color-text-invert: #fbfbfb;
+
+$color-disabled: $neutral-500;
+$color-light-hover: color.adjust($color-light, $lightness: -5%);
+$color-dark-hover: color.adjust($color-dark, $lightness: 5%);
+
+
+// Semantic aliases
+$color-text-body: $neutral-700;
+$color-text-heading: $neutral-900;
+
+$button-bg-prim: map-get($primary-scale, 500);
+$button-bg-prim-hov: map-get($primary-scale, 600);

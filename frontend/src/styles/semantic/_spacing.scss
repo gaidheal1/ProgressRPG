@@ -1,0 +1,8 @@
+@use '../tokens/spacing' as *;
+
+$spacing-gap: map-get($spacing, sm);
+
+$padding-vertical: map-get($spacing, sm);
+$padding-horizontal: map-get($spacing, md);
+
+$padding-base: $padding-vertical $padding-horizontal;

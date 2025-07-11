@@ -1,0 +1,103 @@
+@use '../utilities/mixins' as m;
+@use '../tokens/typography' as t;
+
+// Helper function to get token values from maps
+@function token($map, $key) {
+  @return map-get($map, $key);
+}
+
+// Body text styles
+$text-body: (
+  base: (
+    font-family: token(t.$font-family, base),
+    font-size: token(t.$font-size, base),
+    font-weight: token(t.$font-weight, regular),
+    line-height: token(t.$line-height, base),
+    letter-spacing: token(t.$letter-spacing, normal),
+    text-transform: token(t.$text-transform, none)
+  ),
+  md: (
+    font-size: 1.125rem // you can add more if needed
+  ),
+  lg: (
+    font-size: 1.25rem // you can add more if needed
+  ),
+);
+
+// Heading 1 styles
+$text-heading-1: (
+  base: (
+    font-family: token(t.$font-family, heading),
+    font-size: token(t.$font-size, 2xl),
+    font-weight: token(t.$font-weight, bold),
+    line-height: token(t.$line-height, tight),
+    letter-spacing: token(t.$letter-spacing, tight),
+    text-transform: token(t.$text-transform, none)
+  ),
+  md: (
+    font-size: 2.25rem
+  ),
+  lg: (
+    font-size: 2.5rem
+  ),
+  xl: (
+    font-size: 3rem
+  )
+);
+
+// Heading 2 styles
+$text-heading-2: (
+  base: (
+    font-family: token(t.$font-family, heading),
+    font-size: token(t.$font-size, xl),
+    font-weight: token(t.$font-weight, bold),
+    line-height: token(t.$line-height, tight),
+    letter-spacing: token(t.$letter-spacing, tight),
+    text-transform: token(t.$text-transform, none)
+  ),
+  md: (
+    font-size: 1.75rem
+  ),
+  lg: (
+    font-size: 2rem
+  )
+);
+
+// Caption styles
+$text-caption: (
+  base: (
+    font-family: token(t.$font-family, base),
+    font-size: token(t.$font-size, s),
+    font-weight: token(t.$font-weight, regular),
+    line-height: token(t.$line-height, base),
+    letter-spacing: token(t.$letter-spacing, normal),
+    text-transform: token(t.$text-transform, none)
+  ),
+  md: (
+    font-size: 0.75rem
+  ),
+
+);
+
+
+
+@mixin apply-text-style($style) {
+  $base: map-get($style, base);
+
+  @if $base {
+    @each $prop, $value in $base {
+      #{$prop}: #{$value};
+    }
+  }
+
+  // Responsive layers
+  @each $breakpoint, $settings in $style {
+    @if $breakpoint != base {
+      @include m.respond-to($breakpoint) {
+        @each $prop, $value in $settings {
+          #{$prop}: #{$value};
+        }
+      }
+    }
+  }
+}

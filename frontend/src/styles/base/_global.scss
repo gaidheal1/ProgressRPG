@@ -19,7 +19,7 @@ html, body {
   font-family: v.$font-stack;
   font-size: v.$font-size-base;
   color: v.$color-text-primary;
-  line-height: 1.5;
+  line-height: v.$line-height-base;
 }
 
 body {
