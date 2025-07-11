@@ -1,21 +1,21 @@
 /* ActivityPanel.module.scss */
 @use '../../../styles/base/variables' as v;
+@use '../../../styles/semantic/typography' as t;
 
 .listSectionHeader {
-  font-weight: v.$font-weight-bold;
-  font-size: v.$font-size-lg;
   margin-bottom: v.$spacing-sm;
   color: v.$color-text-primary;
   text-align: center;
+  @include t.apply-text-style(t.$text-heading-2);
 }
 
 .activity-totals {
   display: flex;
   justify-content: space-between;
-  font-size: v.$font-size-sm;
   margin-bottom: v.$spacing-sm;
   color: #555;
   gap: v.$spacing-gap;
+  @include t.apply-text-style(t.$text-body);
 
   span {
     &:first-child {

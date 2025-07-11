@@ -1,5 +1,6 @@
 @use '../../styles/base/variables' as v;
 @use '../../styles/utilities/mixins' as m;
+@use '../../styles/semantic/typography' as t;
 
 .timer {
 	display: flex;
@@ -34,6 +35,6 @@
 	border-radius: v.$border-radius;
 
 	color: v.$color-dark;
-	@include m.apply-text-style(v.$text-body);
-	 & {font-weight: v.$font-weight-bold;}
+	@include t.apply-text-style(t.$text-body);
+	& {font-weight: v.$font-weight-bold;}
 }

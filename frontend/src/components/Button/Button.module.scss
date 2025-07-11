@@ -1,5 +1,6 @@
 @use '../../styles/base/variables' as v;
 @use '../../styles/utilities/mixins' as m;
+@use '../../styles/semantic/typography' as t;
 
 .button {
   display: flex;
@@ -36,7 +37,7 @@
     }
   }
 
-  @include m.apply-text-style(v.$text-body);
+  @include t.apply-text-style(t.$text-body);
 
   @media (prefers-reduced-motion: reduce) {
     transition: none;

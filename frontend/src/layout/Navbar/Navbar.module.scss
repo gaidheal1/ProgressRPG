@@ -1,5 +1,6 @@
 @use '../../styles/base/variables' as v;
 @use '../../styles/utilities/mixins' as m;
+@use '../../styles/semantic/typography' as t;
 
 .header {
   display: flex;
@@ -26,7 +27,7 @@
   align-self: stretch;
   gap: v.$spacing-md;
   margin: 0 v.$spacing-sm;
-  font-size: v.$font-size-lg;
+  @include t.apply-text-style(t.$text-heading-2);
 }
 
 .leftLinks {
@@ -42,8 +43,8 @@
     color: v.$color-light;
     text-decoration: none;
     margin: 0 v.$spacing-sm;
-    font-size: v.$font-size-lg;
     align-self: center;
+    @include t.apply-text-style(t.$text-heading-2);
   }
 }
 

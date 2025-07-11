@@ -1,5 +1,6 @@
 @use '../../styles/base/variables' as v;
 @use '../../layout/two-columns' as tc;
+@use '../../styles/semantic/typography' as t;
 
 .currentQuestSection {
   display: flex;
@@ -15,22 +16,20 @@
 }
 
 .questText {
-  font-size: v.$font-size-base;
   color: v.$color-text-primary;
   margin: 0;
+  @include t.apply-text-style(t.$text-body);
 }
 
 .questLabel {
-  font-weight: v.$font-weight-bold;
   color: v.$color-text-primary;
+  @include t.apply-text-style(t.$text-body);
 }
 
 .currentQuestTitle {
-  font-weight: v.$font-weight-bold;
-  font-style: italic;
   color: v.$color-text-primary;
+  @include t.apply-text-style(t.$text-body);
 }
-
 
 .questRow {
   @include tc.bodyRow;
@@ -44,10 +43,10 @@
 }
 
 .currentStage {
-  //font-weight: v.$font-weight-bold;
   background-color: v.$color-secondary;
   border-left: v.$spacing-xs solid v.$color-accent;
   padding-left: v.$spacing-sm;
+  @include t.apply-text-style(t.$text-body);
 }
 
 .futureStage {

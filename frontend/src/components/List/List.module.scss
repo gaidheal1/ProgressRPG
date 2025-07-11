@@ -1,10 +1,10 @@
 @use '../../styles/base/variables' as v;
 @use '../../styles/utilities/mixins' as m;
-
+@use '../../styles/semantic/typography' as t;
 
 .listSection {
-  padding: v.$spacing-xs  0;
-  gap: v.$spacing-sm;
+  padding: v.$spacing-xs 0;
+  gap: v.$spacing-gap;
   align-self: stretch;
 }
 
@@ -29,7 +29,7 @@
   padding: v.$spacing-xs v.$spacing-sm;
   border-radius: v.$border-radius;
   background-color: v.$color-light;
-  @include m.apply-text-style(v.$text-body);
+  @include t.apply-text-style(t.$text-body);
 
   &.hidden {
     display: none !important;

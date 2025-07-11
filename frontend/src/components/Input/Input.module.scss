@@ -1,6 +1,6 @@
 @use '../../styles/utilities/mixins' as m;
 @use '../../styles/base/variables' as v;
-
+@use '../../styles/semantic/typography' as t;
 .inputGroup {
   display: flex;
   flex-direction: column;
@@ -16,7 +16,7 @@
 .label {
 
   color: v.$color-primary;
-  @include m.apply-text-style(v.$text-caption);
+  @include t.apply-text-style(t.$text-caption);
 }
 
 .required {
@@ -32,7 +32,7 @@
   border-radius: v.$border-radius;
   background-color: v.$color-secondary;
   transition: border 0.2s, background 0.2s;
-  @include m.apply-text-style(v.$text-body);
+  @include t.apply-text-style(t.$text-body);
 
   &:focus {
     outline: none;
@@ -60,11 +60,11 @@
 
 .helpText {
   color: #666;
-  @include m.apply-text-style(v.$text-caption);
+  @include t.apply-text-style(t.$text-caption);
 
 }
 
 .errorText {
   color: red;
-  @include m.apply-text-style(v.$text-caption);
+  @include t.apply-text-style(t.$text-caption);
 }

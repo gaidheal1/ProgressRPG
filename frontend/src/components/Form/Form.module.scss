@@ -1,5 +1,6 @@
 @use '../../styles/base/variables' as v;
 @use '../../styles/utilities/mixins' as m;
+@use '../../styles/semantic/typography' as t;
 @use 'sass:color';
 
 .formFrame {
@@ -20,7 +21,7 @@
   margin-bottom: v.$spacing-lg;
   text-align: center;
   color: v.$color-text-primary;
-  @include m.apply-text-style(v.$text-heading-2);
+  @include t.apply-text-style(t.$text-heading-2);
 }
 
 .form {

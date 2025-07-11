@@ -1,5 +1,6 @@
 @use '../two-columns' as tc;
 @use '../../styles/base/variables' as v;
+@use '../../styles/semantic/typography' as t;
 
 .gameSection {
   //outline: 2px dashed blue;
@@ -20,16 +21,15 @@
 
 .sectionStatusHeader,
 .sectionStatusMessage {
-  font-size: v.$font-size-lg;
-  font-weight: v.$font-weight-base;
+  @include t.apply-text-style(t.$text-body);
 }
 
 .sectionBody {
   display: flex;
   flex-direction: column;
-  font-size: v.$font-size-base;
   width: 100%;
   gap: v.$spacing-gap;
+  @include t.apply-text-style(t.$text-body);
 }
 
 .sectionRow {

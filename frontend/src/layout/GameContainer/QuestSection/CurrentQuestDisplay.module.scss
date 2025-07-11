@@ -1,4 +1,5 @@
 @use '../../../styles/base/variables' as v;
+@use '../../styles/semantic/typography' as t;
 
 .currentQuestSection {
   display: flex;
@@ -13,9 +14,9 @@
 }
 
 .questText {
-  font-size: v.$font-size-base;
   color: v.$color-primary;
   margin: 0;
+  @include t.apply-text-style(t.$text-body);
 }
 
 .questLabel {
@@ -24,7 +25,6 @@
 }
 
 .currentQuestTitle {
-  font-weight: v.$font-weight-bold;
-  font-style: italic;
   color: v.$color-primary;
+  @include t.apply-text-style(t.$text-body);
 }

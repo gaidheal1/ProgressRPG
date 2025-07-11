@@ -1,5 +1,5 @@
-@use '@/styles/utilities/mixins' as m;
-@use '@/styles/base/variables' as m;
+@use '../../styles/utilities/mixins' as m;
+@use '../../styles/base/variables' as v;
 
 .buttonFrame {
   display: flex;
