@@ -1,4 +1,5 @@
 @use '../../styles/base/variables' as v;
+@use '../../styles/semantic/typography' as t;
 
 .form {
   gap: v.$spacing-gap;
@@ -7,25 +8,24 @@
     padding: v.$spacing-sm;
     border-radius: v.$border-radius;
     border: 1px solid #ccc;
-    font-size: v.$font-size-base;
+    @include t.apply-text-style(t.$text-body);
   }
 }
 
 .error {
   color: red;
-  font-size: v.$font-size-sm;
   margin-bottom: v.$spacing-sm;
   text-align: center;
+  @include t.apply-text-style(t.$text-body);
 }
 
 .footer {
-  font-size: v.$font-size-sm;
   text-align: center;
+  @include t.apply-text-style(t.$text-caption);
 
   a {
     color: v.$color-text-primary;
-    font-weight: v.$font-weight-bold;
-    text-decoration: none;
+    @include t.apply-text-style(t.$text-body);
 
     &:hover {
       text-decoration: underline;

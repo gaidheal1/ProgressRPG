@@ -1,5 +1,6 @@
 @use '../../styles/utilities/mixins' as m;
 @use '../../styles/base/variables' as v;
+@use '../../styles/semantic/typography' as t;
 
 .gamePage {
 	display: flex;
@@ -46,15 +47,13 @@
   }
 
   .quest-label {
-	font-size: v.$font-size-base;
-	font-weight: v.$font-weight-base;
 	margin: 0;
+	@include t.apply-text-style(t.$text-body);
   }
 
   .quest-text {
-	font-size: v.$font-size-sm;
-	line-height: v.$line-height-base;
 	margin: 0;
+	@include t.apply-text-style(t.$text-body);
   }
 
   #quest-stages {
@@ -73,8 +72,7 @@
   }
 
   .quest-stage {
-	font-size: v.$font-size-sm;
-	line-height: v.$line-height-base;
+	@include t.apply-text-style(t.$text-body);
 
 	&.previous {
 	  color: #888;
