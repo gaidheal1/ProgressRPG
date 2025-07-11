@@ -10,26 +10,8 @@ export default function Infobar() {
 
   return (
     <div className={styles.infoBar}>
-      <Infobox
-        title={player.name}
-        columns={[
-          [
-            { label: 'Player', value: player.name },
-            { label: 'Level', value: player.level },
-            { label: 'XP', value: `${player.xp}/${player.xp_next_level}` },
-          ],
-        ]}
-      />
-      <Infobox
-        title={character.first_name}
-        columns={[
-          [
-            { label: 'Character', value: character.first_name },
-            { label: 'Level', value: character.level },
-            { label: 'XP', value: `${character.xp}/${character.xp_next_level}` },
-          ],
-        ]}
-      />
+      <Infobox title="Player Info" type="player" data={player} />
+      <Infobox title="Character Info" type="character" data={character} />
     </div>
   );
 }

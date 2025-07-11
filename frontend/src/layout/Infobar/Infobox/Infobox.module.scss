@@ -1,4 +1,6 @@
 @use '../../two-columns' as tc;
+@use '../../../styles/base/variables' as v;
+@use '../../../styles/semantic/typography' as t;
 
 .infoBox {
 	@include tc.section-box;
@@ -10,44 +12,44 @@
 	align-self: auto;
 	gap: v.$spacing-gap;
 	flex: 1 1 45%;
-
-	&.left {
-		justify-content: flex-start;
-		order: 0;
-	}
-
-	&.right {
-		justify-content: flex-end;
-		order: 1;
-	}
 }
 
 .row {
 	display: flex;
 	flex-wrap: wrap;
 	flex-direction: row;
-	align-items: center;
+	align-items: baseline;
 	align-self: auto;
 	gap: v.$spacing-gap;
 }
 
-.name-disp,
-.level-disp {
-	display: flex;
-	align-items: center;
-	color: v.$color-text-primary;
-	//letter-spacing: 0.4px;
-
-	white-space: normal;
-	word-break: break-word;
-	text-align: right;
+.title {
+	@include t.apply-text-style(t.$text-heading-2);
 }
 
 .label {
-  font-weight: v.$font-weight-bold;
-  color: #333;
+	color: #333;
+	@include t.apply-text-style(t.$text-body);
 }
 
 .value {
-  color: v.$color-text-primary;
+	color: v.$color-text-primary;
+  @include t.apply-text-style(t.$text-body);
+}
+
+.levelLabel,
+.levelValue {
+	font-weight: bold;
+}
+
+
+.xpLabel,
+.xpValue {
+  font-family: monospace;
+}
+
+.nameLabel,
+.nameValue {
+  font-weight: bold;
+  font-size: 1.1rem;
 }
