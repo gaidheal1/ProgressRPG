@@ -1,16 +1,114 @@
-@use '../tokens/colors' as *;
+@use '../utilities/mixins' as m;
+@use '../tokens/colors' as c;
+@use 'sass:map';
+@use 'sass:color';
+
+// Helper function to get token values from maps
+@function token($map, $key) {
+  @return map.get($map, $key);
+}
 
 $color-text-primary: #1e1e1e;
 $color-text-invert: #fbfbfb;
 
-$color-disabled: $neutral-500;
-$color-light-hover: color.adjust($color-light, $lightness: -5%);
-$color-dark-hover: color.adjust($color-dark, $lightness: 5%);
+$color-disabled: map.get(c.$neutral-scale, 500);
+$color-light-hover: color.adjust(c.$color-light, $lightness: -5%);
+$color-dark-hover: color.adjust(c.$color-dark, $lightness: 5%);
 
 
 // Semantic aliases
-$color-text-body: $neutral-700;
-$color-text-heading: $neutral-900;
+$color-text-body: map.get(c.$neutral-scale, 700);
+$color-text-heading: map.get(c.$neutral-scale, 900);
 
-$button-bg-prim: map-get($primary-scale, 500);
-$button-bg-prim-hov: map-get($primary-scale, 600);
+$button-bg-prim: map.get(c.$primary-scale, 500);
+$button-bg-prim-hov: map.get(c.$primary-scale, 600);
+
+$color-progress-bar: map.get(c.$primary-scale, 500);
+
+$color-bg: c.$color-light;
+$color-bg-green: map.get(c.$secondary-scale, 100);
+$color-bg-invert: c.$color-dark;
+
+$text-tone: (
+  default: (
+    color: map.get(c.$neutral-scale, 900)
+  ),
+  heading: (
+    color: map.get(c.$neutral-scale, 800)
+  ),
+  muted: (
+    color: map.get(c.$neutral-scale, 500)
+  ),
+  inverted: (
+    color: c.$color-light
+  ),
+  primary: (
+    color: map.get(c.$primary-scale, 600)
+  ),
+  secondary: (
+    color: map.get(c.$secondary-scale, 100)
+  ),
+  accent: (
+    color: map.get(c.$accent-scale, 200)
+  )
+);
+
+
+@mixin apply-text-tone($tone-map) {
+  @each $prop, $value in $tone-map {
+    #{$prop}: #{$value};
+  }
+}
+
+
+$button-variants: (
+  primary: (
+    tone: inverted,
+    bg: map.get(c.$primary-scale, 500),
+    hover: map.get(c.$primary-scale, 400),
+    active: map.get(c.$primary-scale, 600),
+    disabled: map.get(c.$neutral-scale, 800)
+  ),
+  secondary: (
+    tone: primary,
+    bg: map.get(c.$secondary-scale, 100),
+    hover: map.get(c.$secondary-scale, 200),
+    active: map.get(c.$secondary-scale, 300),
+    disabled: map.get(c.$neutral-scale, 100)
+  ),
+  accent: (
+    tone: accent,
+    bg: map.get(c.$accent-scale, 200),
+    hover: map.get(c.$accent-scale, 300),
+    active: map.get(c.$accent-scale, 400),
+    disabled: map.get(c.$accent-scale, 100)
+  )
+);
+
+@mixin apply-button-variant($variant-key) {
+  $variant: map.get($button-variants, $variant-key);
+  $tone-key: map.get($variant, tone);
+  $tone-map: map.get($text-tone, $tone-key);
+
+  $bg: map.get($variant, bg);
+  $hover: map.get($variant, hover);
+  $active: map.get($variant, active);
+  $disabled: map.get($variant, disabled);
+
+  background-color: $bg;
+  @include apply-text-tone($tone-map);
+
+  &:hover {
+    background-color: $hover;
+  }
+
+  &:active {
+    background-color: $active;
+  }
+
+  &:disabled {
+    background-color: $disabled;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}

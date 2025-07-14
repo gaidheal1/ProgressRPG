@@ -1,8 +1,9 @@
 @use '../tokens/spacing' as *;
+@use 'sass:map';
 
-$spacing-gap: map-get($spacing, sm);
+$spacing-gap: map.get($spacing, sm);
 
-$padding-vertical: map-get($spacing, sm);
-$padding-horizontal: map-get($spacing, md);
+$padding-vertical: map.get($spacing, sm);
+$padding-horizontal: map.get($spacing, md);
 
 $padding-base: $padding-vertical $padding-horizontal;
