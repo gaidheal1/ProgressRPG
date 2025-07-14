@@ -3,7 +3,7 @@
 
 // Media query mixin for responsive breakpoints
 @mixin respond-to($breakpoint) {
-  $value: map-get(v.$breakpoints, $breakpoint);
+  $value: map.get(v.$breakpoints, $breakpoint);
 
   @if value {
     @media (min-width: $value) {
@@ -15,7 +15,7 @@
 }
 
 @mixin apply-text-style($style) {
-  $base: map-get($style, base);
+  $base: map.get($style, base);
 
   @if $base {
     @each $prop, $value in $base {
