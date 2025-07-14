@@ -1,5 +1,8 @@
 @use '../../../styles/base/variables' as v;
+@use '../../../styles/semantic/colors' as c;
 @use '../../two-columns' as tc;
+
+
 
 .modalBackdrop {
   position: fixed;
@@ -32,7 +35,7 @@
 
 .modalHeader {
   padding: v.$padding-base;
-  border-bottom: 1px solid v.$color-light;
+  //border-bottom: 1px solid v.$color-light;
   display: flex;
   justify-content: space-between;
   align-items: center;

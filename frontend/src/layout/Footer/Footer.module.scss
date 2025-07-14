@@ -1,5 +1,6 @@
 @use '../../styles/base/variables' as v;
 @use '../../styles/semantic/typography' as t;
+@use '../../styles/semantic/colors' as c;
 
 .footer {
   display: flex;
@@ -10,7 +11,7 @@
   gap: v.$spacing-lg;
   margin-top: v.$spacing-md;
   width: 100%;
-  background: v.$color-light;
+  background: c.$color-bg;
   @include t.apply-text-style(t.$text-body);
 
   a {

@@ -20,12 +20,12 @@
 .progressTrack {
   width: 100%;
   height: v.$spacing-lg;
-  background-color: v.$color-light;
+  background-color: c.$color-bg;
   overflow: hidden;
   position: relative;
 
   border-radius: v.$border-radius;
-  border: 1px solid v.$color-primary;
+  border: 1px solid c.$color-progress-bar;
 }
 
 .progressBarFill {
@@ -60,7 +60,7 @@
 }
 
 .default {
-  background-color: v.$color-primary;
+  background-color: c.$color-progress-bar;
 }
 
 .warning {

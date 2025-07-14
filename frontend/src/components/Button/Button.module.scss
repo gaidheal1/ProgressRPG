@@ -1,6 +1,7 @@
 @use '../../styles/base/variables' as v;
 @use '../../styles/utilities/mixins' as m;
 @use '../../styles/semantic/typography' as t;
+@use '../../styles/semantic/colors' as c;
 
 .button {
   display: flex;
@@ -12,10 +13,12 @@
   gap: v.$spacing-gap;
   border-radius: v.$border-radius;
 
-  text-align: center;
 
   cursor: pointer;
   transition: background 0.2s ease, box-shadow 0.2s ease;
+
+  text-align: center;
+  //@include t.apply-text-style(t.$text-button);
 
   &:hover {
     box-shadow:
@@ -30,36 +33,22 @@
 
   &:disabled {
     cursor: not-allowed;
-    background-color: v.$color-disabled;
     &:hover {
       box-shadow: none;
-      background-color: v.$color-disabled;
     }
   }
-
-  @include t.apply-text-style(t.$text-body);
 
   @media (prefers-reduced-motion: reduce) {
     transition: none;
   }
 }
 
-.primary {
-  background: v.$color-primary;
-  color: v.$color-light;
-
-  &:hover {
-    background: v.$color-primary-hover;
-  }
+.button.primary {
+  @include c.apply-button-variant(primary);
 }
 
-.secondary {
-  background: v.$color-secondary;
-  color: v.$color-text-primary;
-
-  &:hover {
-    background: v.$color-secondary-hover;
-  }
+.button.secondary {
+  @include c.apply-button-variant(secondary);
 }
 
 .fullWidth {

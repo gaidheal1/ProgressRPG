@@ -1,6 +1,7 @@
 @use '../../../../styles/base/variables' as v;
 @use '../../../two-columns' as tc;
 @use '../../../../styles/semantic/typography' as t;
+@use '../../../../styles/semantic/colors' as c;
 
 .questDetail {
   padding: v.$padding-base;

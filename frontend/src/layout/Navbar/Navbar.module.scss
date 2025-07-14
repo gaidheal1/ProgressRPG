@@ -1,6 +1,8 @@
 @use '../../styles/base/variables' as v;
 @use '../../styles/utilities/mixins' as m;
 @use '../../styles/semantic/typography' as t;
+@use '../../styles/semantic/colors' as c;
+@use 'sass:map';
 
 .header {
   display: flex;
@@ -16,7 +18,7 @@
   padding: v.$spacing-sm v.$spacing-md;
   width: 100%;
   max-width: 100%;
-  background: v.$color-light;
+  background: c.$color-bg;
 }
 
 .leftLinks,
@@ -44,6 +46,7 @@
     margin: 0 v.$spacing-sm;
     align-self: center;
     @include t.apply-text-style(t.$text-heading-2);
+    @include c.apply-text-tone(map.get(c.$text-tone, invert));
   }
 }
 

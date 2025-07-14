@@ -1,5 +1,6 @@
 @use '../styles/utilities/mixins' as m;
 @use '../styles/base/variables' as v;
+@use '../styles/semantic/colors' as c;
 
 @mixin two-column-layout {
   display: flex;
@@ -22,7 +23,7 @@
   align-items: flex-start;
   gap: v.$spacing-gap;
   padding: v.$padding-base;
-  background: v.$color-secondary;
+  background: c.$color-bg;
   border: 1px solid rgba(0, 0, 0, 0.45);
   border-radius: v.$border-radius;
   align-self: stretch;
