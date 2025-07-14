@@ -1,25 +1,20 @@
 @use './variables' as v;
 @use '../utilities/mixins' as m;
+@use '../tokens/typography' as t;
+@use '../semantic/typography' as ts;
+@use '../semantic/colors' as c;
+@use 'sass:map';
 
-a {
-  text-decoration: none;
-  color: v.$color-primary;
-
-  &:hover {
-    color: v.$color-secondary;
-  }
-}
 
 html, body {
   width: 100%;
   height: 100%;
-  margin: 0;
-  padding: 0;
   background: v.$color-light;
-  font-family: v.$font-stack;
-  font-size: v.$font-size-base;
-  color: v.$color-text-primary;
-  line-height: v.$line-height-base;
+  font-family: map.get(t.$font-family, base);
+  font-size: 16px;
+  font-weight: map.get(t.$font-weight, regular);
+  line-height: map.get(t.$line-height, base);
+
 }
 
 body {
@@ -27,7 +22,6 @@ body {
   flex-direction: column;
   align-items: stretch;
   min-width: 260px;
-
 }
 
 main {
@@ -36,4 +30,29 @@ main {
   align-items: stretch;
   justify-content: flex-start;
   width: 100%;
+}
+
+h1 {
+  @include ts.apply-text-style(ts.$text-heading-1);
+  @include c.apply-text-tone(map.get(c.$text-tone, heading));
+}
+
+h2 {
+  @include ts.apply-text-style(ts.$text-heading-2);
+  @include c.apply-text-tone(map.get(c.$text-tone, heading));
+}
+
+p {
+  @include ts.apply-text-style(ts.$text-body);
+  @include c.apply-text-tone(map.get(c.$text-tone, default));
+}
+
+
+a {
+  @include ts.apply-text-style(ts.$text-body);
+  @include c.apply-text-tone(map.get(c.$text-tone, primary));
+
+  &:hover {
+    color: v.$color-secondary;
+  }
 }
