@@ -1,5 +1,6 @@
 @use '../../styles/base/variables' as v;
 @use '../../styles/semantic/typography' as t;
+@use '../../styles/semantic/colors' as c;
 @use '../../styles/tokens/typography' as tt;
 
 
@@ -12,7 +13,6 @@
 }
 
 .label {
-  color: v.$color-text-primary;
   pointer-events: none;
   @include t.apply-text-style(t.$text-caption)
 }
@@ -44,7 +44,8 @@
 }
 
 .labelInside {
-    color: v.$color-light;
+    @include t.apply-text-style(t.$text-body);
+    @include c.apply-text-tone(inverted);
   }
 
 .labelOutside {
@@ -52,9 +53,10 @@
   left: 0.5rem;
   top: 50%;
   transform: translateY(-50%);
-  color: v.$color-text-primary;
   user-select: none;
   pointer-events: none;
+  @include t.apply-text-style(t.$text-body);
+
 }
 
 .default {

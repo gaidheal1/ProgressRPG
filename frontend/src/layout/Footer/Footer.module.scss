@@ -11,16 +11,14 @@
   margin-top: v.$spacing-md;
   width: 100%;
   background: v.$color-light;
-  color: v.$color-primary;
+  @include t.apply-text-style(t.$text-body);
 
   a {
-    color: v.$color-primary;
     margin: 0 v.$spacing-sm;
     @include t.apply-text-style(t.$text-body);
 
     &:hover {
       text-decoration: underline;
-      color: v.$color-primary-hover;
     }
   }
 }

@@ -20,7 +20,6 @@
 
   margin-bottom: v.$spacing-lg;
   text-align: center;
-  color: v.$color-text-primary;
   @include t.apply-text-style(t.$text-heading-2);
 }
 

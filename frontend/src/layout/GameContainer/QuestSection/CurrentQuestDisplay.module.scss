@@ -14,17 +14,13 @@
 }
 
 .questText {
-  color: v.$color-primary;
-  margin: 0;
   @include t.apply-text-style(t.$text-body);
 }
 
 .questLabel {
-  font-weight: v.$font-weight-bold;
-  color: v.$color-primary;
+  @include t.apply-text-style(t.$text-body);
 }
 
 .currentQuestTitle {
-  color: v.$color-primary;
   @include t.apply-text-style(t.$text-body);
 }

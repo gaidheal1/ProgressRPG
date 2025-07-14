@@ -1,5 +1,6 @@
 @use '../../../../styles/base/variables' as v;
 @use '../../../two-columns' as tc;
+@use '../../../../styles/semantic/typography' as t;
 
 .questDetail {
   padding: v.$padding-base;
@@ -16,8 +17,7 @@
 }
 
 .durationSelector label {
-  //margin-bottom: 0.25rem;
-  font-weight: v.$font-weight-bold;
+  @include t.apply-text-style(t.$text-body);
 }
 
 .durationSelector select {
@@ -25,6 +25,5 @@
 }
 
 .placeholder {
-  font-style: italic;
-  color: #666;
+  @include t.apply-text-style(t.$text-body);
 }

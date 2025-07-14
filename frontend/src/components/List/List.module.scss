@@ -42,7 +42,6 @@
 }
 
 .selected {
-  color: v.$color-light;
   background-color: v.$color-text-primary;
-  font-weight:v.$font-weight-bold;
+  @include t.apply-text-style(t.$text-body);
 }

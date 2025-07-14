@@ -28,28 +28,25 @@
 }
 
 .label {
-	color: #333;
 	@include t.apply-text-style(t.$text-body);
 }
 
 .value {
-	color: v.$color-text-primary;
-  @include t.apply-text-style(t.$text-body);
+	@include t.apply-text-style(t.$text-body);
+}
+
+.nameLabel,
+.nameValue {
+	@include t.apply-text-style(t.$text-body);
 }
 
 .levelLabel,
 .levelValue {
-	font-weight: bold;
+	@include t.apply-text-style(t.$text-body);
 }
 
 
 .xpLabel,
 .xpValue {
-  font-family: monospace;
-}
-
-.nameLabel,
-.nameValue {
-  font-weight: bold;
-  font-size: 1.1rem;
+	@include t.apply-text-style(t.$text-body);
 }

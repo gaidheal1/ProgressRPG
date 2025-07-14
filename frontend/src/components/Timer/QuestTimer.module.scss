@@ -7,27 +7,24 @@
   flex-direction: column;
   gap: v.$spacing-gap;
   padding: v.$spacing-sm v.$spacing-md;
-  background-color: v.$color-light;
+  //background-color: v.$color-light;
+  //box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
   border-radius: v.$border-radius;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
   width: 100%;
   margin: 0 auto;
   @include tc.bodyRow;
 }
 
 .questText {
-  color: v.$color-text-primary;
   margin: 0;
   @include t.apply-text-style(t.$text-body);
 }
 
 .questLabel {
-  color: v.$color-text-primary;
   @include t.apply-text-style(t.$text-body);
 }
 
 .currentQuestTitle {
-  color: v.$color-text-primary;
   @include t.apply-text-style(t.$text-body);
 }
 
@@ -36,10 +33,7 @@
 }
 
 .completedStage {
-  color: v.$color-disabled;
-  font-style: italic;
-  //opacity: 0.8;
-  //text-decoration: line-through;
+  @include t.apply-text-style(t.$text-body);
 }
 
 .currentStage {
@@ -50,5 +44,5 @@
 }
 
 .futureStage {
-  color: v.$color-primary;
+  @include t.apply-text-style(t.$text-body);
 }

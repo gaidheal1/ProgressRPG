@@ -25,7 +25,6 @@
 .nav-drawer-header {
     padding: v.$spacing-3xl;
     background: v.$color-secondary;
-    //color: white;
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -44,7 +43,6 @@
 
 .nav-drawer-links a {
     text-decoration: none;
-    color: v.$color-dark;
 }
 
 /* Overlay */

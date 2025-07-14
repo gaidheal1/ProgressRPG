@@ -1,18 +1,18 @@
 @use '../../styles/semantic/typography' as t;
+@use '../../styles/base/variables' as v;
 
 .home-page {
   text-align: center;
   margin-top: 10%;
-  padding: 2rem;
+  padding: v.$spacing-lg;
 
   h1 {
     @include t.apply-text-style(t.$text-heading-1);
-    margin-bottom: 0.5rem;
+    margin-bottom: v.$spacing-sm;
   }
 
   p {
-    color: #555;
-    margin-bottom: 2rem;
+    margin-bottom: v.$spacing-lg;
     @include t.apply-text-style(t.$text-body);
   }
 }

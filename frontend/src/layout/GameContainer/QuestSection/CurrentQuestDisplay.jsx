@@ -7,7 +7,7 @@ export default function CurrentQuestDisplay({ quest }) {
   return (
     <div className={styles.currentQuestSection}>
       <p className={`${styles.questText} ${styles.questLabel}`}>
-        <strong>Current quest:</strong>{' '}
+        Current quest:{' '}
         <span className={styles.currentQuestTitle}>{title}</span>
       </p>
       <p className={styles.questText}>{intro}</p>

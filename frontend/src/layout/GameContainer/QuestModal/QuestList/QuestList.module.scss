@@ -1,5 +1,6 @@
 @use '../../../../styles/base/variables' as v;
 @use '../../../two-columns' as tc;
+@use '../../../../styles/semantic/typography' as t;
 
 .questList {
   width: 35%;
@@ -18,6 +19,5 @@
 
 .questList .selected {
   background-color: v.$color-secondary;
-  color: v.$color-primary;
-  font-weight: v.$font-weight-bold;
+  @include t.apply-text-style(t.$text-body);
 }

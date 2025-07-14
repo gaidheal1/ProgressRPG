@@ -2,7 +2,7 @@
 @use '../../layout/two-columns' as tc;
 @use '../../styles/semantic/typography' as t;
 
-.currentQuestSection {
+.currentActivitySection {
   display: flex;
   flex-direction: column;
   gap: v.$spacing-gap;
@@ -14,21 +14,7 @@
   margin: 0 auto;
 }
 
-.questText {
-  color: v.$color-primary;
-  margin: 0;
-  @include t.apply-text-style(t.$text-body);
-}
 
-.questLabel {
-  color: v.$color-primary;
-  @include t.apply-text-style(t.$text-heading-2);
-}
-
-.currentQuestTitle {
-  color: v.$color-primary;
-  @include t.apply-text-style(t.$text-heading-2);
-}
 
 .activityRow {
   @include tc.bodyRow;

@@ -72,13 +72,13 @@
   }
 
   .quest-stage {
-	@include t.apply-text-style(t.$text-body);
+	  @include t.apply-text-style(t.$text-body);
 
-	&.previous {
-	  color: #888;
-	}
+	  &.previous {
+			@include t.apply-text-style(t.$text-body);
+		}
 
-	&.current {
-	  font-weight: 500;
-	}
+		&.current {
+			@include t.apply-text-style(t.$text-body);
+		}
   }

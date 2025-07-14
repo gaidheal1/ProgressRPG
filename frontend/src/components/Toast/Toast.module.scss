@@ -1,6 +1,8 @@
 @use '../../styles/base/variables' as v;
 @use '../../styles/utilities/mixins' as m;
 @use '../../styles/semantic/typography' as t;
+@use '../../styles/semantic/colors' as c;
+
 
 .toastContainer {
   position: fixed;
@@ -17,7 +19,6 @@
 
 .toast {
   background: v.$color-primary;
-  color: v.$color-light;
 
   padding: v.$padding-base;
   border-radius: v.$border-radius;

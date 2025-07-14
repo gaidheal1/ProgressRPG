@@ -4,7 +4,6 @@
 
 .listSectionHeader {
   margin-bottom: v.$spacing-sm;
-  color: v.$color-text-primary;
   text-align: center;
   @include t.apply-text-style(t.$text-heading-2);
 }
@@ -13,13 +12,13 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: v.$spacing-sm;
-  color: #555;
   gap: v.$spacing-gap;
+
   @include t.apply-text-style(t.$text-body);
 
   span {
     &:first-child {
-      font-weight: v.$font-weight-bold;
+      @include t.apply-text-style(t.$text-body);
     }
   }
 }

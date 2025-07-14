@@ -14,8 +14,6 @@
 }
 
 .label {
-
-  color: v.$color-primary;
   @include t.apply-text-style(t.$text-caption);
 }
 
@@ -53,13 +51,11 @@
 
   &:disabled {
     background-color: #f5f5f5;
-    color: #999;
     cursor: not-allowed;
   }
 }
 
 .helpText {
-  color: #666;
   @include t.apply-text-style(t.$text-caption);
 
 }

@@ -24,7 +24,6 @@
   @include t.apply-text-style(t.$text-caption);
 
   a {
-    color: v.$color-text-primary;
     @include t.apply-text-style(t.$text-body);
 
     &:hover {

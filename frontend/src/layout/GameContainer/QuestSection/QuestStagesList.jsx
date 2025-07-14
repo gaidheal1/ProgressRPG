@@ -5,7 +5,7 @@ import styles from './QuestStagesList.module.scss';
 export default function QuestStagesList({ stages = [] }) {
   return (
     <div className={`${styles.container} section-row`}>
-      <p className={styles.title}><strong>Quest stages</strong></p>
+      <p className={styles.title}>Quest stages</p>
 
       <div className={styles.listWrapper}>
         {stages.length === 0 ? (

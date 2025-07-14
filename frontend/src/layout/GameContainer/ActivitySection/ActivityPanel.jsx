@@ -15,7 +15,7 @@ export default function ActivityPanel() {
 
   return (
     <section className={styles.listSection}>
-      <p className={styles.listSectionHeader}><strong>Today's activities</strong></p>
+      <p className={styles.listSectionHeader}>Today's activities</p>
 
       <div className={styles.activityTotals}>
         <span id="activities-time-message">Total time:</span>

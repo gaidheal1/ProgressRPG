@@ -17,7 +17,7 @@
 
 .timerStatus {
   margin-right: v.$spacing-sm;
-  font-weight: v.$font-weight-bold;
+  @include t.apply-text-style(t.$text-body);
 }
 
 
@@ -34,7 +34,5 @@
 	border: 1px solid v.$color-primary;
 	border-radius: v.$border-radius;
 
-	color: v.$color-dark;
 	@include t.apply-text-style(t.$text-body);
-	& {font-weight: v.$font-weight-bold;}
 }
