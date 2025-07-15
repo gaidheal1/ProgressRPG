@@ -1,9 +1,46 @@
-@use '../tokens/spacing' as *;
+@use '../tokens/spacing' as s;
 @use 'sass:map';
 
-$spacing-gap: map.get($spacing, sm);
+// === Spacing ===
+$gap: (
+  xs: map.get(s.$spacing, xs),
+  sm: map.get(s.$spacing, sm),
+  md: map.get(s.$spacing, md),
+  lg: map.get(s.$spacing, lg),
+);
 
-$padding-vertical: map.get($spacing, sm);
-$padding-horizontal: map.get($spacing, md);
+$spacing-gap: map.get($gap, sm);
 
-$padding-base: $padding-vertical $padding-horizontal;
+// === Padding ===
+$padding-vertical-sm: map.get(s.$spacing, sm);
+$padding-vertical-md: map.get(s.$spacing, md);
+$padding-horizontal-sm: map.get(s.$spacing, md);
+$padding-horizontal-md: map.get(s.$spacing, lg);
+
+$spacing-padding: (
+  base: $padding-vertical-sm $padding-horizontal-sm,
+  lg: $padding-vertical-md $padding-horizontal-md,
+);
+
+// === Margins ===
+$margin-xs: map.get(s.$spacing, xs);
+$margin-sm: map.get(s.$spacing, sm);
+$margin-md: map.get(s.$spacing, md);
+$margin-lg: map.get(s.$spacing, lg);
+
+// === Utility shortcuts ===
+$section-padding: map.get($spacing-padding, lg);
+$card-padding: map.get($spacing-padding, base);
+$container-gap: $spacing-gap;
+
+$radius: (
+  sm: map.get(s.$spacing, xs),
+  md: map.get(s.$spacing, sm),
+  lg: map.get(s.$spacing, md),
+);
+
+$shadow: (
+  sm: 0 1px 2px rgba(0, 0, 0, 0.1),
+  md: 0 4px 8px rgba(0, 0, 0, 0.1),
+  lg: 0 8px 16px rgba(0, 0, 0, 0.1)
+)

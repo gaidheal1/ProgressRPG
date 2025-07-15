@@ -40,14 +40,9 @@
   justify-content: flex-end;
 }
 
-.buttonFilled {
-  a {
-    text-decoration: none;
-    margin: 0 v.$spacing-sm;
-    align-self: center;
-    @include t.apply-text-style(t.$text-heading-2);
+.navLink {
+    @include t.apply-text-style(t.$text-link);
     @include c.apply-text-tone(map.get(c.$text-tone, invert));
-  }
 }
 
 //.account {
@@ -55,7 +50,7 @@
 //}
 
 .icons {
-  display: flex; // Hidden by default for larger screens
+  display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;

@@ -10,11 +10,23 @@
   gap: v.$spacing-gap;
   width: 100%;
   gap: v.$spacing-gap;
+  position: relative;
 }
 
 .label {
   pointer-events: none;
   @include t.apply-text-style(t.$text-caption)
+}
+
+.labelMeasure {
+  position: absolute;
+  visibility: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+  height: auto;
+  width: auto;
+  overflow: hidden;
+  @include t.apply-text-style(t.$text-body);
 }
 
 .progressTrack {
@@ -40,13 +52,13 @@
   border-top-right-radius: v.$border-radius;
   border-bottom-right-radius: v.$border-radius;
   white-space: nowrap;
-  padding: 0 0.5rem;
+  //padding: 0 0.5rem;
 }
 
 .labelInside {
-    @include t.apply-text-style(t.$text-body);
-    @include c.apply-text-tone(inverted);
-  }
+  @include c.apply-text-tone(inverted);
+  @include t.apply-text-style(t.$text-body);
+}
 
 .labelOutside {
   position: absolute;
@@ -55,6 +67,7 @@
   transform: translateY(-50%);
   user-select: none;
   pointer-events: none;
+  z-index: 1;
   @include t.apply-text-style(t.$text-body);
 
 }

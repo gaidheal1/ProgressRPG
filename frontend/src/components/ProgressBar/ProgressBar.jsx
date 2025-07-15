@@ -10,6 +10,8 @@ const ProgressBar = ({
 }) => {
   const percent = Math.min((value / max) * 100, 100);
   const fillRef = useRef(null);
+  const labelMeasureRef = useRef(null);
+
   const [fillWidth, setFillWidth] = useState(0);
   const [labelWidth, setLabelWidth] = useState(0);
 
@@ -17,10 +19,11 @@ const ProgressBar = ({
   useEffect(() => {
     if (fillRef.current) {
       setFillWidth(fillRef.current.offsetWidth);
-      // We'll measure label inside fill on next tick
-      // or do it dynamically by refs if you want to be exact
     }
-  }, [percent]);
+    if (labelMeasureRef.current) {
+      setLabelWidth(labelMeasureRef.current.offsetWidth);
+    }
+  }, [percent, label]);
 
   const showInsideLabel = fillWidth > labelWidth + 10;
 
@@ -32,9 +35,21 @@ const ProgressBar = ({
 
   return (
     <div className={styles.progressBarWrapper}>
+      {/* Hidden label used for measuring width */}
+      {label && (
+        <span
+          ref={labelMeasureRef}
+          className={styles.labelMeasure}
+          aria-hidden
+        >
+          {label}
+        </span>
+      )}
+
       {label && !showInsideLabel && (
         <span className={styles.labelOutside}>{label}</span>
       )}
+
       <div className={styles.progressTrack}>
         <div
           ref={fillRef}

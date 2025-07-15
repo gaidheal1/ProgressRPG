@@ -61,10 +61,10 @@ export default function RegisterPage() {
         }),
       });
 
-      localStorage.setItem('accessToken', data.access);
-      localStorage.setItem('refreshToken', data.refresh);
+      localStorage.setItem('accessToken', data.access_token);
+      localStorage.setItem('refreshToken', data.refresh_token);
 
-      login(data.access, data.refresh);
+      login(data.access_token, data.refresh_token);
       navigate('/onboarding');
     } catch (err) {
       console.error('[Register] Error:', err);

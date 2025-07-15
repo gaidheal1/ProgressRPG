@@ -31,8 +31,14 @@ export default function QuestModal({ onClose, onChooseQuest }) {
       <div className={styles.modal}>
 
         <header className={styles.modalHeader}>
-          <h2>Available Quests</h2>
-          <Button onClick={onClose} aria-label="Close modal">&times;</ Button>
+          <h2>Choose your quest</h2>
+          <Button
+            onClick={onClose}
+            aria-label="Close modal"
+            className={styles.closeButton}
+          >
+            &times;
+          </Button>
         </header>
         <div className={styles.modalContent}>
           <QuestList

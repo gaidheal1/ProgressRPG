@@ -30,7 +30,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 # from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -47,6 +47,7 @@ from api.serializers import (
     # Step2Serializer,
     # Step3Serializer,
     CustomTokenObtainPairSerializer,
+    CustomTokenRefreshSerializer,
 )
 
 from character.models import Character, PlayerCharacterLink
@@ -99,6 +100,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         return Response(
             {"status": "ok", "message": f"Hello {request.user.email}! POST successful!"}
         )
+
+
+class CustomTokenRefreshView(TokenRefreshView):
+    serializer_class = CustomTokenRefreshSerializer
 
 
 @api_view(["GET"])

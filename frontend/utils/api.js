@@ -1,5 +1,18 @@
 // src/utils/api.js
+import { jwtDecode } from "jwt-decode";
+
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
+
+
+function isTokenExpiringSoon(token, bufferSeconds = 60) {
+  try {
+    const { exp } = jwtDecode(token);
+    const now = Date.now() / 1000;
+    return exp - now < bufferSeconds;
+  } catch (err) {
+    return true; // treat invalid token as expiring
+  }
+}
 
 function clearAuthAndRedirect() {
   localStorage.removeItem('accessToken');
@@ -9,7 +22,8 @@ function clearAuthAndRedirect() {
   window.location.href = '/#/login'; // ✅ Direct browser redirect
 }
 
-async function tryRefreshToken(refreshToken) {
+
+async function refreshAccessToken(refreshToken) {
   try {
     const response = await fetch(`${API_URL}/auth/jwt/refresh/`, {
       method: 'POST',
@@ -17,63 +31,68 @@ async function tryRefreshToken(refreshToken) {
       body: JSON.stringify({ refresh: refreshToken }),
     });
 
-    if (!response.ok) return false;
+    if (!response.ok) throw new Error('Failed to refresh access token');
 
     const data = await response.json();
-    console.log("data:", data);
 
-    localStorage.setItem('accessToken', data.access_token);
-    // Optionally update refresh token if backend sends a new one
-    if (data.access) {
-      localStorage.setItem('accessToken', data.access);
-      return true;
+    if (data.access_token) {
+      localStorage.setItem('accessToken', data.access_token);
+      return data.access_token;
     }
-    return false;
+    throw new Error('No access token returned from refresh');;
   } catch {
     return false;
   }
 }
 
 
-export async function apiFetch(path, options = {}) {
+async function getValidAccessToken() {
   const accessToken = localStorage.getItem('accessToken');
   const refreshToken = localStorage.getItem('refreshToken');
-  const fullPath = `${API_URL}${path}`;
-  const headers = {
-    ...(options.headers || {}),
-    Authorization: accessToken ? `Bearer ${accessToken}` : undefined,
-    'Content-Type': 'application/json',
-  };
+  if (!accessToken || !refreshToken) throw new Error('Missing tokens');
 
-  const response = await fetch(fullPath, {
-    ...options,
-    headers,
-  });
+  if (isTokenExpiringSoon(accessToken)) {
+    const newAccess = await refreshAccessToken(refreshToken);
+    if (!newAccess) throw new Error('Token refresh failed');
+    return newAccess;
+  }
+
+  return accessToken;
+}
 
 
-  if (response.status === 401 && refreshToken) {
-    const refreshSuccess = await tryRefreshToken(refreshToken);
+export async function apiFetch(path, options = {}, explicitAccessToken=null) {
+  try {
+    const accessToken = explicitAccessToken || await getValidAccessToken();
 
-    if (refreshSuccess) {
-      // Retry original request with new token
-      const newAccessToken = localStorage.getItem('accessToken');
-      const newHeaders = {
-        ...headers,
-        Authorization: `Bearer ${newAccessToken}`,
-      };
+    if (!accessToken) {
+      throw new Error('No access token available for request');
+    }
 
-      const response = await fetch(fullPath, { ...options, headers: newHeaders });
-    } else {
-      // Refresh failed, clear tokens and redirect to login
+    const headers = {
+      ...(options.headers || {}),
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    };
+
+    const response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+    });
+
+    if (response.status === 401) {
       clearAuthAndRedirect();
       throw new Error('Unauthorized');
     }
-  }
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || `HTTP ${response.status}`);
-  }
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'API error');
+    }
 
-  return response.json();
+    return response.json();
+  } catch (err) {
+    console.error('apiFetch error:', err);
+    throw err;
+  }
 }

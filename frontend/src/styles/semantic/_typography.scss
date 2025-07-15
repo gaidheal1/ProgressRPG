@@ -94,7 +94,6 @@ $text-link : (
   )
 );
 
-
 // Caption styles
 $text-caption: (
   base: (
@@ -108,9 +107,19 @@ $text-caption: (
   md: (
     font-size: 0.75rem
   ),
-
 );
 
+// Label styles
+$text-label: (
+  base: (
+    font-family: token(t.$font-family, base),
+    font-size: token(t.$font-size, base),
+    font-weight: token(t.$font-weight, regular),
+    line-height: token(t.$line-height, base),
+    letter-spacing: token(t.$letter-spacing, normal),
+    text-transform: token(t.$text-transform, none),
+  )
+);
 
 
 @mixin apply-text-style($style) {

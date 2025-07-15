@@ -1,6 +1,7 @@
 @use '../../styles/base/variables' as v;
 @use '../../layout/two-columns' as tc;
 @use '../../styles/semantic/typography' as t;
+@use '../../styles/semantic/colors' as c;
 
 .currentQuestSection {
   display: flex;
@@ -37,8 +38,7 @@
 }
 
 .currentStage {
-  background-color: v.$color-secondary;
-  border-left: v.$spacing-xs solid v.$color-accent;
+  border-left: v.$spacing-xs solid c.$color-border-accent;
   padding-left: v.$spacing-sm;
   @include t.apply-text-style(t.$text-body);
 }

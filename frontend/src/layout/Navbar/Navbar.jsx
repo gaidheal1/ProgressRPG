@@ -10,27 +10,44 @@ export default function Navbar() {
     <header className={styles.header}>
       <nav className={styles.navbar}>
         <div className={styles.leftLinks}>
-          <Link to={isAuthenticated ? '/game' : '/'}>{isAuthenticated ? 'Game' : 'Home'}</Link>
+          <Link to={isAuthenticated ? '/game' : '/'}>
+            <Button variant="primary" className={styles.navLink}>
+              {isAuthenticated ? 'Game' : 'Home'}
+            </Button>
+          </Link>
         </div>
 
         <div className={styles.rightLinks}>
           {isAuthenticated ? (
             <>
               <div className={styles.link}>
-                <div className={styles.textWrapper}>
-                  <Link to="/logout">Log out</Link>
-                </div>
+                <Link to="/login">
+                <Button variant="secondary" className={styles.navLink}>
+                  Log out
+                </Button>
+              </Link>
               </div>
-              <Button className={styles.buttonFilled}>
-                <Link to="/profile">Account</Link>
-              </Button>
+              <Link to="/profile">
+                <Button
+                  className={styles.navLink}
+                  variant="primary"
+                >
+                  Account
+                </Button>
+              </Link>
             </>
           ) : (
             <>
-              <Link to="/login">Login</Link>
-              <Button className={styles.buttonFilled}>
-                <Link to="/register">Sign up</Link>
-              </Button>
+              <Link to="/login">
+                <Button variant="secondary" className={styles.navLink}>
+                  Log in
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button variant="primary" className={styles.navLink}>
+                  Sign up
+                </Button>
+              </Link>
             </>
           )}
           <div className={styles.account}>

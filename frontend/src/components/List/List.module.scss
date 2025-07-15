@@ -1,11 +1,13 @@
 @use '../../styles/base/variables' as v;
 @use '../../styles/utilities/mixins' as m;
 @use '../../styles/semantic/typography' as t;
+@use '../../styles/semantic/colors' as c;
 
 .listSection {
-  padding: v.$spacing-xs 0;
+  //padding: v.$spacing-xs 0;
   gap: v.$spacing-gap;
   align-self: stretch;
+  display: flex;
 }
 
 .list {
@@ -14,7 +16,7 @@
   align-items: flex-start;
   padding: 0;
   margin: 0;
-  gap: v.$spacing-xs;
+  //gap: v.$spacing-xs;
   width: 100%;
   list-style: none;
 }
@@ -28,20 +30,21 @@
   width: 100%;
   padding: v.$spacing-xs v.$spacing-sm;
   border-radius: v.$border-radius;
-  background-color: v.$color-light;
+
+  background-color: c.$color-bg;
   @include t.apply-text-style(t.$text-body);
+  @include c.apply-list-variant(default, false);
 
   &.hidden {
     display: none !important;
   }
+
+  &.selected {
+    @include c.apply-list-variant(default, true);
+  }
+
 }
 
 .selectable li:hover {
-  background-color: v.$color-light-hover;
   cursor: pointer;
-}
-
-.selected {
-  background-color: v.$color-text-primary;
-  @include t.apply-text-style(t.$text-body);
 }

@@ -1,11 +1,12 @@
 // hooks/useLogin.js
 import { useCallback } from 'react';
-import { apiFetch } from '../../utils/api';
+
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 export default function useLogin() {
   const login = useCallback(async (email, password) => {
     try {
-      const data = await apiFetch('/auth/jwt/create/', {
+      const response = await fetch(`${API_URL}/auth/jwt/create/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -13,8 +14,16 @@ export default function useLogin() {
         body: JSON.stringify({ email, password }),
       });
 
-      localStorage.setItem('accessToken', data.access);
-      localStorage.setItem('refreshToken', data.refresh);
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Login failed');
+      }
+
+      const data = await response.json();
+
+      //console.log('useLogin, data:', data);
+      localStorage.setItem('accessToken', data.access_token);
+      localStorage.setItem('refreshToken', data.refresh_token);
 
       return { success: true, tokens: data };
     } catch (error) {

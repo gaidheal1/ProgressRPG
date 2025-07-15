@@ -17,10 +17,10 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     async function verifyUser() {
-      const token = localStorage.getItem('accessToken');
-      const refresh = localStorage.getItem('refreshToken');
+      const accessToken = localStorage.getItem('accessToken');
+      const refreshToken = localStorage.getItem('refreshToken');
 
-      if (!token || !refresh) {
+      if (!accessToken || !refreshToken) {
         setLoading(false);
         setIsAuthenticated(false);
         return;
@@ -30,8 +30,8 @@ export function AuthProvider({ children }) {
         // Use apiFetch here to auto handle token refresh etc.
         const userData = await apiFetch('/me/');
         setUser(userData);
-        setAccessToken(token);
-        setRefreshToken(refresh);
+        setAccessToken(accessToken);
+        setRefreshToken(refreshToken);
         setIsAuthenticated(true);
       } catch (err) {
         logout();
@@ -43,11 +43,11 @@ export function AuthProvider({ children }) {
     verifyUser();
   }, []);
 
-  const login = async (access, refresh) => {
-    localStorage.setItem('accessToken', access);
-    localStorage.setItem('refreshToken', refresh);
-    setAccessToken(access);
-    setRefreshToken(refresh);
+  const login = async (accessToken, refreshToken) => {
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+    setAccessToken(accessToken);
+    setRefreshToken(refreshToken);
     setLoading(true);
 
     // Fetch user info after login
@@ -56,6 +56,7 @@ export function AuthProvider({ children }) {
       console.log('AuthProv userData:', userData);
       setUser(userData);
       setIsAuthenticated(true);
+      return userData;
     } catch (err) {
       setUser(null);
       setIsAuthenticated(false);

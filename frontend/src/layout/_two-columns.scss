@@ -19,6 +19,7 @@
 
 @mixin section-box {
   display: flex;
+  justify-content: flex-start;
   flex-direction: column;
   align-items: flex-start;
   gap: v.$spacing-gap;
@@ -30,7 +31,6 @@
   max-width: 100%;
 
   width: 100%;
-
 
   @include m.respond-to(sm) {
     flex: 1 1 50%;

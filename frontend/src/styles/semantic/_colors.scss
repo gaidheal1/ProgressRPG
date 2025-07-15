@@ -25,9 +25,14 @@ $button-bg-prim-hov: map.get(c.$primary-scale, 600);
 
 $color-progress-bar: map.get(c.$primary-scale, 500);
 
+// Backgrounds
 $color-bg: c.$color-light;
 $color-bg-green: map.get(c.$secondary-scale, 100);
 $color-bg-invert: c.$color-dark;
+
+// Timer
+$color-border-primary: map.get(c.$primary-scale, 500);
+$color-border-accent: map.get(c.$accent-scale, 200);
 
 $text-tone: (
   default: (
@@ -110,5 +115,58 @@ $button-variants: (
     background-color: $disabled;
     cursor: not-allowed;
     opacity: 0.6;
+  }
+}
+
+$list-variants: (
+  default: (
+    tone: base,
+    selected-tone: inverted,
+    bg: transparent,
+    hover: map.get(c.$neutral-scale, 100),
+    active: map.get(c.$neutral-scale, 200),
+    selected: map.get(c.$primary-scale, 500),
+    selected-hover: map.get(c.$primary-scale, 400),
+    selected-active: map.get(c.$primary-scale, 600),
+  ),
+  subtle: (
+    tone: secondary,
+    bg: transparent,
+    hover: map.get(c.$secondary-scale, 100),
+    active: map.get(c.$secondary-scale, 200),
+    selected: map.get(c.$accent-scale, 100),
+    selected-hover: map.get(c.$accent-scale, 200),
+    selected-active: map.get(c.$accent-scale, 300),
+  )
+);
+
+@mixin apply-list-variant($variant-key, $is-selected: false) {
+  $variant: map.get($list-variants, $variant-key);
+
+  $tone-key: if($is-selected, map.get($variant, selected-tone), map.get($variant, tone));
+  $tone-map: map.get($text-tone, $tone-key);
+
+  @include apply-text-tone($tone-map);
+
+  @if $is-selected {
+    background-color: map.get($variant, selected);
+
+    &:hover {
+      background-color: map.get($variant, selected-hover);
+    }
+
+    &:active {
+      background-color: map.get($variant, selected-active);
+    }
+  } @else {
+    background-color: map.get($variant, bg);
+
+    &:hover {
+      background-color: map.get($variant, hover);
+    }
+
+    &:active {
+      background-color: map.get($variant, active);
+    }
   }
 }

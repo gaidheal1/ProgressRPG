@@ -9,16 +9,14 @@
   align-items: center;
 
   padding: v.$button-padding;
-  // height: 2.5rem;
   gap: v.$spacing-gap;
-  border-radius: v.$border-radius;
-
+  border-radius: v.$button-radius;
 
   cursor: pointer;
   transition: background 0.2s ease, box-shadow 0.2s ease;
 
   text-align: center;
-  //@include t.apply-text-style(t.$text-button);
+  @include t.apply-text-style(t.$text-button);
 
   &:hover {
     box-shadow:

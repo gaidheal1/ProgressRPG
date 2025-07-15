@@ -9,7 +9,7 @@
 html, body {
   width: 100%;
   height: 100%;
-  background: v.$color-light;
+  background: c.$color-bg;
   font-family: map.get(t.$font-family, base);
   font-size: 16px;
   font-weight: map.get(t.$font-weight, regular);
@@ -51,8 +51,4 @@ p {
 a {
   @include ts.apply-text-style(ts.$text-body);
   @include c.apply-text-tone(map.get(c.$text-tone, primary));
-
-  &:hover {
-    color: v.$color-secondary;
-  }
 }

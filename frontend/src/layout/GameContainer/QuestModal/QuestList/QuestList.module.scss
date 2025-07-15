@@ -5,20 +5,7 @@
 
 .questList {
   width: 35%;
-  border-right: 1px solid #eee;
   padding: v.$padding-base;
   overflow-y: auto;
   @include tc.section-box;
-}
-
-.questList ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-
-.questList .selected {
-  background-color: c.$color-bg-green;
-  @include t.apply-text-style(t.$text-body);
 }

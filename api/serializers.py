@@ -15,7 +15,10 @@ from gameplay.models import (
 from users.models import Profile, InviteCode
 
 
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import (
+    TokenObtainPairSerializer,
+    TokenRefreshSerializer,
+)
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -29,9 +32,21 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
-        # Allow login with email instead of username
         attrs["username"] = attrs.get("email")
-        return super().validate(attrs)
+        data = super().validate(attrs)
+
+        return {
+            "access_token": data["access"],
+            "refresh_token": data["refresh"],
+        }
+
+
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        return {
+            "access_token": data["access"],
+        }
 
 
 class UserSerializer(serializers.ModelSerializer):

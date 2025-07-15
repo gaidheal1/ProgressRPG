@@ -20,13 +20,14 @@ export default function LoginPage() {
     setSubmitting(true);
     setError('');
 
-    const result = await loginWithJwt(email, password);
-    console.log('LoginPage login result:', result);
-    if (result.success) {
-      try {
-        await login(result.tokens.access, result.tokens.refresh);
+    const result1 = await loginWithJwt(email, password);
+    console.log('LoginPage login result1:', result1);
 
-        if (result.onboarding_step && result.onboarding_step < 4) {
+    if (result1.success) {
+      try {
+        const result2 = await login(result1.tokens.access_token, result1.tokens.refresh_token);
+        console.log('[HANDLE SUBMIT] result2:', result2);
+        if (result2.onboarding_step && result2.onboarding_step < 4) {
           navigate('/onboarding');
         } else {
           navigate('/game');
@@ -37,7 +38,7 @@ export default function LoginPage() {
         console.error('Post-login user fetch failed:', err);
       }
     } else {
-      setError(result.error || 'Login failed');
+      setError(result1.error || 'Login failed');
     }
 
     setSubmitting(false);

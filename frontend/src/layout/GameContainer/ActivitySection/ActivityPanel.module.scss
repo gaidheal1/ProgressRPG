@@ -2,15 +2,16 @@
 @use '../../../styles/base/variables' as v;
 @use '../../../styles/semantic/typography' as t;
 
-.listSectionHeader {
-  margin-bottom: v.$spacing-sm;
-  text-align: center;
-  @include t.apply-text-style(t.$text-heading-2);
+
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+
 }
 
-.activity-totals {
+.activityTotals {
   display: flex;
-  justify-content: space-between;
   margin-bottom: v.$spacing-sm;
   gap: v.$spacing-gap;
 

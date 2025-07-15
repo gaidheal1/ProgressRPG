@@ -4,7 +4,11 @@ import styles from './QuestDetail.module.scss';
 
 export default function QuestDetail({ quest, selectedDuration, onDurationChange, onChoose }) {
   if (!quest) {
-    return <p className={styles.placeholder}>Please select a quest from the list</p>;
+    return (
+      <section className={styles.questDetail}>
+        <p className={styles.placeholder}>Please select a quest from the list</p>
+      </section>
+    )
   }
 
   //console.log('[QUEST DETAIL] Quest:', quest);

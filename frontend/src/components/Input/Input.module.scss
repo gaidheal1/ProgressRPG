@@ -1,6 +1,9 @@
 @use '../../styles/utilities/mixins' as m;
 @use '../../styles/base/variables' as v;
 @use '../../styles/semantic/typography' as t;
+@use '../../styles/semantic/colors' as c;
+@use '../../styles/base/a11y' as a;
+
 .inputGroup {
   display: flex;
   flex-direction: column;
@@ -14,7 +17,7 @@
 }
 
 .label {
-  @include t.apply-text-style(t.$text-caption);
+  @include a.visually-hidden;
 }
 
 .required {
@@ -28,29 +31,28 @@
 
   border: 1px solid rgba(0, 0, 0, 0.3);
   border-radius: v.$border-radius;
-  background-color: v.$color-secondary;
   transition: border 0.2s, background 0.2s;
   @include t.apply-text-style(t.$text-body);
 
   &:focus {
     outline: none;
-    border-color: v.$color-primary;
-    background-color: #d9fbe7;
+    border-color: c.$color-border-primary;
+    background-color: c.$color-bg;
   }
 
   &:focus-visible {
-    outline: 2px solid v.$color-accent;
+    outline: 2px solid c.$color-border-accent;
     outline-offset: 2px;
-    border-color: v.$color-accent;
+    border-color: c.$color-border-accent;
   }
 
   &:invalid {
     border-color: red;
-    background-color: #ffe5e5;
+    background-color: c.$color-bg;
   }
 
   &:disabled {
-    background-color: #f5f5f5;
+    background-color: c.$color-bg;
     cursor: not-allowed;
   }
 }

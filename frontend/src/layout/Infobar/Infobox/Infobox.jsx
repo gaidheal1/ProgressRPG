@@ -65,6 +65,7 @@ export default function Infobox({ title, type, data }) {
             color="xp"  // Use your CSS class for XP color, define in ProgressBar.module.scss
           />
         </div>
+        <div className={styles.column}></div>
       </div>
     </div>
   );

@@ -15,17 +15,19 @@ export default function ActivityPanel() {
 
   return (
     <section className={styles.listSection}>
-      <p className={styles.listSectionHeader}>Today's activities</p>
+      <h2>Today's activities</h2>
 
-      <div className={styles.activityTotals}>
-        <span id="activities-time-message">Total time:</span>
-        <span id="activities-time-data">{formatDuration(totalDuration)}</span>
-        <span id="activities-total-message">Activities logged:</span>
-        <span id="activities-total-data">{activities.length}</span>
+      <div className={styles.row}>
+        <div className={styles.activityTotals}>
+          <span>{formatDuration(totalDuration)}</span>
+          <span>time and</span>
+          <span>{activities.length}</span>
+          <span>activities logged today</span>
+        </div>
       </div>
 
       {activities.length === 0 ? (
-        <p>Searching for activities completed today...</p>
+        <p>No activities completed today...so far!</p>
       ) : (
         <List
           items={activities}
