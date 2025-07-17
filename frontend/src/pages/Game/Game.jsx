@@ -23,7 +23,7 @@ export default function Game() {
         console.log('[WS] Pong!');
         break;
       case 'console.log':
-        console.log(data.message);
+        console.log("Message from server:", data.message);
         break;
       case 'action':
         switch (data.action) {
@@ -36,10 +36,12 @@ export default function Game() {
             questTimer.pause();
             break;
           case 'submit_activity':
-            handleSubmitActivity();
+            //handleSubmitActivity();
+            console.log("Server WS sent 'submit_activity'");
             break;
-          case 'quest_complete':
-            handleCompleteQuest();
+            case 'quest_complete':
+              //handleCompleteQuest();
+              console.log("Server WS sent 'complete_quest'");
             break;
           default:
             console.warn('[WS] Unknown action:', data);
