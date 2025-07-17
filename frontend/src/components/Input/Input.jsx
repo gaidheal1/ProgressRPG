@@ -10,7 +10,12 @@ export default function Input({
   helpText = '',
   error = '',
   required = false,
+  autoComplete,
+  checked,
 }) {
+  const isCheckbox = type === 'checkbox';
+  console.log(`[Input] Rendering ${id}, type: ${type}, isCheckbox: ${isCheckbox}`);
+
   return (
     <div className={styles.inputGroup}>
       {label && (
@@ -23,10 +28,16 @@ export default function Input({
         id={id}
         type={type}
         className={`${styles.inputField} ${error ? styles.errorInput : ''}`}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={isCheckbox ? undefined : value}
+        checked={isCheckbox ? checked : undefined}
+        onChange={(e) => {
+          if (onChange) {
+            isCheckbox ? onChange(e) : onChange(e.target.value);
+          }
+        }}
         placeholder={placeholder}
         aria-invalid={!!error}
+        autoComplete={autoComplete}
         required={required}
       />
 

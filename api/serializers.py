@@ -1,6 +1,6 @@
 from dj_rest_auth.registration.serializers import RegisterSerializer
+from django.contrib.sites.shortcuts import get_current_site
 from rest_framework import serializers
-
 
 from character.models import Character, PlayerCharacterLink
 from gameplay.models import (
@@ -14,14 +14,18 @@ from gameplay.models import (
 )
 from users.models import Profile, InviteCode
 
-
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
     TokenRefreshSerializer,
 )
+
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
+import logging
+
+logger = logging.getLogger("django")
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -228,6 +232,20 @@ class QuestTimerSerializer(serializers.ModelSerializer):
 class CustomRegisterSerializer(RegisterSerializer):
     invite_code = serializers.CharField(write_only=True, required=True)
     agree_to_terms = serializers.BooleanField(write_only=True, required=True)
+    email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ("email", "password1", "password2", "invite_code", "agree_to_terms")
+
+    def get_email_context(self):
+        context = super().get_email_context()
+        request = self.context.get("request")
+        if request:
+            current_site = get_current_site(request)
+            context["domain"] = current_site.domain
+            context["protocol"] = "https" if request.is_secure() else "http"
+        return context
 
     def validate_invite_code(self, value):
         try:
@@ -237,17 +255,23 @@ class CustomRegisterSerializer(RegisterSerializer):
         return value
 
     def validate_agree_to_terms(self, value):
+        logger.debug(f"[VALIDATE AGREE TERMS] Value: {value}")
         if not value:
             raise serializers.ValidationError(
                 "You must agree to the terms and conditions."
             )
         return value
 
-    def custom_signup(self, user):
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("A user with that email already exists.")
+        return value
+
+    def custom_signup(self, request, user):
         code = self.validated_data.get("invite_code")
         try:
             invite = InviteCode.objects.get(code=code, is_active=True)
-            invite.mark_used(user)
+            invite.use()
             user.profile.invited_by_code = code
             user.profile.save()
         except InviteCode.DoesNotExist:

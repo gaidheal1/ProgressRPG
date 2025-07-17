@@ -3,6 +3,7 @@ from asgiref.sync import async_to_sync
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth import login, logout, get_user_model
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.db import DatabaseError, transaction
 from django.http import Http404  # , HttpResponseRedirect
@@ -46,6 +47,7 @@ from api.serializers import (
     Step1Serializer,
     # Step2Serializer,
     # Step3Serializer,
+    CustomRegisterSerializer,
     CustomTokenObtainPairSerializer,
     CustomTokenRefreshSerializer,
 )
@@ -115,19 +117,29 @@ def me_view(request):
 
 
 class CustomRegisterView(RegisterView):
+    serializer_class = CustomRegisterSerializer
+
     def perform_create(self, serializer):
         user = serializer.save(self.request)
 
         backend_path = settings.AUTHENTICATION_BACKENDS[0]
         user.backend = backend_path
 
-        # Complete signup (this triggers login)
-        complete_signup(self.request, user, allauth_settings.EMAIL_VERIFICATION, None)
+        current_site = get_current_site(self.request)
+        signup_context = {
+            "current_site": current_site,
+            "domain": current_site.domain,
+            "protocol": "https" if self.request.is_secure() else "http",
+            "redirect_url": "https://example.com/",
+        }
+
+        complete_signup(
+            self.request, user, allauth_settings.EMAIL_VERIFICATION, signup_context
+        )
+
         return user
 
     def get_response_data(self, user):
-        # Override to avoid Token and return JWT tokens instead
-
         refresh = RefreshToken.for_user(user)
         return {
             "refresh": str(refresh),

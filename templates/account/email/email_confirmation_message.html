@@ -2,6 +2,7 @@
 <p>{% blocktrans %}Please confirm your email address by clicking the link below:{% endblocktrans %}</p>
 
 <p>
+  {% debug %}
   <a href="{{ protocol }}://{{ domain }}/api/v1/auth/confirm-email/{{ key }}/">
     {{ protocol }}://{{ domain }}/api/v1/auth/confirm-email/{{ key }}/
   </a>

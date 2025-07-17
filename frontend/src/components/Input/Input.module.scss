@@ -17,7 +17,8 @@
 }
 
 .label {
-  @include a.visually-hidden;
+  //@include a.visually-hidden;
+  @include t.apply-text-style(t.$text-label)
 }
 
 .required {
@@ -26,7 +27,6 @@
 }
 
 .inputField {
-
   padding: v.$padding-base;
 
   border: 1px solid rgba(0, 0, 0, 0.3);
@@ -38,6 +38,7 @@
     outline: none;
     border-color: c.$color-border-primary;
     background-color: c.$color-bg;
+    border-radius: v.$border-radius;
   }
 
   &:focus-visible {
