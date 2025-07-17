@@ -5,6 +5,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import ErrorFallback from './components/ErrorFallback';
 import Navbar from './layout/Navbar/Navbar';
 import Footer from './layout/Footer/Footer';
+import FeedbackWidget from './components/FeedbackWidget/FeedbackWidget';
 
 import Home from './pages/Home/Home';
 import LoginPage from './pages/LoginPage/LoginPage';
@@ -85,6 +86,8 @@ function AppRoutes() {
 }
 
 function App() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <AuthProvider>
       <GameProvider>
@@ -93,6 +96,7 @@ function App() {
             <Navbar />
             <AppRoutes />
             <Footer />
+            {isAuthenticated && <FeedbackWidget />}
           </div>
         </HashRouter>
       </GameProvider>
