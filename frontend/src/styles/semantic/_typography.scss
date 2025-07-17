@@ -63,6 +63,23 @@ $text-heading-2: (
   )
 );
 
+$text-heading-3: (
+  base: (
+    font-family: token(t.$font-family, heading),
+    font-size: token(t.$font-size, lg),
+    font-weight: token(t.$font-weight, bold),
+    line-height: token(t.$line-height, tight),
+    letter-spacing: token(t.$letter-spacing, normal),
+    text-transform: token(t.$text-transform, none)
+  ),
+  md: (
+    font-size: 1.5rem
+  ),
+  lg: (
+    font-size: 1.75rem
+  )
+);
+
 
 // Button styles
 $text-button: (

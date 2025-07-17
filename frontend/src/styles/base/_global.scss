@@ -42,6 +42,11 @@ h2 {
   @include c.apply-text-tone(map.get(c.$text-tone, heading));
 }
 
+h3 {
+  @include ts.apply-text-style(ts.$text-heading-3);
+  @include c.apply-text-tone(map.get(c.$text-tone, heading));
+}
+
 p {
   @include ts.apply-text-style(ts.$text-body);
   @include c.apply-text-tone(map.get(c.$text-tone, default));
