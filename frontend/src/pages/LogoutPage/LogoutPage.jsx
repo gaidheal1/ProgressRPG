@@ -3,20 +3,24 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function LogoutPage() {
+  console.log('[LogoutPage] mounted');
   const { logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('[LogoutPage] Triggering logout...');
+    logout();
+
     const timer = setTimeout(() => {
-      logout(); // Clear tokens, state, etc.
+      console.log('[LogoutPage] Navigating to /');
       navigate('/');
     }, 800); // Slight delay for smoother UX
 
     return () => clearTimeout(timer); // Cleanup in case unmounted early
-  }, [logout, navigate]);
+  }, []);
 
   return (
-    <div className="centered-page">
+    <div>
       <h2>👋 Logging you out...</h2>
       <p>Please wait a moment.</p>
     </div>
