@@ -21,7 +21,7 @@ export default function Navbar() {
           {isAuthenticated ? (
             <>
               <div className={styles.link}>
-                <Link to="/login">
+                <Link to="/logout">
                 <Button variant="secondary" className={styles.navLink}>
                   Log out
                 </Button>

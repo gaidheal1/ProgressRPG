@@ -17,21 +17,17 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     async function verifyUser() {
-      const accessToken = localStorage.getItem('accessToken');
-      const refreshToken = localStorage.getItem('refreshToken');
-
       if (!accessToken || !refreshToken) {
         setLoading(false);
         setIsAuthenticated(false);
         return;
       }
+      console.log('[VERIFY] accessToken:', accessToken);
+      console.log('[VERIFY] refreshToken:', refreshToken);
 
       try {
-        // Use apiFetch here to auto handle token refresh etc.
         const userData = await apiFetch('/me/');
         setUser(userData);
-        setAccessToken(accessToken);
-        setRefreshToken(refreshToken);
         setIsAuthenticated(true);
       } catch (err) {
         logout();
@@ -41,9 +37,11 @@ export function AuthProvider({ children }) {
     }
 
     verifyUser();
-  }, []);
+  }, [accessToken, refreshToken]);
 
   const login = async (accessToken, refreshToken) => {
+    console.log('[APP] isAuthenticated:', isAuthenticated);
+
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
     setAccessToken(accessToken);
@@ -66,8 +64,8 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    console.log('[LOGOUT] Clearing auth state');
+    localStorage.clear();
     setAccessToken(null);
     setRefreshToken(null);
     setUser(null);
