@@ -30,6 +30,7 @@ class CustomUserAdmin(UserAdmin):
                     "is_staff",
                     "is_superuser",
                     "is_active",
+                    "is_confirmed",
                     "groups",
                     "user_permissions",
                 ),

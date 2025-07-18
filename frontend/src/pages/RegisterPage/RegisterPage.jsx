@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Form from '../../components/Form/Form';
 import useRegister from '../../hooks/useRegister';
 
@@ -13,18 +13,26 @@ export default function RegisterPage() {
   const register = useRegister();
   const [inviteCode, setInviteCode] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const location = useLocation();
+  const [formState, setFormState] = useState("default");
 
 
-  const handleSubmit = async e => {
+  useEffect(() => {
+    // Reset form or state when location changes (even to the same path)
+    setFormState("default");
+  }, [location.key]); // `key` changes on every navigation
+
+  const handleRegister = async e => {
     e.preventDefault();
     setError('');
+    setFieldErrors({});
 
     if (password !== confirmPassword) {
       setError("Passwords don't match");
       return;
     }
 
-    const { success, errors, errorMessage } = await register(
+    const { success, errors, errorMessage, confirmationRequired } = await register(
       email,
       password,
       confirmPassword,
@@ -33,7 +41,17 @@ export default function RegisterPage() {
     );
 
     if (success) {
-      navigate('/onboarding');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setInviteCode('');
+      setAgreeToTerms(false);
+
+      if (confirmationRequired) {
+        setFormState("submitted");
+      } else {
+        navigate('/game');
+      }
     } else {
       setError(errorMessage);
       setFieldErrors(errors || {});
@@ -42,77 +60,86 @@ export default function RegisterPage() {
   };
 
   return (
-    <Form
-      title="📝 Register"
-      fields={[
-        {
-          name: 'email',
-          label: 'Email:',
-          type: 'email',
-          placeholder: 'Email',
-          autoComplete: 'email',
-          value: email,
-          onChange: setEmail,
-          required: true,
-          error: fieldErrors.email?.[0],
-        },
-        {
-          name: 'password',
-          label: 'Password:',
-          type: 'password',
-          placeholder: 'Password',
-          autoComplete: 'new-password',
-          value: password,
-          onChange: setPassword,
-          required: true,
-          error: fieldErrors.password1?.[0],
-        },
-        {
-          name: 'confirmPassword',
-          label: 'Confirm password:',
-          type: 'password',
-          placeholder: 'Confirm Password',
-          autoComplete: 'new-password',
-          value: confirmPassword,
-          onChange: setConfirmPassword,
-          required: true,
-          error: fieldErrors.password2?.[0],
-        },
-        {
-          name: 'invite_code',
-          label: 'Invite Code:',
-          type: 'text',
-          placeholder: 'e.g. TESTER',
-          value: inviteCode,
-          onChange: setInviteCode,
-          required: true,
-          error: fieldErrors.invite_code?.[0],
-        },
-        {
-          name: 'agree_to_terms',
-          label: (
-            <>
-              I agree to the{' '}
-              <a href="https://progressrpg.com/terms-of-service/" target='_blank' rel='noopener noreferrer'>
-                Terms of Service
-              </a>{' '}
-              and{' '}
-              <a href="https://progressrpg.com/privacy-policy-2/" target='_blank' rel='noopener noreferrer'>
-                Privacy Policy
-              </a>
-              .
-            </>
-          ),
-          type: 'checkbox',
-          checked: agreeToTerms,
-          onChange: e => setAgreeToTerms(e.target.checked),
-          required: true,
-          error: fieldErrors.agree_to_terms?.[0],
-        },
-      ]}
-      error={error}
-      onSubmit={handleSubmit}
-      submitLabel="Create Account"
-    />
+    <div>
+      {formState === "submitted" ? (
+        <p>
+          Thanks for registering! Please check your email and follow the confirmation link before logging in.
+        </p>
+      ) : (
+        <Form
+          title="📝 Register"
+          fields={[
+            {
+              name: 'email',
+              label: 'Email:',
+              type: 'email',
+              placeholder: 'Email',
+              autoComplete: 'email',
+              value: email,
+              onChange: setEmail,
+              required: true,
+              error: fieldErrors.email?.[0],
+            },
+            {
+              name: 'password',
+              label: 'Password:',
+              type: 'password',
+              placeholder: 'Password',
+              autoComplete: 'new-password',
+              value: password,
+              onChange: setPassword,
+              required: true,
+              error: fieldErrors.password1?.[0],
+            },
+            {
+              name: 'confirmPassword',
+              label: 'Confirm password:',
+              type: 'password',
+              placeholder: 'Confirm Password',
+              autoComplete: 'new-password',
+              value: confirmPassword,
+              onChange: setConfirmPassword,
+              required: true,
+              error: fieldErrors.password2?.[0],
+            },
+            {
+              name: 'invite_code',
+              label: 'Invite Code:',
+              type: 'text',
+              placeholder: 'e.g. TESTER',
+              value: inviteCode,
+              onChange: setInviteCode,
+              required: true,
+              error: fieldErrors.invite_code?.[0],
+            },
+            {
+              name: 'agree_to_terms',
+              label: (
+                <>
+                  I agree to the{' '}
+                  <a href="https://progressrpg.com/terms-of-service/" target='_blank' rel='noopener noreferrer'>
+                    Terms of Service
+                  </a>{' '}
+                  and{' '}
+                  <a href="https://progressrpg.com/privacy-policy-2/" target='_blank' rel='noopener noreferrer'>
+                    Privacy Policy
+                  </a>
+                  .
+                </>
+              ),
+              type: 'checkbox',
+              checked: agreeToTerms,
+              onChange: e => setAgreeToTerms(e.target.checked),
+              required: true,
+              error: fieldErrors.agree_to_terms?.[0],
+            },
+          ]}
+          error={error}
+          onSubmit={handleRegister}
+          submitLabel="Create Account"
+        />
+      )}
+      {error && <p className="error">{error}</p>}
+    </div>
   );
 }

@@ -12,7 +12,7 @@ from django_channels_jwt.views import AsgiValidateTokenView
 from .views import (
     me_view,
     CustomRegisterView,
-    confirm_email_and_redirect,
+    ConfirmEmailView,
     OnboardingViewSet,
     FetchInfoAPIView,
     ProfileViewSet,
@@ -44,8 +44,8 @@ urlpatterns = [
     path("fetch_info/", FetchInfoAPIView.as_view(), name="fetch_info"),
     path(
         "auth/confirm-email/<str:key>/",
-        confirm_email_and_redirect,
-        name="account_confirm_email",
+        ConfirmEmailView.as_view(),
+        name="confirm_email",
     ),
     path("ws_auth/", AsgiValidateTokenView.as_view(), name="ws_auth"),
     path("auth/", include(auth_urls)),

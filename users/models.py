@@ -110,6 +110,7 @@ class CustomUser(AbstractUser):
     objects = CustomUserManager()
     pending_delete = models.BooleanField(default=False)
     delete_at = models.DateTimeField(null=True, blank=True)
+    is_confirmed = models.BooleanField(default=False)
 
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"

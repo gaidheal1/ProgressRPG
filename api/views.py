@@ -12,10 +12,12 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import escape
 from django.views.decorators.csrf import csrf_exempt
+from django_filters.rest_framework import DjangoFilterBackend
 from django_ratelimit.decorators import ratelimit
 
+
 from allauth.account import app_settings as allauth_settings
-from allauth.account.models import EmailConfirmationHMAC
+from allauth.account.models import EmailConfirmationHMAC, EmailConfirmation
 from allauth.account.utils import complete_signup
 from dj_rest_auth.registration.views import RegisterView
 
@@ -27,6 +29,7 @@ from rest_framework.decorators import (
     authentication_classes,
 )
 from rest_framework.exceptions import ValidationError
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -53,6 +56,7 @@ from api.serializers import (
 )
 
 from character.models import Character, PlayerCharacterLink
+from gameplay.filters import ActivityFilter
 from gameplay.models import Activity, Quest, ActivityTimer, QuestTimer, ServerMessage
 from gameplay.utils import check_quest_eligibility, send_group_message
 from users.models import Profile
@@ -125,53 +129,60 @@ class CustomRegisterView(RegisterView):
         backend_path = settings.AUTHENTICATION_BACKENDS[0]
         user.backend = backend_path
 
-        current_site = get_current_site(self.request)
+        email_address = user.emailaddress_set.get(email=user.email)
+        email_confirmation = EmailConfirmation.objects.get(email_address=email_address)
+
+        key = email_confirmation.key
         signup_context = {
-            "current_site": current_site,
-            "domain": current_site.domain,
-            "protocol": "https" if self.request.is_secure() else "http",
+            "activate_url": f"{settings.FRONTEND_URL}/confirm-email/{key}",
             "redirect_url": "https://example.com/",
         }
 
         complete_signup(
             self.request, user, allauth_settings.EMAIL_VERIFICATION, signup_context
         )
-
         return user
 
     def get_response_data(self, user):
-        refresh = RefreshToken.for_user(user)
         return {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
+            "needs_confirmation": True,
+            "detail": "Registration successful. Please confirm your email to activate your account.",
         }
 
 
-def confirm_email_and_redirect(request, key):
-    try:
-        confirmation = EmailConfirmationHMAC.from_key(key)
-        if not confirmation:
-            raise Http404("Invalid or expired confirmation key")
+class ConfirmEmailView(APIView):
+    permission_classes = []  # No auth required for email confirmation
 
-        # Confirm the email
-        confirmation.confirm(request)
-        user = confirmation.email_address.user
+    def get(self, request, key):
+        try:
+            confirmation = EmailConfirmationHMAC.from_key(key)
+            if not confirmation:
+                raise Http404("Invalid or expired confirmation key")
 
-        # Create JWT tokens
-        refresh = RefreshToken.for_user(user)
-        access = str(refresh.access_token)
+            # Confirm the email address
+            confirmation.confirm(request)
+            user = confirmation.email_address.user
+            """
+            # Optional: set custom user field if you're tracking confirmation manually
+            if hasattr(user, 'is_confirmed'):
+                user.is_confirmed = True
+                user.save() """
 
-        return Response(
-            {
-                "message": "Email confirmed",
-                "access": access,
-                "refresh": str(refresh),
-            },
-            status=status.HTTP_200_OK,
-        )
+            # Create JWT tokens
+            refresh = RefreshToken.for_user(user)
+            access = str(refresh.access_token)
 
-    except Exception:
-        raise Http404("Invalid confirmation link")
+            return Response(
+                {
+                    "message": "Email confirmed",
+                    "access": access,
+                    "refresh": str(refresh),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception:
+            raise Http404("Invalid confirmation link")
 
 
 class ProfileViewSet(
@@ -341,6 +352,8 @@ class CharacterViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ActivityViewSet(viewsets.ModelViewSet):
     serializer_class = ActivitySerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ActivityFilter
     permission_classes = [IsAuthenticated, IsOwnerProfile]
 
     def perform_create(self, serializer):

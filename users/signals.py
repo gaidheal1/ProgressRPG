@@ -1,4 +1,5 @@
 # user.signals
+from allauth.account.signals import email_confirmed
 from asgiref.sync import async_to_sync
 from datetime import timedelta
 from django.contrib.auth import get_user_model
@@ -18,6 +19,13 @@ from gameplay.models import ServerMessage
 logger = logging.getLogger("django")
 
 User = get_user_model()
+
+
+@receiver(email_confirmed)
+def set_user_confirmed(sender, request, email_address, **kwargs):
+    user = email_address.user
+    user.is_confirmed = True
+    user.save()
 
 
 @receiver(post_save, sender=User)

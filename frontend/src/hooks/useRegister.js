@@ -33,23 +33,36 @@ export default function useRegister() {
         }
       }
 
+      if (data?.detail?.includes('Verification email sent')) {
+        return {
+          success: true,
+          confirmationRequired: true,
+          message: data.detail,
+        };
+      }
+
+       // fallback: handle unexpected case (tokens returned)
       const { accessToken, refreshToken } = data;
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      if (accessToken && refreshToken) {
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        await login(accessToken, refreshToken);
+        return { success: true };
+      }
 
-      // Await login to make sure state is set before continuing
-      await login(accessToken, refreshToken);
-
-      return { success: true };
+      return {
+        success: true,
+        confirmationRequired: true,
+        message: 'Please check your email to confirm your account.',
+      };
     } catch (err) {
       console.error('[useRegister] Unexpected error:', err);
       return {
         success: false,
         errors: null,
-        errorMessage: data?.non_field_errors?.[0] || 'Something went wrong, please try again.',
+        errorMessage: 'Something went wrong, please try again.',
       };
     }
   }, [login]);
-
   return register;
 }

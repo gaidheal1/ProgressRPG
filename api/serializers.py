@@ -59,6 +59,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             "email",
             "is_staff",
+            "is_confirmed",
         ]
 
 
