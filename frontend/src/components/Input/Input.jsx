@@ -14,7 +14,6 @@ export default function Input({
   checked,
 }) {
   const isCheckbox = type === 'checkbox';
-  console.log(`[Input] Rendering ${id}, type: ${type}, isCheckbox: ${isCheckbox}`);
 
   return (
     <div className={styles.inputGroup}>

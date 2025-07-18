@@ -45,6 +45,11 @@
 
 }
 
+li:hover {
+  cursor: default;
+
+}
+
 .selectable li:hover {
   cursor: pointer;
 }
