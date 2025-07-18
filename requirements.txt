@@ -33,6 +33,7 @@ django-channels-jwt==0.0.3
 django-cors-headers==4.7.0
 django-environ==0.11.2
 django-extensions==4.1
+django-filter==25.1
 django-ratelimit==4.1.0
 django-redis==5.4.0
 django-stubs==5.1.1
@@ -42,6 +43,7 @@ django-vite==3.1.0
 djangorestframework==3.15.2
 djangorestframework_simplejwt==5.4.0
 docutils==0.21.2
+drf-spectacular==0.28.0
 filelock==3.18.0
 freezegun==1.5.2
 gunicorn==23.0.0
@@ -50,7 +52,10 @@ identify==2.6.12
 idna==3.10
 imagesize==1.4.1
 incremental==24.7.2
+inflection==0.5.1
 Jinja2==3.1.6
+jsonschema==4.24.1
+jsonschema-specifications==2025.4.1
 kombu==5.4.2
 MarkupSafe==3.0.2
 msgpack==1.1.0
@@ -82,8 +87,10 @@ python-decouple==3.8
 python-dotenv==1.0.1
 PyYAML==6.0.2
 redis==6.2.0
+referencing==0.36.2
 requests==2.32.4
 roman-numerals-py==3.1.0
+rpds-py==0.26.0
 sentry-sdk==2.30.0
 service-identity==24.2.0
 setuptools==78.1.1
@@ -104,6 +111,7 @@ txaio==23.1.1
 types-PyYAML==6.0.12.20241221
 typing_extensions==4.12.2
 tzdata==2025.2
+uritemplate==4.2.0
 urllib3==2.5.0
 vine==5.1.0
 virtualenv==20.31.2
