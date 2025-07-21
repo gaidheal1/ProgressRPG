@@ -263,9 +263,9 @@ class FetchInfoAPIView(APIView):
         logger.info(
             f"[FETCH INFO] Fetching data for profile {profile.id}, character {character.id}"
         )
-        logger.debug(
-            f"[FETCH INFO] Timers status: {profile.activity_timer.status}/{character.quest_timer.status}"
-        )
+        # logger.debug(
+        #    f"[FETCH INFO] Timers status: {profile.activity_timer.status}/{character.quest_timer.status}"
+        # )
 
         qt = character.quest_timer
         if qt.time_finished() and qt.status != "completed":
@@ -367,9 +367,6 @@ class ActivityViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         profile = self.request.user.profile
         queryset = Activity.objects.filter(profile=profile)
-
-        logger.debug(f"Query params: {self.request.query_params}")
-        logger.debug(f"All profile's activities: {queryset}")
 
         return queryset.order_by("-created_at")
 
@@ -659,7 +656,7 @@ class ActivityTimerViewSet(BaseTimerViewSet):
 
     def get_queryset(self):
         timer = ActivityTimer.objects.filter(profile=self.request.user.profile)
-        logger.debug(f"activitytimer viewset, timer: {timer}")
+        # logger.debug(f"activitytimer viewset, timer: {timer}")
         return timer
 
     @action(detail=True, methods=["post"])
