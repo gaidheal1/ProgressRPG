@@ -41,9 +41,13 @@ export const GameProvider = ({ children }) => {
   const formattedDate = getFormattedDate();
   console.log("Formatted date:", formattedDate);
   async function fetchActivities() {
-    const data = await apiFetch(`/activities/?date=${formattedDate}`);
+    const all = await apiFetch("/activities/");
+    console.log("Fetching all activities:", all);
+
+    const data = await apiFetch(`/activities/?date_after=${formattedDate}&date_before=${formattedDate}`);
+    //console.log("Fetching today's activities (link):", `/activities/?date=${formattedDate}`);
     setActivities(data);
-    console.log("fetchActivities response:", data);
+    console.log("Fetching today's activities:", data);
   }
   useEffect(() => {
     fetchActivities();

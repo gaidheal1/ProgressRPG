@@ -359,6 +359,7 @@ class ActivityViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ActivityFilter
     permission_classes = [IsAuthenticated, IsOwnerProfile]
+    # pagination_class = None
 
     def perform_create(self, serializer):
         serializer.save(profile=self.request.user.profile)
@@ -367,24 +368,8 @@ class ActivityViewSet(viewsets.ModelViewSet):
         profile = self.request.user.profile
         queryset = Activity.objects.filter(profile=profile)
 
-        logger.debug("Query params:", self.request.query_params)
-
-        # Check if a 'date' query param is provided, e.g. ?date=2025-06-25
-        date_str = self.request.query_params.get("date")
-        if date_str:
-            try:
-                date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-                start_of_day = timezone.make_aware(
-                    datetime.combine(date_obj, datetime.min.time())
-                )
-                end_of_day = timezone.make_aware(
-                    datetime.combine(date_obj + timedelta(days=1), datetime.min.time())
-                )
-                queryset = queryset.filter(
-                    created_at__gte=start_of_day, created_at__lt=end_of_day
-                )
-            except ValueError:
-                pass  # Invalid date format, just ignore filtering by date
+        logger.debug(f"Query params: {self.request.query_params}")
+        logger.debug(f"All profile's activities: {queryset}")
 
         return queryset.order_by("-created_at")
 
