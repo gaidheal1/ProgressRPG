@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from .base import *
 
 ROOT_URLCONF = "progress_rpg.urls"
-FRONTEND_URL = "http://localhost:5173/"
+FRONTEND_URL = "http://localhost:5173"
 
 
 LOGGING = {

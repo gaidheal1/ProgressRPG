@@ -140,8 +140,6 @@ REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "api.serializers.CustomRegisterSerializer",
 }
 
-ACCOUNT_ADAPTER = "allauth.account.adapter.DefaultAccountAdapter"
-
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
@@ -172,11 +170,15 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",  # fallback default
 ]
 
-
+ACCOUNT_ADAPTER = "users.adapters.CustomAccountAdapter"
 AUTH_USER_MODEL = "users.CustomUser"
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_CONFIRMATION_HTML_TEMPLATE = (
+    "account/email/email_confirmation_message.html"
+)
+ACCOUNT_EMAIL_CONFIRMATION_TEMPLATE = "account/email/email_confirmation_message.txt"
 
 
 # Internationalization
