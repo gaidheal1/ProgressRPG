@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { apiFetch } from "../../utils/api.js";
 
+
 function shuffle(array) {
   return array.sort(() => Math.random() - 0.5);
 }
@@ -175,13 +176,18 @@ export default function useTimers({ mode }) {
   }, [mode, status, id]);
 
   // Assign subject to timer
-  const assignSubject = useCallback((newSubject, newDuration = 0, newStatus = "waiting", newElapsed = 0) => {
+  const assignSubject = useCallback(async (newSubject, newDuration = 0, newStatus = "waiting", newElapsed = 0) => {
     console.log(`[useTimers] Assign ${mode}`);
     setSubject(newSubject);
     setStatus(newStatus);
     setElapsed(newElapsed);
 
     if (mode === "quest") {
+      await apiFetch(`/${mode}_timers/${id}/change_quest/`, {
+        method: 'POST',
+        body: JSON.stringify({ quest_id: newSubject.id, duration: newDuration }),
+      });
+
       setDuration(newDuration);
       const quest = newSubject;
       let stagesEd = quest?.stages || [];
@@ -200,7 +206,6 @@ export default function useTimers({ mode }) {
         stagesEd = shuffle([...stagesEd]);
       }
       console.log('stagesEd:', stagesEd);
-
 
       // Loop stages if necessary
       if (newDuration > totalStagesDuration) {
@@ -224,10 +229,19 @@ export default function useTimers({ mode }) {
       console.log(`Duration? ${stagesEd[0].duration} ... or endTime? ${stagesEd[0].endTime}`);
       setStageTimeRemaining(stagesEd[0].duration ?? stagesEd[0].endTime ?? 0);
       console.log('stageTimeRemaining:', stageTimeRemaining);
+
     } else if (mode === "activity") {
+      console.log("assign activity, id:", id);
       setDuration(newDuration);
+      const response = await apiFetch(`/${mode}_timers/${id}/set_activity/`, {
+        method: 'POST',
+        body: JSON.stringify({ activityName: newSubject }),
+      });
+
+      const data = response;
+      console.log("Assign activity, response data:", data);
     }
-  }, [mode]);
+  }, [mode, id]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -248,7 +262,7 @@ export default function useTimers({ mode }) {
 
   const loadFromServer = useCallback((serverData) => {
     if (!serverData) return;
-
+    console.log("timer from server:", serverData);
     const { id, status, elapsed_time, duration, activity, quest, stages } = serverData;
 
     setId(id || 0);
