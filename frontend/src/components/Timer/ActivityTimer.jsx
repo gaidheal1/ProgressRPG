@@ -24,7 +24,7 @@ export function ActivityTimer() {
 
   const { submitActivity } = useCombinedTimers();
 
-  // console.log("Activity timer displayTime:", displayTime);
+  // console.log("Activity timer:", activityTimer);
 
   return (
     <section className={styles.activityRow}>

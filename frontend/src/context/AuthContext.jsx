@@ -22,8 +22,6 @@ export function AuthProvider({ children }) {
         setIsAuthenticated(false);
         return;
       }
-      console.log('[VERIFY] accessToken:', accessToken);
-      console.log('[VERIFY] refreshToken:', refreshToken);
 
       try {
         const userData = await apiFetch('/me/');
@@ -40,8 +38,6 @@ export function AuthProvider({ children }) {
   }, [accessToken, refreshToken]);
 
   const login = async (accessToken, refreshToken) => {
-    console.log('[APP] isAuthenticated:', isAuthenticated);
-
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
     setAccessToken(accessToken);
@@ -51,7 +47,6 @@ export function AuthProvider({ children }) {
     // Fetch user info after login
     try {
       const userData = await apiFetch('/me/');
-      console.log('AuthProv userData:', userData);
       setUser(userData);
       setIsAuthenticated(true);
       return userData;
@@ -64,7 +59,6 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    console.log('[LOGOUT] Clearing auth state');
     localStorage.clear();
     setAccessToken(null);
     setRefreshToken(null);

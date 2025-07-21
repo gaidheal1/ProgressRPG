@@ -620,10 +620,14 @@ class ActivityTimer(Timer):
         :param activity: The activity to associate with the timer.
         :type activity: Activity
         """
+        logger.debug(f"Assigning new activity {activity} to timer {self.pk}")
         self.reset()
         self.activity = activity
         self.set_waiting()
         self.save(update_fields=["activity", "status"])
+        logger.debug(
+            f"Timer after save: {self.pk}, activity: {self.activity}, status: {self.status}"
+        )
 
     def pause(self):
         """
