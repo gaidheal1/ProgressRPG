@@ -3,7 +3,7 @@ import { useRef, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 
 export default function useCombinedTimers() {
-  const { activityTimer, questTimer } = useGame();
+  const { activityTimer, questTimer, fetchActivities, fetchQuests } = useGame();
   const timersRunningRef = useRef(false);
 
   // Auto-start both if both are ready
@@ -32,11 +32,11 @@ export default function useCombinedTimers() {
   // Submit activity
   const submitActivity = async () => {
     console.log('[COMBINED TIMERS] Submit activity');
-    console.log('Activity:', activityTimer.subject);
 
     timersRunningRef.current = false;
 
     await activityTimer.complete();
+    await fetchActivities();
     await activityTimer.reset();
     if (questTimer.status !== "complete") questTimer.pause();
   };
@@ -50,6 +50,7 @@ export default function useCombinedTimers() {
       questTimer.remaining <= 0
     ) {
       questTimer.complete();
+      fetchQuests();
       activityTimer.pause();
       timersRunningRef.current = false;
     }
