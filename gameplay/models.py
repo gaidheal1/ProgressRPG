@@ -14,7 +14,7 @@ from django.db import models, transaction
 
 # from django.db.models import ForeignKey
 from django.db.models import QuerySet
-from django.utils.timezone import now, timedelta
+from django.utils import timezone
 from typing import Optional, Iterable, Dict, Any, cast, List, TYPE_CHECKING
 import json, logging
 
@@ -155,7 +155,7 @@ class Quest(models.Model):
         :rtype: bool
         """
         if self.frequency != "NONE":
-            today = now()
+            today = timezone.now()
             completions = self.quest_completions.all()
             for completion in completions:
                 if completion.character == character:
@@ -349,7 +349,7 @@ class QuestCompletion(models.Model):
         "gameplay.Quest", on_delete=models.CASCADE, related_name="quest_completions"
     )
     times_completed = models.PositiveIntegerField(default=1)
-    last_completed = models.DateTimeField(default=now)
+    last_completed = models.DateTimeField(default=timezone.now)
 
     class Meta:
         unique_together = ("character", "quest")
@@ -381,6 +381,7 @@ class Activity(models.Model):
     duration = models.PositiveIntegerField(default=0)  # Time spent
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
     xp_rate = models.IntegerField(default=1)
     skill = models.ForeignKey(
         "Skill",
@@ -429,6 +430,10 @@ class Activity(models.Model):
         """
         self.duration = num
         self.save(update_fields=["duration"])
+
+    def complete(self):
+        self.completed_at = timezone.now()
+        self.save(update_fields=["completed_at"])
 
     def calculate_xp_reward(self) -> int:
         """
@@ -508,7 +513,16 @@ class Timer(models.Model):
 
     def get_elapsed_time(self):
         if self.start_time and self.status == "active":
-            return int((now() - self.start_time).total_seconds()) + self.elapsed_time
+            logger.debug(
+                f"[GET ELAPSED] Timer {self.id} active — start_time: {self.start_time}, now: {timezone.now()}, base: {self.elapsed_time}"
+            )
+            return (
+                int((timezone.now() - self.start_time).total_seconds())
+                + self.elapsed_time
+            )
+        logger.debug(
+            f"[GET ELAPSED] Timer {self.id} not active — returning stored elapsed_time: {self.elapsed_time}"
+        )
         return self.elapsed_time
 
     def compute_elapsed(self):
@@ -518,6 +532,9 @@ class Timer(models.Model):
     def apply_elapsed(self):
         """Store current elapsed time in the DB."""
         self.elapsed_time = self.get_elapsed_time()
+        logger.debug(
+            f"[APPLY ELAPSED] Timer {self.id} — elapsed_time set to {self.elapsed_time}"
+        )
         self.start_time = None
         return self
 
@@ -527,8 +544,11 @@ class Timer(models.Model):
         """
         if self.status != "active":
             self.status = "active"
-            self.start_time = now()
+            self.start_time = timezone.now()
             self.save()
+            logger.debug(
+                f"[TIMER START] Timer {self.id} started at {self.start_time} for profile {self.profile_id}"
+            )
         return self
 
     def pause(self):
@@ -557,7 +577,7 @@ class Timer(models.Model):
         if self.status != "completed":
             self.apply_elapsed()
             self.status = "completed"
-            self.save(update_fields=["status", "elapsed_time"])
+            self.save()
         return self
 
     def reset(self):
@@ -656,8 +676,19 @@ class ActivityTimer(Timer):
         :rtype: int
         """
         super().complete()
+        if not self.activity:
+            logger.warning(
+                f"[COMPLETE] Timer {self.id} has no activity assigned — skipping activity.complete()"
+            )
+            return 0
+        logger.warning(
+            f"[COMPLETE CALLED AGAIN] Timer {self.id} already completed — elapsed_time: {self.elapsed_time}"
+        )
         xp = self.calculate_xp()
-        self.reset()
+        self.activity.complete()
+        logger.debug(
+            f"[TIMER COMPLETE] Timer {self.id} completed — elapsed_time: {self.elapsed_time}, completed_at: {self.activity.completed_at}"
+        )
         return xp
 
     def _reset_hook(self):
@@ -885,7 +916,7 @@ class ServerMessage(models.Model):
         :param days: The age threshold (in days) for deleting old messages.
         :type days: int
         """
-        cutoff_date = now() - timedelta(days=days)
+        cutoff_date = timezone.now() - timezone.timedelta(days=days)
         cls.objects.filter(created_at__lt=cutoff_date).delete()
 
 
@@ -912,12 +943,14 @@ class AppliedBuff(Buff):
 
     def save(self, *args, **kwargs):
         if not self.ends_at:
-            self.ends_at = now() + timedelta(seconds=self.duration)
+            self.ends_at = timezone.now() + timezone.timedelta(seconds=self.duration)
         super().save(*args, **kwargs)
 
     def is_active(self):
         """Check if buff is still active."""
-        return now() < self.applied_at + timedelta(seconds=self.duration)
+        return timezone.now() < self.applied_at + timezone.timedelta(
+            seconds=self.duration
+        )
 
     def calc_value(self, total_value):
         if self.is_active():
