@@ -5,7 +5,7 @@ from .models import Activity
 
 
 class ActivityFilter(django_filters.FilterSet):
-    date = django_filters.DateFromToRangeFilter(field_name="created_at")
+    date = django_filters.DateFromToRangeFilter(field_name="completed_at")
 
     class Meta:
         model = Activity

@@ -26,7 +26,6 @@ export const GameProvider = ({ children }) => {
 
   const activityTimer = useTimers({ mode: "activity" });
   const questTimer = useTimers({ mode: "quest" });
-  console.log("acttimerinfo:", activityTimerInfo);
 
   useEffect(() => {
     if (activityTimerInfo || questTimerInfo) {
@@ -35,19 +34,10 @@ export const GameProvider = ({ children }) => {
     }
   }, [activityTimerInfo, questTimerInfo]);
 
-
-  console.log("acttimer:", activityTimer);
-
   const formattedDate = getFormattedDate();
-  console.log("Formatted date:", formattedDate);
   async function fetchActivities() {
-    const all = await apiFetch("/activities/");
-    console.log("Fetching all activities:", all);
-
     const data = await apiFetch(`/activities/?date_after=${formattedDate}&date_before=${formattedDate}`);
-    //console.log("Fetching today's activities (link):", `/activities/?date=${formattedDate}`);
     setActivities(data);
-    console.log("Fetching today's activities:", data);
   }
   useEffect(() => {
     fetchActivities();

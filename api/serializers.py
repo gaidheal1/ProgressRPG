@@ -170,11 +170,18 @@ class ActivitySerializer(serializers.ModelSerializer):
             "duration",
             "created_at",
             "last_updated",
+            "completed_at",
             "profile",
             "skill",
             "project",
         ]
-        read_only_fields = ["id", "created_at", "last_updated", "profile"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "last_updated",
+            "completed_at",
+            "profile",
+        ]
 
 
 class ActivityTimerSerializer(serializers.ModelSerializer):
@@ -185,15 +192,22 @@ class ActivityTimerSerializer(serializers.ModelSerializer):
     class Meta:
         model = ActivityTimer
         fields = [
+            # Base timer fields
             "id",
             "status",
             "elapsed_time",
             "created_at",
-            "last_updated",  # Base timer fields
+            "last_updated",
+            # Activity timer specific fields
             "activity",
-            "profile",  # Activity timer specific fields
+            "profile",
         ]
-        read_only_fields = ["id", "created_at", "last_updated", "profile"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "last_updated",
+            "profile",
+        ]
 
     def get_elapsed_time(self, obj):
         return obj.get_elapsed_time()
@@ -207,15 +221,17 @@ class QuestTimerSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestTimer
         fields = [
+            # Base timer fields
             "id",
             "status",
             "elapsed_time",
             "created_at",
-            "last_updated",  # Base timer fields
+            "last_updated",
+            # Quest timer specific fields
             "quest",
             "duration",
             "remaining_time",
-            "character",  # Quest timer specific fields
+            "character",
         ]
         read_only_fields = [
             "id",
