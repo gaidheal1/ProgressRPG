@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_URL = `${BASE_URL}/api/v1`;
+console.log("API_URL:", API_URL);
 
 export default function ConfirmationPage() {
-  const [searchParams] = useSearchParams();
+  const { key } = useParams();
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -13,17 +15,23 @@ export default function ConfirmationPage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const key = searchParams.get("key");
-
     if (!key) {
       setStatus("error");
       setMessage("Invalid confirmation link.");
       return;
     }
 
+    const confirmedKey = sessionStorage.getItem("confirmedKey");
+    if (confirmedKey === key) {
+      setStatus("success");
+      setMessage("Email already confirmed!");
+      setTimeout(() => navigate("/onboarding"), 2000);
+      return;
+    }
+
     async function confirmEmail() {
       try {
-        const res = await fetch(`${API_URL}/auth/confirm-email/${key}/`);
+        const res = await fetch(`${API_URL}/auth/confirm_email/${key}/`);
         const data = await res.json();
 
         if (res.ok) {
@@ -35,6 +43,7 @@ export default function ConfirmationPage() {
             await login(data.access, data.refresh);
           }
 
+          sessionStorage.setItem("confirmedKey", key);
           setTimeout(() => navigate("/onboarding"), 2000);
         } else {
           setStatus("error");
@@ -47,11 +56,11 @@ export default function ConfirmationPage() {
     }
 
     confirmEmail();
-  }, [searchParams, navigate, login]);
+  }, [key, navigate, login]);
 
   return (
     <div>
-      {status === "loading" && <p>Confirming your email...</p>}
+      {status === "loading" && <p>Just a moment...</p>}
       {status === "success" && <p style={{ color: "green" }}>{message}</p>}
       {status === "error" && <p style={{ color: "red" }}>{message}</p>}
     </div>

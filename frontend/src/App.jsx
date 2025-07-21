@@ -14,6 +14,7 @@ import RegisterPage from './pages/RegisterPage/RegisterPage';
 import OnboardingPage from './pages/OnboardingPage';
 import Game from './pages/Game/Game';
 import ProfilePage from './pages/Profile/Profile';
+import ConfirmationPage from './pages/ConfirmationPage';
 // import NotFound from './pages/NotFound'; // optional 404
 
 import { useAuth } from './context/AuthContext';
@@ -46,6 +47,7 @@ function AppRoutes() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/logout" element={<LogoutPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/confirm_email/:key" element={<ConfirmationPage />} />
 
           {/* Protected routes */}
           <Route
