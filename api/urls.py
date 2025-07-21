@@ -43,7 +43,7 @@ urlpatterns = [
     path("me/", me_view, name="me"),
     path("fetch_info/", FetchInfoAPIView.as_view(), name="fetch_info"),
     path(
-        "auth/confirm-email/<str:key>/",
+        "auth/confirm_email/<str:key>/",
         ConfirmEmailView.as_view(),
         name="confirm_email",
     ),

@@ -179,6 +179,7 @@ class ActivitySerializer(serializers.ModelSerializer):
 
 class ActivityTimerSerializer(serializers.ModelSerializer):
     activity = ActivitySerializer(read_only=True)
+    logger.debug(f"API Activity serializer: {activity}")
     elapsed_time = serializers.SerializerMethodField()
 
     class Meta:
@@ -256,7 +257,6 @@ class CustomRegisterSerializer(RegisterSerializer):
         return value
 
     def validate_agree_to_terms(self, value):
-        logger.debug(f"[VALIDATE AGREE TERMS] Value: {value}")
         if not value:
             raise serializers.ValidationError(
                 "You must agree to the terms and conditions."
@@ -278,3 +278,7 @@ class CustomRegisterSerializer(RegisterSerializer):
         except InviteCode.DoesNotExist:
             # Should not happen due to earlier validation, but fail safe
             pass
+
+    def save(self, request):
+        user = super().save(request)
+        return user
