@@ -1,9 +1,8 @@
 # api/views.py
 from asgiref.sync import async_to_sync
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth import login, logout, get_user_model
-from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.db import DatabaseError, transaction
 from django.http import Http404  # , HttpResponseRedirect
@@ -14,11 +13,11 @@ from django.utils.html import escape
 from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
 from django_ratelimit.decorators import ratelimit
-
+from urllib.parse import quote, unquote
 
 from allauth.account import app_settings as allauth_settings
 from allauth.account.models import EmailConfirmationHMAC, EmailConfirmation
-from allauth.account.utils import complete_signup
+from allauth.account.utils import complete_signup, send_email_confirmation
 from dj_rest_auth.registration.views import RegisterView
 
 from rest_framework import viewsets, permissions, serializers, status, mixins
@@ -130,17 +129,18 @@ class CustomRegisterView(RegisterView):
         user.backend = backend_path
 
         email_address = user.emailaddress_set.get(email=user.email)
-        email_confirmation = EmailConfirmation.objects.get(email_address=email_address)
+        confirmation = EmailConfirmationHMAC(email_address)
+        print("Expected key:", confirmation.key)
+        key = quote(confirmation.key)
 
-        key = email_confirmation.key
         signup_context = {
-            "activate_url": f"{settings.FRONTEND_URL}/confirm-email/{key}",
+            "activate_url": f"{settings.FRONTEND_URL}/#/confirm_email/{key}",
             "redirect_url": "https://example.com/",
         }
 
-        complete_signup(
-            self.request, user, allauth_settings.EMAIL_VERIFICATION, signup_context
-        )
+        print("Sending confirmation link to:", signup_context["activate_url"])
+        send_email_confirmation(self.request, user, signup_context)
+
         return user
 
     def get_response_data(self, user):
@@ -154,8 +154,12 @@ class ConfirmEmailView(APIView):
     permission_classes = []  # No auth required for email confirmation
 
     def get(self, request, key):
+        key = unquote(key)
+        print("Raw key from URL:", key)
         try:
             confirmation = EmailConfirmationHMAC.from_key(key)
+            print("Confirmation object:", confirmation)
+
             if not confirmation:
                 raise Http404("Invalid or expired confirmation key")
 
@@ -363,12 +367,22 @@ class ActivityViewSet(viewsets.ModelViewSet):
         profile = self.request.user.profile
         queryset = Activity.objects.filter(profile=profile)
 
+        logger.debug("Query params:", self.request.query_params)
+
         # Check if a 'date' query param is provided, e.g. ?date=2025-06-25
         date_str = self.request.query_params.get("date")
         if date_str:
             try:
                 date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-                queryset = queryset.filter(created_at__date=date_obj)
+                start_of_day = timezone.make_aware(
+                    datetime.combine(date_obj, datetime.min.time())
+                )
+                end_of_day = timezone.make_aware(
+                    datetime.combine(date_obj + timedelta(days=1), datetime.min.time())
+                )
+                queryset = queryset.filter(
+                    created_at__gte=start_of_day, created_at__lt=end_of_day
+                )
             except ValueError:
                 pass  # Invalid date format, just ignore filtering by date
 
@@ -438,7 +452,7 @@ class ActivityViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        activity.update_name(activity_name)  # Assuming you have this method
+        activity.update_name(activity_name)
 
         try:
             profile.add_activity(profile.activity_timer.elapsed_time)
@@ -659,18 +673,19 @@ class ActivityTimerViewSet(BaseTimerViewSet):
     permission_classes = [IsAuthenticated, IsOwnerProfile]
 
     def get_queryset(self):
-        return ActivityTimer.objects.filter(profile=self.request.user.profile)
+        timer = ActivityTimer.objects.filter(profile=self.request.user.profile)
+        logger.debug(f"activitytimer viewset, timer: {timer}")
+        return timer
 
     @action(detail=True, methods=["post"])
     def set_activity(self, request, pk=None):
         timer = self.get_object()
-        activity_id = request.data.get("activity_id")
+        name = request.data.get("activityName")
 
-        activity, error_response = self.handle_related_object(
-            Activity, activity_id, "activity"
-        )
-        if error_response:
-            return error_response
+        if not name:
+            return Response({"error": "Missing activity name"}, status=400)
+
+        activity = Activity.objects.create(name=name, profile=request.user.profile)
 
         timer.new_activity(activity)
         serializer = self.get_serializer(timer)
