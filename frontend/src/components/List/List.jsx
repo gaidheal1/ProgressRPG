@@ -12,6 +12,10 @@ export default function List({
   sectionClass,
   getItemClassName,
 }) {
+  if (!Array.isArray(items)) {
+    items = Array.isArray(items.results) ? items.results : [];
+  }
+
   return (
     <section className={classNames(styles.listSection, sectionClass)}>
       <ul
