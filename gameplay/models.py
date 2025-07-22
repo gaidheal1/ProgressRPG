@@ -383,6 +383,7 @@ class Activity(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     xp_rate = models.IntegerField(default=1)
+    xp_gained = models.IntegerField(default=0)
     skill = models.ForeignKey(
         "Skill",
         on_delete=models.SET_NULL,
@@ -444,6 +445,7 @@ class Activity(models.Model):
         """
         base_xp = self.duration * self.xp_rate
         final_xp = self.profile.apply_buffs(base_xp, "xp")
+        self.xp_gained = final_xp
         return final_xp
 
     def __str__(self):
@@ -521,7 +523,7 @@ class Timer(models.Model):
                 + self.elapsed_time
             )
         logger.debug(
-            f"[GET ELAPSED] Timer {self.id} not active — returning stored elapsed_time: {self.elapsed_time}"
+            f"[GET ELAPSED] Timer {self.id} status: '{self.status}' and start time: '{self.start_time}' — returning stored elapsed_time: {self.elapsed_time}"
         )
         return self.elapsed_time
 
@@ -546,9 +548,7 @@ class Timer(models.Model):
             self.status = "active"
             self.start_time = timezone.now()
             self.save()
-            logger.debug(
-                f"[TIMER START] Timer {self.id} started at {self.start_time} for profile {self.profile_id}"
-            )
+            logger.debug(f"[TIMER START] Timer {self.id} started at {self.start_time}")
         return self
 
     def pause(self):
@@ -660,6 +660,7 @@ class ActivityTimer(Timer):
         """
         Update the total duration of the associated activity.
         """
+
         if self.activity:
             self.activity.new_time(self.elapsed_time)
         else:
@@ -676,20 +677,33 @@ class ActivityTimer(Timer):
         :rtype: int
         """
         super().complete()
+
         if not self.activity:
             logger.warning(
                 f"[COMPLETE] Timer {self.id} has no activity assigned — skipping activity.complete()"
             )
             return 0
+
         logger.warning(
             f"[COMPLETE CALLED AGAIN] Timer {self.id} already completed — elapsed_time: {self.elapsed_time}"
         )
-        xp = self.calculate_xp()
+
+        self.update_activity_time()
+        xp_gained = self.calculate_xp()
+
+        message_text = f"Activity submitted. You got {xp_gained} XP!"
+        ServerMessage.objects.create(
+            group=self.profile.group_name,
+            type="notification",
+            action="notification",
+            data={},
+            message=message_text,
+            is_draft=False,
+        )
         self.activity.complete()
         logger.debug(
             f"[TIMER COMPLETE] Timer {self.id} completed — elapsed_time: {self.elapsed_time}, completed_at: {self.activity.completed_at}"
         )
-        return xp
 
     def _reset_hook(self):
         self.activity = None
