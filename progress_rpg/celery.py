@@ -40,7 +40,7 @@ app.conf.beat_schedule = {
     #     'schedule': crontab(day_of_week=0, hour=0, minute=0),
     # },
     "check_user_deletion": {
-        "task": "users.tasks.perform_account_deletion",
+        "task": "users.tasks.perform_account_wipe",
         "schedule": crontab(minute=0, hour=0),
     }
 }
