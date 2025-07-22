@@ -4,7 +4,7 @@ from asgiref.sync import async_to_sync
 from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_in
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.utils.timezone import now
 import logging
@@ -12,7 +12,7 @@ import logging
 from .models import Profile
 from .utils import assign_character_to_profile
 
-# from character.models import Character
+from character.models import PlayerCharacterLink
 from gameplay.models import ActivityTimer
 from gameplay.models import ServerMessage
 

@@ -56,8 +56,8 @@ class CustomUserAdmin(UserAdmin):
 class PlayerAdmin(admin.ModelAdmin):
     list_display = [
         "user",
-        "get_character",
         "name",
+        "get_character",
         "last_login",
         "user_created_at",
         "is_premium",
@@ -114,7 +114,14 @@ class PlayerAdmin(admin.ModelAdmin):
 
     @admin.display(description="Character")
     def get_character(self, obj):
-        return PlayerCharacterLink().get_character(obj)
+        try:
+            return PlayerCharacterLink.get_character(obj)
+        except ValueError:
+            return "-"
+
+    @admin.display(boolean=True, description="Has Character")
+    def has_character(self, obj):
+        return PlayerCharacterLink.objects.filter(profile=obj, is_active=True).exists()
 
     @admin.display(
         description="User Created",

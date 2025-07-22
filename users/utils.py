@@ -46,37 +46,26 @@ def assign_character_to_profile(profile):
     :raises ValueError: If the tutorial quest is not found in the database.
     """
 
-    PlayerCharacterLink.objects.filter(profile=profile, is_active=True).update(
-        is_active=False
-    )
-
     character = Character.objects.filter(is_npc=True, death_date__isnull=True).first()
 
-    if character:
-        PlayerCharacterLink.objects.create(
-            profile=profile,
-            character=character,
-            is_active=True,
-        )
-        character.is_npc = False
-        character.save()
+    if not character:
+        logger.warning(f"No available NPC character to assign to profile {profile.id}")
+        return None
 
-        qt, created = QuestTimer.objects.get_or_create(character=character)
+    PlayerCharacterLink.assign_character(profile=profile, character=character)
 
-        if not ("test" in sys.argv):
-            tut_quest = Quest.objects.filter(name="[TUTORIAL] Getting started").first()
-            if not tut_quest:
-                logger.warning(
-                    f"Tutorial quest '[TUTORIAL] Getting started' not found!"
-                )
-                raise ValueError(
-                    "Tutorial quest '[TUTORIAL] Getting started' not found!"
-                )
+    qt, created = QuestTimer.objects.get_or_create(character=character)
 
-            if created or profile.created_at > (
-                timezone.now() - timezone.timedelta(days=14)
-            ):
-                qt.change_quest(tut_quest, 60)
+    if not ("test" in sys.argv):
+        tut_quest = Quest.objects.filter(name="[TUTORIAL] Getting started").first()
+        if not tut_quest:
+            logger.warning(f"Tutorial quest '[TUTORIAL] Getting started' not found!")
+        elif created or profile.created_at > (
+            timezone.now() - timezone.timedelta(days=14)
+        ):
+            qt.change_quest(tut_quest, 60)
+
+    return character
 
 
 def send_email_to_users(users, subject, template_base, context=None, cc_admin=False):

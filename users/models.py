@@ -221,10 +221,12 @@ class Profile(Person):
     total_activities = models.IntegerField(default=0)
     is_premium = models.BooleanField(default=False)
     is_online = models.BooleanField(default=False)
-    last_login = models.DateTimeField(default=timezone.now)
+    last_login = models.DateTimeField(default=timezone.now, null=True, blank=True)
     login_streak = models.PositiveIntegerField(default=1)
     login_streak_max = models.PositiveIntegerField(default=1)
     total_logins = models.PositiveIntegerField(default=0)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
     buffs = models.ManyToManyField(
         "gameplay.AppliedBuff", related_name="profiles", blank=True
     )
