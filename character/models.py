@@ -302,12 +302,16 @@ class PlayerCharacterLink(models.Model):
 
     @classmethod
     def get_character(cls, profile: Profile) -> Character:
-        link = PlayerCharacterLink.objects.filter(
-            profile=profile, is_active=True
-        ).first()
-        if link is None:
-            raise ValueError("Character not found for this profile.")
-        return link.character
+        links = PlayerCharacterLink.objects.filter(profile=profile, is_active=True)
+        if not links.exists():
+            raise ValueError("No active Character found for this profile.")
+
+        if links.count() > 1:
+            logger.warning(
+                f"[PROFILE] Multiple active characters found for profile {profile.id} — returning the first one"
+            )
+
+        return links.first().character
 
     @classmethod
     def get_profile(cls, character):
@@ -321,6 +325,23 @@ class PlayerCharacterLink(models.Model):
         self.date_unlinked = now().date()
         self.is_active = False
         self.save()
+
+    @classmethod
+    def deactivate_active_links(cls, profile: Profile):
+        for link in cls.objects.filter(profile=profile, is_active=True):
+            link.unlink()
+
+    @classmethod
+    def assign_character(cls, profile: Profile, character: Character):
+        cls.deactivate_active_links(profile)
+        link = cls.objects.create(
+            profile=profile,
+            character=character,
+            is_active=True,
+        )
+        character.is_npc = False
+        character.save(update_fields=["is_npc"])
+        return link
 
 
 class CharacterRole(models.Model):
