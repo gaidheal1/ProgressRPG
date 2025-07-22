@@ -5,8 +5,6 @@ import { useAuth } from '../context/AuthContext.jsx';
 export function useBootstrapGameData() {
   const { isAuthenticated, loading: authLoading } = useAuth();
 
-
-
   const [player, setPlayer] = useState(null);
   const [character, setCharacter] = useState(null);
   const [activityTimerInfo, setActivityTimerInfo] = useState(null);

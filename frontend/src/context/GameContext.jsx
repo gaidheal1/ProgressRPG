@@ -20,12 +20,33 @@ export const useGame = () => {
 }
 
 export const GameProvider = ({ children }) => {
-  const { player, character, activityTimerInfo, questTimerInfo, loading, error } = useBootstrapGameData();
+  const { player: playerOnload, character: characterOnload, activityTimerInfo, questTimerInfo, loading, error } = useBootstrapGameData();
   const [activities, setActivities] = useState({ results: [], count: 0 });
   const [quests, setQuests] = useState([]);
+  const [player, setPlayer] = useState(playerOnload);
+  const [character, setCharacter] = useState(characterOnload);
 
   const activityTimer = useTimers({ mode: "activity" });
   const questTimer = useTimers({ mode: "quest" });
+
+  //console.log("Playeronload, characteronload:", playerOnload, characterOnload);
+  async function fetchPlayerAndCharacter() {
+    const [freshPlayer, freshCharacter] = await Promise.all([
+      apiFetch(`/profile/${playerOnload.id}/`),
+      apiFetch(`/character/${characterOnload.id}/`),
+    ]);
+    setPlayer(freshPlayer);
+    setCharacter(freshCharacter);
+  }
+
+
+  useEffect(() => {
+    if (!playerOnload?.id || !characterOnload?.id) return;
+
+    fetchPlayerAndCharacter();
+  }, [playerOnload, characterOnload]);
+
+  //console.log("Player, character:", player, character);
 
   useEffect(() => {
     if (activityTimerInfo || questTimerInfo) {
@@ -35,10 +56,12 @@ export const GameProvider = ({ children }) => {
   }, [activityTimerInfo, questTimerInfo]);
 
   const formattedDate = getFormattedDate();
+
   async function fetchActivities() {
     const data = await apiFetch(`/activities/?date_after=${formattedDate}&date_before=${formattedDate}`);
     setActivities(data);
   }
+
   useEffect(() => {
     fetchActivities();
   }, [formattedDate]);
@@ -54,14 +77,17 @@ export const GameProvider = ({ children }) => {
 
   const value = React.useMemo(() => ({
     player,
+    setPlayer,
     character,
+    setCharacter,
     activityTimer,
     questTimer,
     activities,
     fetchActivities,
     quests,
     fetchQuests,
-  }), [player, character, activityTimer, questTimer, activities, fetchActivities, quests,fetchQuests]);
+    loading,
+  }), [player, character, activityTimer, questTimer, activities, fetchActivities, quests, fetchQuests, loading]);
 
 
   return (
