@@ -36,8 +36,8 @@ export default function useCombinedTimers() {
     timersRunningRef.current = false;
 
     await activityTimer.complete();
-    await fetchActivities();
     await activityTimer.reset();
+    await fetchActivities();
     if (questTimer.status !== "complete") questTimer.pause();
   };
 

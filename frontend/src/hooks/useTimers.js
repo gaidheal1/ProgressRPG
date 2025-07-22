@@ -63,11 +63,11 @@ export default function useTimers({ mode }) {
     if (!subject) return;
     console.log(`[useTimers] Start ${mode}`);
 
-    await apiFetch(`/${mode}_timers/${id}/start/`, {
+    const response = await apiFetch(`/${mode}_timers/${id}/start/`, {
       method: 'POST',
     });
 
-    setStatus("active");
+    setStatus(response.status);
     startTimeRef.current = Date.now();
     pausedTimeRef.current = elapsed;
 
@@ -76,7 +76,7 @@ export default function useTimers({ mode }) {
       timerRef.current = null;
     }
     timerRef.current = setInterval(() => {
-      console.log(`[START] tickMain fired for ${mode}`);
+      //console.log(`[START] tickMain fired for ${mode}`);
       tickMain();
     }, 1000);
 
@@ -99,7 +99,7 @@ export default function useTimers({ mode }) {
     if (!startTimeRef.current) return;
 
     console.log(`[useTimers] Pause ${mode}`);
-    await apiFetch(`/${mode}_timers/${id}/pause/`, {
+    const response = await apiFetch(`/${mode}_timers/${id}/pause/`, {
       method: 'POST',
     });
 
@@ -113,7 +113,7 @@ export default function useTimers({ mode }) {
       setDuration((prev) => prev - secondsPassed);
     }
 
-    setStatus("waiting");
+    setStatus(response.status);
 
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -131,10 +131,10 @@ export default function useTimers({ mode }) {
     console.log(`[useTimers] Complete ${mode}`);
     if (status === "complete") return;
 
-    await apiFetch(`/${mode}_timers/${id}/complete/`, {
+    const response = await apiFetch(`/${mode}_timers/${id}/complete/`, {
       method: 'POST',
     });
-
+    console.log("Complete timer, response:", response);
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -143,8 +143,8 @@ export default function useTimers({ mode }) {
       clearInterval(stageTimerRef.current);
       stageTimerRef.current = null;
     }
-
-    setStatus("complete");
+    console.log("Timer complete method, response:", response);
+    setStatus(response.status);
   }, [mode, status]);
 
   // Reset timer
@@ -153,11 +153,11 @@ export default function useTimers({ mode }) {
     if (status === "empty") return;
     console.log(`[useTimers] Reset ${mode}`);
 
-    await apiFetch(`/${mode}_timers/${id}/reset/`, {
+    const response = await apiFetch(`/${mode}_timers/${id}/reset/`, {
       method: 'POST',
     });
 
-    setStatus("empty");
+    setStatus(response.status);
     setDuration(0);
     setSubject(null);
     setElapsed(0);

@@ -4,9 +4,14 @@ import Infobox from './Infobox/Infobox';
 import styles from './Infobar.module.scss';
 
 export default function Infobar() {
-  const { player, character } = useGame();
+  const { player, character, loading } = useGame();
+  console.log("[INFOBAR] Player, character:", player, character);
 
-  if (!player || !character) return null;
+
+  if (loading) return <div className={styles.infoBar}>Loading data...</div>;
+  if (!player || !character) {
+  return <div className={styles.infoBar}>Loading player/character info...</div>;
+  }
 
   return (
     <div className={styles.infoBar}>
