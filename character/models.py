@@ -228,17 +228,16 @@ class Character(Person, LifeCycleMixin):
             return None
 
         try:
-            with transaction.atomic():
-                completion, created = QuestCompletion.objects.get_or_create(
-                    character=self,
-                    quest=quest,
-                )
-                if not created:
-                    completion.times_completed += 1
+            completion, created = QuestCompletion.objects.get_or_create(
+                character=self,
+                quest=quest,
+            )
+            if not created:
+                completion.times_completed += 1
                 completion.save()
-                logger.debug(
-                    f"[CHAR.COMPLETE_QUEST] Quest completion updated: {completion} (Created: {created})"
-                )
+            logger.debug(
+                f"[CHAR.COMPLETE_QUEST] Quest completion updated: {completion} (Created: {created})"
+            )
         except IntegrityError as e:
             logger.error(
                 f"[CHAR.COMPLETE_QUEST] IntegrityError: failed to create or retrieve quest completion for character {self.id}, quest {quest.id}: {e}"
@@ -252,7 +251,7 @@ class Character(Person, LifeCycleMixin):
 
         rewards = None
         try:
-            if hasattr(quest, "results"):
+            if hasattr(quest, "results") and quest.results is not None:
                 results = quest.results
                 results.apply(self)
                 rewards = QuestResultSerializer(results).data
@@ -261,7 +260,6 @@ class Character(Person, LifeCycleMixin):
                 f"[CHAR.COMPLETE_QUEST] Error applying rewards for quest {quest.id}: {e}"
             )
 
-        logger.debug(f"[CHAR.COMPLETE_QUEST] Rewards applied: {rewards}")
         try:
             xp_reward = self.quest_timer.complete()
             self.add_xp(xp_reward)

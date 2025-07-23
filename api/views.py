@@ -359,7 +359,6 @@ class ActivityViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ActivityFilter
     permission_classes = [IsAuthenticated, IsOwnerProfile]
-    # pagination_class = None
 
     def perform_create(self, serializer):
         serializer.save(profile=self.request.user.profile)
@@ -426,7 +425,6 @@ class ActivityViewSet(viewsets.ModelViewSet):
                 {"error": "Activity not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
-        # Get updated name from request body
         activity_name = request.data.get("name")
         if not activity_name:
             return Response(
@@ -434,13 +432,8 @@ class ActivityViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        activity.update_name(activity_name)
-
         try:
-            profile.add_activity(profile.activity_timer.elapsed_time)
-            xp_reward = profile.activity_timer.complete()
-            profile.activity_timer.refresh_from_db()
-            profile.add_xp(xp_reward)
+            activity.update_name(activity_name)
         except Exception as e:
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -448,25 +441,15 @@ class ActivityViewSet(viewsets.ModelViewSet):
 
         # Return latest activities (today’s or recent 5)
         activities = Activity.objects.filter(
-            profile=profile, created_at__date=timezone.now().date()
-        ).order_by("-created_at")
+            profile=profile, completed_at__date=timezone.now().date()
+        ).order_by("-completed_at")
         if not activities.exists():
             activities = Activity.objects.filter(profile=profile).order_by(
-                "-created_at"
+                "-completed_at"
             )[:5]
 
         activities_list = ActivitySerializer(activities, many=True).data
         profile_data = ProfileSerializer(profile).data
-
-        message_text = f"Activity submitted. You got {xp_reward} XP!"
-        ServerMessage.objects.create(
-            group=profile.group_name,
-            type="notification",
-            action="notification",
-            data={},
-            message=message_text,
-            is_draft=False,
-        )
 
         return Response(
             {
@@ -474,7 +457,6 @@ class ActivityViewSet(viewsets.ModelViewSet):
                 "message": "Activity submitted",
                 "profile": profile_data,
                 "activities": activities_list,
-                "activity_rewards": xp_reward,
             }
         )
 
@@ -504,43 +486,6 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
             eligible_quests, many=True, context={"request": request}
         )
         return Response(serializer.data)
-
-    @action(detail=False, methods=["post"])
-    def choose(self, request):
-        profile = request.user.profile
-        quest_id = request.data.get("quest_id")
-        if not quest_id:
-            return Response(
-                {"error": "quest_id is required"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        quest = get_object_or_404(Quest, id=quest_id)
-
-        try:
-            character = PlayerCharacterLink.get_character(profile)
-        except ValueError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        duration = request.data.get("duration")
-        try:
-            character.quest_timer.change_quest(quest, duration)
-            character.quest_timer.refresh_from_db()
-        except Exception as e:
-            return Response(
-                {"error": "Failed to change quest: " + str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-        quest_timer_data = QuestTimerSerializer(
-            character.quest_timer, context={"request": request}
-        ).data
-        return Response(
-            {
-                "success": True,
-                "quest_timer": quest_timer_data,
-                "message": f"Quest {quest.name} selected",
-            }
-        )
 
     @action(detail=False, methods=["post"])
     def complete(self, request):
@@ -577,7 +522,6 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
             {
                 "success": True,
                 "message": "Quest completed",
-                "xp_reward": 5,
                 "quests": quests_data,
                 "character": character_data,
                 "activity_timer_status": profile.activity_timer.status,
@@ -671,7 +615,7 @@ class ActivityTimerViewSet(BaseTimerViewSet):
 
         timer.new_activity(activity)
         serializer = self.get_serializer(timer)
-        return Response(serializer.data)
+        return Response({"success": True, "activity_timer": serializer.data})
 
 
 class QuestTimerViewSet(BaseTimerViewSet):
@@ -690,6 +634,19 @@ class QuestTimerViewSet(BaseTimerViewSet):
     @action(detail=True, methods=["post"])
     def change_quest(self, request, pk=None):
         timer = self.get_object()
+
+        # Confirm timer belongs to request.user.profile's character
+        try:
+            character = PlayerCharacterLink.get_character(request.user.profile)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if timer.character != character:
+            return Response(
+                {"error": "You do not have permission to modify this quest timer."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         quest_id = request.data.get("quest_id")
         duration = request.data.get("duration")
 
@@ -698,14 +655,46 @@ class QuestTimerViewSet(BaseTimerViewSet):
             return error_response
 
         if not isinstance(duration, int):
+            try:
+                duration = int(duration)
+            except (ValueError, TypeError):
+                return Response(
+                    {"error": "Duration must be an integer."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        try:
+            timer.change_quest(quest, duration)
+            timer.refresh_from_db()
+        except Exception as e:
             return Response(
-                {"error": "Duration must be an integer."},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"error": "Failed to change quest: " + str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        serializer = self.get_serializer(timer)
+        return Response({"success": True, "quest_timer": serializer.data})
+
+    @action(detail=True, methods=["post"])
+    def complete(self, request, pk=None):
+        timer = self.get_object()
+        logging.debug(f"You have arrived in the arrivals lounge.")
+        if not timer.quest:
+            return Response({"error": "No quest assigned to this timer."}, status=400)
+        quest_id = timer.quest.id
+
+        quest, error_response = self.handle_related_object(Quest, quest_id, "quest")
+        if error_response:
+            return error_response
+
+        try:
+            timer.complete()
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to complete quest: {str(e)}"}, status=500
             )
 
-        timer.change_quest(quest, duration)
         serializer = self.get_serializer(timer)
-        return Response(serializer.data)
+        return Response({"success": True, "quest_timer": serializer.data})
 
 
 class DownloadUserDataAPIView(APIView):

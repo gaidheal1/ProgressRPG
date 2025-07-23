@@ -631,7 +631,7 @@ class ActivityTimer(Timer):
     )
 
     def __str__(self):
-        return f"ActivityTimer for {self.profile.name}: status {self.status}"
+        return f"ActivityTimer {self.id} for {self.profile.name}"
 
     def new_activity(self, activity: Activity):
         """
@@ -689,7 +689,9 @@ class ActivityTimer(Timer):
         )
 
         self.update_activity_time()
+
         xp_gained = self.calculate_xp()
+        self.profile.add_activity(self.elapsed_time, xp=xp_gained)
 
         message_text = f"Activity submitted. You got {xp_gained} XP!"
         ServerMessage.objects.create(
@@ -700,10 +702,13 @@ class ActivityTimer(Timer):
             message=message_text,
             is_draft=False,
         )
+
         self.activity.complete()
         logger.debug(
             f"[TIMER COMPLETE] Timer {self.id} completed — elapsed_time: {self.elapsed_time}, completed_at: {self.activity.completed_at}"
         )
+
+        return self
 
     def _reset_hook(self):
         self.activity = None
@@ -751,12 +756,7 @@ class QuestTimer(Timer):
     duration = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"QuestTimer for {self.character.name}"
-
-    # def save(self, *args, **kwargs):
-    #     #print(f"QuestTimer saved. {self}")
-    #     #traceback.print_stack()
-    #     super().save(*args, **kwargs)
+        return f"QuestTimer {self.id} for {self.character.name}"
 
     def change_quest(self, quest: Quest, duration: int):
         """
@@ -781,8 +781,30 @@ class QuestTimer(Timer):
         :rtype: int
         """
         # logger.debug(f"[QUESTTIMER.COMPLETE] {self}")
+        self.refresh_from_db()
+        character = self.character
+        profile = character.profile
+
+        profile.activity_timer.refresh_from_db()
+        character.quest_timer.refresh_from_db()
+
         super().complete()
-        return self.calculate_xp()
+
+        xp_gained = self.calculate_xp()
+
+        completion_data = character.complete_quest()
+        if not completion_data:
+            raise RuntimeError("Quest completion failed.")
+
+        message_text = f"Quest completed. Character got {xp_gained} XP!"
+        ServerMessage.objects.create(
+            group=self.profile.group_name,
+            type="notification",
+            action="notification",
+            data={"completion_data": completion_data},
+            message=message_text,
+            is_draft=False,
+        )
 
     def reset(self):
         """
@@ -818,7 +840,6 @@ class QuestTimer(Timer):
         :rtype: int
         """
         if self.status == "active":
-            # elapsed = self.get_elapsed_time()
             remaining = self.duration - self.get_elapsed_time()
         else:
             remaining = self.duration - self.elapsed_time

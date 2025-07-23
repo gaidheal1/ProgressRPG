@@ -278,7 +278,7 @@ class Profile(Person):
     def __str__(self):
         return self.name if self.name else "Unnamed profile"
 
-    def add_activity(self, time: int, num: int = 1):
+    def add_activity(self, time: int = 0, num: int = 1, xp: int = 0):
         """
         Update the total time and number of activities for this profile.
 
@@ -289,6 +289,8 @@ class Profile(Person):
         """
         self.total_time += time
         self.total_activities += num
+        if xp:
+            self.add_xp(xp)
         self.save()
 
     def change_character(self, new_character: "Character"):
