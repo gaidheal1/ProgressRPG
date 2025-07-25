@@ -8,7 +8,7 @@ export default function ActivityPanel() {
   const { activities } = useGame();
   const totalDuration = activities?.results?.reduce((acc, a) => acc + a.duration, 0) || 0;
   const count = activities?.count || 0;
-  console.log("activities:", activities);
+  //console.log("activities:", activities);
   return (
     <section className={styles.listSection}>
       <h2>Today's activities</h2>

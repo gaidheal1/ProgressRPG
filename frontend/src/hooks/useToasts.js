@@ -1,3 +1,4 @@
+// useToasts.js
 import { useState, useCallback } from 'react';
 
 export function useToasts(duration = 3300) {

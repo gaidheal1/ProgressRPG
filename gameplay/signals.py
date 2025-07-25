@@ -21,7 +21,7 @@ logger = logging.getLogger("django")
 def handle_new_activity(sender, instance, created, **kwargs):
     """Handles all activity submission jobs"""
     if created:
-        try:
+        """try:
             logger.info(
                 f"[HANDLE NEW ACTIVITY] New activity created: {instance.id}, profile: {instance.profile.id}"
             )
@@ -41,7 +41,7 @@ def handle_new_activity(sender, instance, created, **kwargs):
                 f"[HANDLE NEW ACTIVITY] Unexpected error for activity {instance.id}: {e}",
                 exc_info=True,
             )
-
+        """
         # Event Progress Updates
         """
         try:

@@ -138,26 +138,6 @@ class QuestResultSerializer(serializers.ModelSerializer):
         fields = ["dynamic_rewards", "xp_rate", "coin_reward"]
 
 
-class QuestSerializer(serializers.ModelSerializer):
-    results = QuestResultSerializer(read_only=True)  # source='results',
-
-    class Meta:
-        model = Quest
-        fields = [
-            "id",
-            "name",
-            "description",
-            "intro_text",
-            "outro_text",
-            "duration_choices",
-            "stages",
-            "results",
-        ]
-        read_only_fields = [
-            "id",
-        ]
-
-
 class ActivitySerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
     last_updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
@@ -184,9 +164,29 @@ class ActivitySerializer(serializers.ModelSerializer):
         ]
 
 
+class QuestSerializer(serializers.ModelSerializer):
+    results = QuestResultSerializer(read_only=True)  # source='results',
+
+    class Meta:
+        model = Quest
+        fields = [
+            "id",
+            "name",
+            "description",
+            "intro_text",
+            "outro_text",
+            "duration_choices",
+            "stages",
+            "results",
+        ]
+        read_only_fields = [
+            "id",
+        ]
+
+
 class ActivityTimerSerializer(serializers.ModelSerializer):
     activity = ActivitySerializer(read_only=True)
-    logger.debug(f"API Activity serializer: {activity}")
+    # logger.debug(f"API Activity serializer: {activity}")
     elapsed_time = serializers.SerializerMethodField()
 
     class Meta:

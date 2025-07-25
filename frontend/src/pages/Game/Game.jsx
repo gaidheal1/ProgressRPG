@@ -1,18 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import ToastManager from '../../components/Toast/ToastManager';
 import ProfileSocketListener from '../../components/ProfileSocketListener';
 import { useGame } from '../../context/GameContext';
 import styles from './Game.module.scss';
 import GameContainer from '../../layout/GameContainer/GameContainer';
 
 export default function Game() {
-  const [toasts, setToasts] = useState([]);
-
-  const { player, loading, error } = useGame();
-
-  const showToast = (message) => {
-    setToasts((prev) => [...prev, { id: Date.now(), message }]);
-  };
+  const { player, loading, showToast, error } = useGame();
 
   const handleWebSocketEvent = (data) => {
     switch (data.type) {
@@ -58,11 +51,8 @@ export default function Game() {
   return (
     <div className={styles.gamePage}>
       {player?.id && <ProfileSocketListener onEvent={handleWebSocketEvent} />}
-      <ToastManager messages={toasts} />
 
-      <GameContainer
-        showToast={showToast}
-      />
+      <GameContainer />
     </div>
   );
 }

@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import styles from './Toast.module.scss';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function ToastManager({ messages }) {
   const [visibleMessages, setVisibleMessages] = useState([]);
 
   useEffect(() => {
     const newToasts = messages.map((msg, index) => {
-      const id = typeof msg === 'object' && msg.id ? msg.id : `${Date.now()}-${index}`;
+      const id = typeof msg === 'object' && msg.id ? msg.id : uuidv4();
+      console.log("Toast id:", id);
       return { id, content: normalizeMessage(msg) };
     });
 

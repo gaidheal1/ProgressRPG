@@ -1,8 +1,9 @@
 // GameContext.jsx
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useBootstrapGameData } from '../hooks/useBootstrapGameData';
 import { apiFetch } from '../../utils/api';
 import useTimers from '../hooks/useTimers';
+import ToastManager from '../components/Toast/ToastManager';
 
 const GameContext = createContext();
 
@@ -25,9 +26,18 @@ export const GameProvider = ({ children }) => {
   const [quests, setQuests] = useState([]);
   const [player, setPlayer] = useState(playerOnload);
   const [character, setCharacter] = useState(characterOnload);
-
+  const [toasts, setToasts] = useState([]);
   const activityTimer = useTimers({ mode: "activity" });
   const questTimer = useTimers({ mode: "quest" });
+
+
+  // Your existing useToasts logic moved here, slightly adapted:
+  const showToast = useCallback((message) => {
+    setToasts((prev) => [...prev, { id: Date.now(), message: String(message) }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.slice(1));
+    }, 3300);
+  }, []);
 
   //console.log("Playeronload, characteronload:", playerOnload, characterOnload);
   async function fetchPlayerAndCharacter() {
@@ -68,7 +78,7 @@ export const GameProvider = ({ children }) => {
 
   async function fetchQuests() {
     const data = await apiFetch(`/quests/eligible`);
-    setQuests(data);
+    setQuests(data.eligible_quests);
   }
 
   useEffect(() => {
@@ -86,6 +96,8 @@ export const GameProvider = ({ children }) => {
     fetchActivities,
     quests,
     fetchQuests,
+    toasts,
+    showToast,
     loading,
   }), [player, character, activityTimer, questTimer, activities, fetchActivities, quests, fetchQuests, loading]);
 
@@ -93,6 +105,7 @@ export const GameProvider = ({ children }) => {
   return (
     <GameContext.Provider value={value}>
       {children}
+      <ToastManager messages={toasts} />
     </GameContext.Provider>
   );
 };

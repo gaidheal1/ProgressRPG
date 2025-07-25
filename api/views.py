@@ -116,7 +116,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 def me_view(request):
     user = request.user
     serializer = UserSerializer(user)
-    return Response(serializer.data)
+    return Response({"success": True, "user": serializer.data})
 
 
 class CustomRegisterView(RegisterView):
@@ -471,7 +471,7 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
     def list(self, request):
         quests = self.get_queryset()
         serializer = QuestSerializer(quests, many=True, context={"request": request})
-        return Response(serializer.data)
+        return Response({"quests": serializer.data})
 
     @action(detail=False, methods=["get"])
     def eligible(self, request):
@@ -485,7 +485,7 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = QuestSerializer(
             eligible_quests, many=True, context={"request": request}
         )
-        return Response(serializer.data)
+        return Response({"eligible_quests": serializer.data})
 
     @action(detail=False, methods=["post"])
     def complete(self, request):
@@ -499,11 +499,8 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
             profile.activity_timer.refresh_from_db()
             character.quest_timer.refresh_from_db()
             completion_data = character.complete_quest()
-            if completion_data is None:
-                return Response(
-                    {"error": "Quest completion failed."},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
+            if not completion_data:
+                raise ValidationError("Quest completion failed - data was None.")
         except Exception as e:
             return Response(
                 {"error": "Failed to complete quest: " + str(e)},
@@ -562,7 +559,6 @@ class BaseTimerViewSet(viewsets.ReadOnlyModelViewSet):
         commands_map = {
             "start": timer.start,
             "pause": timer.pause,
-            "complete": timer.complete,
             "reset": timer.reset,
         }
 
@@ -571,8 +567,9 @@ class BaseTimerViewSet(viewsets.ReadOnlyModelViewSet):
 
         try:
             commands_map[command]()
+            timer.refresh_from_db()
             serializer = self.get_serializer(timer)
-            return Response(serializer.data)
+            return Response({"success": True, "timer": serializer.data})
         except Exception as e:
             return Response({"error": str(e)}, status=400)
 
@@ -583,10 +580,6 @@ class BaseTimerViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=["post"])
     def pause(self, request, pk=None):
         return self.control_timer(request, pk, "pause")
-
-    @action(detail=True, methods=["post"])
-    def complete(self, request, pk=None):
-        return self.control_timer(request, pk, "complete")
 
     @action(detail=True, methods=["post"])
     def reset(self, request, pk=None):
@@ -611,11 +604,22 @@ class ActivityTimerViewSet(BaseTimerViewSet):
         if not name:
             return Response({"error": "Missing activity name"}, status=400)
 
-        activity = Activity.objects.create(name=name, profile=request.user.profile)
+        act_timer_updated = timer.new_activity(name)
 
-        timer.new_activity(activity)
-        serializer = self.get_serializer(timer)
+        logger.debug(f"activitytimer set_activity, timer: {act_timer_updated.activity}")
+        act_timer_updated.refresh_from_db()
+        serializer = self.get_serializer(act_timer_updated)
         return Response({"success": True, "activity_timer": serializer.data})
+
+    @action(detail=True, methods=["post"])
+    def complete(self, request, pk=None):
+        timer = self.get_object()
+        try:
+            timer.complete()
+            serializer = self.get_serializer(timer)
+            return Response({"success": True, "timer": serializer.data})
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
 
 
 class QuestTimerViewSet(BaseTimerViewSet):
@@ -677,7 +681,7 @@ class QuestTimerViewSet(BaseTimerViewSet):
     @action(detail=True, methods=["post"])
     def complete(self, request, pk=None):
         timer = self.get_object()
-        logging.debug(f"You have arrived in the arrivals lounge.")
+        # logger.debug(f"You have arrived in the arrivals lounge.")
         if not timer.quest:
             return Response({"error": "No quest assigned to this timer."}, status=400)
         quest_id = timer.quest.id
@@ -687,14 +691,22 @@ class QuestTimerViewSet(BaseTimerViewSet):
             return error_response
 
         try:
-            timer.complete()
+            qt_updated, character_updated = timer.complete()
         except Exception as e:
             return Response(
                 {"error": f"Failed to complete quest: {str(e)}"}, status=500
             )
 
-        serializer = self.get_serializer(timer)
-        return Response({"success": True, "quest_timer": serializer.data})
+        qt_serialized = self.get_serializer(qt_updated)
+        character_serialized = CharacterSerializer(character_updated)
+        response = {
+            "success": True,
+            "quest_timer": qt_serialized.data,
+            "character": character_serialized.data,
+        }
+
+        logger.debug(f"Questtimer complete, response: {response}")
+        return Response(response)
 
 
 class DownloadUserDataAPIView(APIView):

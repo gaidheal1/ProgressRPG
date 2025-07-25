@@ -16,7 +16,7 @@ from django.db import models, transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 from typing import Optional, Iterable, Dict, Any, cast, List, TYPE_CHECKING
-import json, logging
+import json, logging, math
 
 if TYPE_CHECKING:
     from character.models import Character
@@ -241,18 +241,27 @@ class QuestResults(models.Model):
         :return: The calculated experience points.
         :rtype: int
         """
-        character_level = character.level
         base_xp = self.xp_rate
         time_xp = base_xp * duration
-        level_scaling = 1 + (character_level * 0.05)
 
-        quest_completions = character.get_quest_completions(self.quest).first()
+        # Temp disabling level scaling
+        # character_level = character.level
+        # level_scaling = 1 + (character_level * 0.05)
+        level_scaling = 1
 
-        repeat_penalty = (
-            0.99**quest_completions.times_completed if quest_completions else 1
-        )
+        # Temp disabling repeat penalty
+        # quest_completions = character.get_quest_completions(self.quest).first()
+        # times = quest_completions.times_completed if quest_completions else 0
+        # midpoint = 50      # Adjust as needed
+        # steepness = 0.1    # Adjust as needed
+        # min_penalty = 0.8  # Lowest XP multiplier
+
+        # exp_value = math.exp(-steepness * (times - midpoint))
+        # repeat_penalty = min_penalty + (1 - min_penalty) / (1 + exp_value)
+        repeat_penalty = 1
 
         final_xp = time_xp * level_scaling * repeat_penalty
+
         return max(1, round(final_xp))
 
     @transaction.atomic
@@ -538,16 +547,21 @@ class Timer(models.Model):
             f"[APPLY ELAPSED] Timer {self.id} — elapsed_time set to {self.elapsed_time}"
         )
         self.start_time = None
+        self.save()
         return self
 
     def start(self):
         """
         Start the timer and set its status to 'active'.
         """
+        logger.debug(
+            f"[TIMER START DEBUG] Timer {self.id} status before: {self.status}, after: active, time: {timezone.now()}"
+        )
+
         if self.status != "active":
             self.status = "active"
             self.start_time = timezone.now()
-            self.save()
+            self.save(update_fields=["status", "start_time"])
             logger.debug(f"[TIMER START] Timer {self.id} started at {self.start_time}")
         return self
 
@@ -558,7 +572,7 @@ class Timer(models.Model):
         if self.status != "paused":
             self.apply_elapsed()
             self.status = "paused"
-            self.save()
+            self.save(update_fields=["status"])
         return self
 
     def set_waiting(self):
@@ -567,13 +581,17 @@ class Timer(models.Model):
         """
         if self.status != "waiting":
             self.status = "waiting"
-            self.save()
+            self.save(update_fields=["status"])
         return self
 
     def complete(self):
         """
         Mark the timer as 'completed' and update its elapsed time.
         """
+        logger.debug(
+            f"[COMPLETE DEBUG] Timer {self.id} — status: {self.status}, start_time: {self.start_time}, elapsed_time before: {self.elapsed_time}"
+        )
+
         if self.status != "completed":
             self.apply_elapsed()
             self.status = "completed"
@@ -630,24 +648,33 @@ class ActivityTimer(Timer):
         blank=True,
     )
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        logger.debug(f"Activity timer save: compute elapsed: {self.compute_elapsed()}")
+
     def __str__(self):
         return f"ActivityTimer {self.id} for {self.profile.name}"
 
-    def new_activity(self, activity: Activity):
+    def new_activity(self, name=""):
         """
         Assign a new activity to the timer.
 
         :param activity: The activity to associate with the timer.
         :type activity: Activity
         """
-        logger.debug(f"Assigning new activity {activity} to timer {self.pk}")
-        self.reset()
-        self.activity = activity
-        self.set_waiting()
-        self.save(update_fields=["activity", "status"])
         logger.debug(
-            f"Timer after save: {self.pk}, activity: {self.activity}, status: {self.status}"
+            f"[ACTIVITYTIMER.new_activity]: Assigning new activity {name} to timer {self.pk}"
         )
+
+        self.activity = Activity.objects.create(name=name, profile=self.profile)
+
+        if self.status == "empty":
+            self.set_waiting()
+        self.save(update_fields=["activity"])
+        logger.debug(
+            f"ActivityTimer after save: {self.pk}, activity: {self.activity}, status: {self.status}"
+        )
+        return self
 
     def pause(self):
         """
@@ -676,7 +703,6 @@ class ActivityTimer(Timer):
         :return: The XP reward for the activity.
         :rtype: int
         """
-        super().complete()
 
         if not self.activity:
             logger.warning(
@@ -684,10 +710,12 @@ class ActivityTimer(Timer):
             )
             return 0
 
-        logger.warning(
-            f"[COMPLETE CALLED AGAIN] Timer {self.id} already completed — elapsed_time: {self.elapsed_time}"
-        )
+        if self.status == "completed":
+            logger.warning(
+                f"[COMPLETE CALLED AGAIN] Timer {self.id} already completed — elapsed_time: {self.elapsed_time}"
+            )
 
+        super().complete()
         self.update_activity_time()
 
         xp_gained = self.calculate_xp()
@@ -782,29 +810,56 @@ class QuestTimer(Timer):
         """
         # logger.debug(f"[QUESTTIMER.COMPLETE] {self}")
         self.refresh_from_db()
+
+        if not self.quest:
+            logger.error("No quest found on timer %s", self.id)
+            raise RuntimeError("Cannot complete: quest is None.")
+
         character = self.character
-        profile = character.profile
+        if not self.character:
+            logger.error("No character found on timer %s", self.id)
+            raise RuntimeError("Cannot complete: character is None.")
 
-        profile.activity_timer.refresh_from_db()
-        character.quest_timer.refresh_from_db()
+        try:
+            from character.models import PlayerCharacterLink
 
-        super().complete()
+            profile = PlayerCharacterLink.get_profile(character)
 
-        xp_gained = self.calculate_xp()
+            self.refresh_from_db()
+            character.refresh_from_db()
 
-        completion_data = character.complete_quest()
-        if not completion_data:
-            raise RuntimeError("Quest completion failed.")
+            super().complete()
 
-        message_text = f"Quest completed. Character got {xp_gained} XP!"
-        ServerMessage.objects.create(
-            group=self.profile.group_name,
-            type="notification",
-            action="notification",
-            data={"completion_data": completion_data},
-            message=message_text,
-            is_draft=False,
-        )
+            xp_gained = self.calculate_xp()
+            logger.debug(f"Quest timer, xp_gained: {xp_gained}")
+            rewards_summary = character.complete_quest(xp_gained)
+
+            completion_data = {
+                "xp_gained": xp_gained,
+                "rewards_summary": rewards_summary,
+            }
+
+            message_text = f"Quest completed. Character got {xp_gained} XP!"
+            ServerMessage.objects.create(
+                group=profile.group_name,
+                type="notification",
+                action="notification",
+                data={"completion_data": completion_data},
+                message=message_text,
+                is_draft=False,
+            )
+            return self, character
+
+        except Exception as e:
+            import traceback
+
+            logger.error(
+                f"[CHAR.COMPLETE_QUEST] Error updating XP or quest count for character {self.id}: {e}"
+            )
+            logger.error(
+                traceback.format_exc()
+            )  # logs full stack trace of original error
+            raise  # RuntimeError("Quest completion failed.") from e
 
     def reset(self):
         """
