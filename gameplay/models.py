@@ -14,9 +14,9 @@ from django.db import models, transaction
 
 # from django.db.models import ForeignKey
 from django.db.models import QuerySet
-from django.utils.timezone import now, timedelta
+from django.utils import timezone
 from typing import Optional, Iterable, Dict, Any, cast, List, TYPE_CHECKING
-import json, logging
+import json, logging, math
 
 if TYPE_CHECKING:
     from character.models import Character
@@ -62,6 +62,7 @@ class Quest(models.Model):
     end_date = models.DateTimeField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     stages: Any = models.JSONField(default=list)
+    stagesFixed = models.BooleanField(default=False)
 
     class Category(models.TextChoices):
         NONE = "NONE", "No category"
@@ -73,10 +74,10 @@ class Quest(models.Model):
     results: Optional["QuestResults"] = None
 
     # Eligibility criteria
-    is_premium = models.BooleanField(default=True)
+    is_premium = models.BooleanField(default=False)
     levelMin = models.IntegerField(default=0)
     levelMax = models.IntegerField(default=0)
-    canRepeat = models.BooleanField(default=False)
+    canRepeat = models.BooleanField(default=True)
     quest_requirements: QuerySet["QuestRequirement"]
     quest_completions: QuerySet["QuestCompletion"]
 
@@ -154,7 +155,7 @@ class Quest(models.Model):
         :rtype: bool
         """
         if self.frequency != "NONE":
-            today = now()
+            today = timezone.now()
             completions = self.quest_completions.all()
             for completion in completions:
                 if completion.character == character:
@@ -240,18 +241,27 @@ class QuestResults(models.Model):
         :return: The calculated experience points.
         :rtype: int
         """
-        character_level = character.level
         base_xp = self.xp_rate
         time_xp = base_xp * duration
-        level_scaling = 1 + (character_level * 0.05)
 
-        quest_completions = character.get_quest_completions(self.quest).first()
+        # Temp disabling level scaling
+        # character_level = character.level
+        # level_scaling = 1 + (character_level * 0.05)
+        level_scaling = 1
 
-        repeat_penalty = (
-            0.99**quest_completions.times_completed if quest_completions else 1
-        )
+        # Temp disabling repeat penalty
+        # quest_completions = character.get_quest_completions(self.quest).first()
+        # times = quest_completions.times_completed if quest_completions else 0
+        # midpoint = 50      # Adjust as needed
+        # steepness = 0.1    # Adjust as needed
+        # min_penalty = 0.8  # Lowest XP multiplier
+
+        # exp_value = math.exp(-steepness * (times - midpoint))
+        # repeat_penalty = min_penalty + (1 - min_penalty) / (1 + exp_value)
+        repeat_penalty = 1
 
         final_xp = time_xp * level_scaling * repeat_penalty
+
         return max(1, round(final_xp))
 
     @transaction.atomic
@@ -348,7 +358,7 @@ class QuestCompletion(models.Model):
         "gameplay.Quest", on_delete=models.CASCADE, related_name="quest_completions"
     )
     times_completed = models.PositiveIntegerField(default=1)
-    last_completed = models.DateTimeField(default=now)
+    last_completed = models.DateTimeField(default=timezone.now)
 
     class Meta:
         unique_together = ("character", "quest")
@@ -380,7 +390,9 @@ class Activity(models.Model):
     duration = models.PositiveIntegerField(default=0)  # Time spent
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
     xp_rate = models.IntegerField(default=1)
+    xp_gained = models.IntegerField(default=0)
     skill = models.ForeignKey(
         "Skill",
         on_delete=models.SET_NULL,
@@ -429,6 +441,10 @@ class Activity(models.Model):
         self.duration = num
         self.save(update_fields=["duration"])
 
+    def complete(self):
+        self.completed_at = timezone.now()
+        self.save(update_fields=["completed_at"])
+
     def calculate_xp_reward(self) -> int:
         """
         Calculate the experience points (XP) reward for the activity.
@@ -438,6 +454,7 @@ class Activity(models.Model):
         """
         base_xp = self.duration * self.xp_rate
         final_xp = self.profile.apply_buffs(base_xp, "xp")
+        self.xp_gained = final_xp
         return final_xp
 
     def __str__(self):
@@ -507,7 +524,16 @@ class Timer(models.Model):
 
     def get_elapsed_time(self):
         if self.start_time and self.status == "active":
-            return int((now() - self.start_time).total_seconds()) + self.elapsed_time
+            logger.debug(
+                f"[GET ELAPSED] Timer {self.id} active — start_time: {self.start_time}, now: {timezone.now()}, base: {self.elapsed_time}"
+            )
+            return (
+                int((timezone.now() - self.start_time).total_seconds())
+                + self.elapsed_time
+            )
+        logger.debug(
+            f"[GET ELAPSED] Timer {self.id} status: '{self.status}' and start time: '{self.start_time}' — returning stored elapsed_time: {self.elapsed_time}"
+        )
         return self.elapsed_time
 
     def compute_elapsed(self):
@@ -517,17 +543,26 @@ class Timer(models.Model):
     def apply_elapsed(self):
         """Store current elapsed time in the DB."""
         self.elapsed_time = self.get_elapsed_time()
+        logger.debug(
+            f"[APPLY ELAPSED] Timer {self.id} — elapsed_time set to {self.elapsed_time}"
+        )
         self.start_time = None
+        self.save()
         return self
 
     def start(self):
         """
         Start the timer and set its status to 'active'.
         """
+        logger.debug(
+            f"[TIMER START DEBUG] Timer {self.id} status before: {self.status}, after: active, time: {timezone.now()}"
+        )
+
         if self.status != "active":
             self.status = "active"
-            self.start_time = now()
-            self.save()
+            self.start_time = timezone.now()
+            self.save(update_fields=["status", "start_time"])
+            logger.debug(f"[TIMER START] Timer {self.id} started at {self.start_time}")
         return self
 
     def pause(self):
@@ -537,7 +572,7 @@ class Timer(models.Model):
         if self.status != "paused":
             self.apply_elapsed()
             self.status = "paused"
-            self.save()
+            self.save(update_fields=["status"])
         return self
 
     def set_waiting(self):
@@ -546,17 +581,21 @@ class Timer(models.Model):
         """
         if self.status != "waiting":
             self.status = "waiting"
-            self.save()
+            self.save(update_fields=["status"])
         return self
 
     def complete(self):
         """
         Mark the timer as 'completed' and update its elapsed time.
         """
+        logger.debug(
+            f"[COMPLETE DEBUG] Timer {self.id} — status: {self.status}, start_time: {self.start_time}, elapsed_time before: {self.elapsed_time}"
+        )
+
         if self.status != "completed":
             self.apply_elapsed()
             self.status = "completed"
-            self.save(update_fields=["status", "elapsed_time"])
+            self.save()
         return self
 
     def reset(self):
@@ -609,20 +648,33 @@ class ActivityTimer(Timer):
         blank=True,
     )
 
-    def __str__(self):
-        return f"ActivityTimer for {self.profile.name}: status {self.status}"
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        logger.debug(f"Activity timer save: compute elapsed: {self.compute_elapsed()}")
 
-    def new_activity(self, activity: Activity):
+    def __str__(self):
+        return f"ActivityTimer {self.id} for {self.profile.name}"
+
+    def new_activity(self, name=""):
         """
         Assign a new activity to the timer.
 
         :param activity: The activity to associate with the timer.
         :type activity: Activity
         """
-        self.reset()
-        self.activity = activity
-        self.set_waiting()
-        self.save(update_fields=["activity", "status"])
+        logger.debug(
+            f"[ACTIVITYTIMER.new_activity]: Assigning new activity {name} to timer {self.pk}"
+        )
+
+        self.activity = Activity.objects.create(name=name, profile=self.profile)
+
+        if self.status == "empty":
+            self.set_waiting()
+        self.save(update_fields=["activity"])
+        logger.debug(
+            f"ActivityTimer after save: {self.pk}, activity: {self.activity}, status: {self.status}"
+        )
+        return self
 
     def pause(self):
         """
@@ -635,6 +687,7 @@ class ActivityTimer(Timer):
         """
         Update the total duration of the associated activity.
         """
+
         if self.activity:
             self.activity.new_time(self.elapsed_time)
         else:
@@ -650,10 +703,40 @@ class ActivityTimer(Timer):
         :return: The XP reward for the activity.
         :rtype: int
         """
+
+        if not self.activity:
+            logger.warning(
+                f"[COMPLETE] Timer {self.id} has no activity assigned — skipping activity.complete()"
+            )
+            return 0
+
+        if self.status == "completed":
+            logger.warning(
+                f"[COMPLETE CALLED AGAIN] Timer {self.id} already completed — elapsed_time: {self.elapsed_time}"
+            )
+
         super().complete()
-        xp = self.calculate_xp()
-        self.reset()
-        return xp
+        self.update_activity_time()
+
+        xp_gained = self.calculate_xp()
+        self.profile.add_activity(self.elapsed_time, xp=xp_gained)
+
+        message_text = f"Activity submitted. You got {xp_gained} XP!"
+        ServerMessage.objects.create(
+            group=self.profile.group_name,
+            type="notification",
+            action="notification",
+            data={},
+            message=message_text,
+            is_draft=False,
+        )
+
+        self.activity.complete()
+        logger.debug(
+            f"[TIMER COMPLETE] Timer {self.id} completed — elapsed_time: {self.elapsed_time}, completed_at: {self.activity.completed_at}"
+        )
+
+        return self
 
     def _reset_hook(self):
         self.activity = None
@@ -701,12 +784,7 @@ class QuestTimer(Timer):
     duration = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"QuestTimer for {self.character.name}"
-
-    # def save(self, *args, **kwargs):
-    #     #print(f"QuestTimer saved. {self}")
-    #     #traceback.print_stack()
-    #     super().save(*args, **kwargs)
+        return f"QuestTimer {self.id} for {self.character.name}"
 
     def change_quest(self, quest: Quest, duration: int):
         """
@@ -731,8 +809,57 @@ class QuestTimer(Timer):
         :rtype: int
         """
         # logger.debug(f"[QUESTTIMER.COMPLETE] {self}")
-        super().complete()
-        return self.calculate_xp()
+        self.refresh_from_db()
+
+        if not self.quest:
+            logger.error("No quest found on timer %s", self.id)
+            raise RuntimeError("Cannot complete: quest is None.")
+
+        character = self.character
+        if not self.character:
+            logger.error("No character found on timer %s", self.id)
+            raise RuntimeError("Cannot complete: character is None.")
+
+        try:
+            from character.models import PlayerCharacterLink
+
+            profile = PlayerCharacterLink.get_profile(character)
+
+            self.refresh_from_db()
+            character.refresh_from_db()
+
+            super().complete()
+
+            xp_gained = self.calculate_xp()
+            logger.debug(f"Quest timer, xp_gained: {xp_gained}")
+            rewards_summary = character.complete_quest(xp_gained)
+
+            completion_data = {
+                "xp_gained": xp_gained,
+                "rewards_summary": rewards_summary,
+            }
+
+            message_text = f"Quest completed. Character got {xp_gained} XP!"
+            ServerMessage.objects.create(
+                group=profile.group_name,
+                type="notification",
+                action="notification",
+                data={"completion_data": completion_data},
+                message=message_text,
+                is_draft=False,
+            )
+            return self, character
+
+        except Exception as e:
+            import traceback
+
+            logger.error(
+                f"[CHAR.COMPLETE_QUEST] Error updating XP or quest count for character {self.id}: {e}"
+            )
+            logger.error(
+                traceback.format_exc()
+            )  # logs full stack trace of original error
+            raise  # RuntimeError("Quest completion failed.") from e
 
     def reset(self):
         """
@@ -768,7 +895,6 @@ class QuestTimer(Timer):
         :rtype: int
         """
         if self.status == "active":
-            # elapsed = self.get_elapsed_time()
             remaining = self.duration - self.get_elapsed_time()
         else:
             remaining = self.duration - self.elapsed_time
@@ -880,7 +1006,7 @@ class ServerMessage(models.Model):
         :param days: The age threshold (in days) for deleting old messages.
         :type days: int
         """
-        cutoff_date = now() - timedelta(days=days)
+        cutoff_date = timezone.now() - timezone.timedelta(days=days)
         cls.objects.filter(created_at__lt=cutoff_date).delete()
 
 
@@ -907,12 +1033,14 @@ class AppliedBuff(Buff):
 
     def save(self, *args, **kwargs):
         if not self.ends_at:
-            self.ends_at = now() + timedelta(seconds=self.duration)
+            self.ends_at = timezone.now() + timezone.timedelta(seconds=self.duration)
         super().save(*args, **kwargs)
 
     def is_active(self):
         """Check if buff is still active."""
-        return now() < self.applied_at + timedelta(seconds=self.duration)
+        return timezone.now() < self.applied_at + timezone.timedelta(
+            seconds=self.duration
+        )
 
     def calc_value(self, total_value):
         if self.is_active():

@@ -8,6 +8,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from .base import *
 
+
+FRONTEND_URL = os.environ.get("FRONTEND_URL")
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -84,9 +87,7 @@ if os.environ.get("PGBOUNCER") == "1":
 
 DB_URL = os.environ.get("DATABASE_URL")
 
-DATABASES = {
-    'default': dj_database_url.parse(DB_URL, conn_max_age=60)
-}
+DATABASES = {"default": dj_database_url.parse(DB_URL, conn_max_age=60)}
 
 
 REDIS_URL = os.environ.get("REDIS_URL")
@@ -161,5 +162,4 @@ SECURE_HSTS_PRELOAD = True
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
-SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
-
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"

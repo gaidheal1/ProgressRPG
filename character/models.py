@@ -217,7 +217,7 @@ class Character(Person, LifeCycleMixin):
         return QuestCompletion.objects.filter(character=self, quest=quest)
 
     @transaction.atomic
-    def complete_quest(self):
+    def complete_quest(self, xp_gained):
         logger.info(f"[CHAR.COMPLETE_QUEST] Starting quest completion for {self}")
 
         quest = self.quest_timer.quest
@@ -228,17 +228,14 @@ class Character(Person, LifeCycleMixin):
             return None
 
         try:
-            with transaction.atomic():
-                completion, created = QuestCompletion.objects.get_or_create(
-                    character=self,
-                    quest=quest,
-                )
-                if not created:
-                    completion.times_completed += 1
+            completion, created = QuestCompletion.objects.get_or_create(
+                character=self,
+                quest=quest,
+            )
+            if not created:
+                completion.times_completed += 1
                 completion.save()
-                logger.debug(
-                    f"[CHAR.COMPLETE_QUEST] Quest completion updated: {completion} (Created: {created})"
-                )
+
         except IntegrityError as e:
             logger.error(
                 f"[CHAR.COMPLETE_QUEST] IntegrityError: failed to create or retrieve quest completion for character {self.id}, quest {quest.id}: {e}"
@@ -250,43 +247,30 @@ class Character(Person, LifeCycleMixin):
             )
             return None
 
-        rewards = None
+        rewards_summary = None
         try:
-            if hasattr(quest, "results"):
-                results = quest.results
-                results.apply(self)
-                rewards = QuestResultSerializer(results).data
+            if hasattr(quest, "results") and quest.results is not None:
+                quest.results.apply(self)
+                rewards_summary = QuestResultSerializer(quest.results).data
+
         except Exception as e:
             logger.exception(
                 f"[CHAR.COMPLETE_QUEST] Error applying rewards for quest {quest.id}: {e}"
             )
 
-        logger.debug(f"[CHAR.COMPLETE_QUEST] Rewards applied: {rewards}")
         try:
-            xp_reward = self.quest_timer.complete()
-            self.add_xp(xp_reward)
+            self.add_xp(xp_gained)
             self.total_quests += 1
             self.save()
-            logger.debug(
-                f"[CHAR.COMPLETE_QUEST] XP awarded: {xp_reward}, Total quests completed: {self.total_quests}"
-            )
+
         except Exception as e:
             logger.exception(
                 f"[CHAR.COMPLETE_QUEST] Error updating XP or quest count for character {self.id}: {e}"
             )
             return None
 
-        completion_data = {
-            "quest_id": quest.id,
-            "xp_reward": xp_reward,
-            "total_quests": self.total_quests,
-            "rewards": rewards,
-        }
-
-        logger.info(
-            f"[CHAR.COMPLETE_QUEST] Quest completion successful: {completion_data}"
-        )
-        return completion_data
+        logger.info(f"[CHAR.COMPLETE_QUEST] Quest completion successful")
+        return rewards_summary
 
 
 class PlayerCharacterLink(models.Model):
@@ -302,12 +286,16 @@ class PlayerCharacterLink(models.Model):
 
     @classmethod
     def get_character(cls, profile: Profile) -> Character:
-        link = PlayerCharacterLink.objects.filter(
-            profile=profile, is_active=True
-        ).first()
-        if link is None:
-            raise ValueError("Character not found for this profile.")
-        return link.character
+        links = PlayerCharacterLink.objects.filter(profile=profile, is_active=True)
+        if not links.exists():
+            raise ValueError("No active Character found for this profile.")
+
+        if links.count() > 1:
+            logger.warning(
+                f"[PROFILE] Multiple active characters found for profile {profile.id} — returning the first one"
+            )
+
+        return links.first().character
 
     @classmethod
     def get_profile(cls, character):
@@ -321,6 +309,23 @@ class PlayerCharacterLink(models.Model):
         self.date_unlinked = now().date()
         self.is_active = False
         self.save()
+
+    @classmethod
+    def deactivate_active_links(cls, profile: Profile):
+        for link in cls.objects.filter(profile=profile, is_active=True):
+            link.unlink()
+
+    @classmethod
+    def assign_character(cls, profile: Profile, character: Character):
+        cls.deactivate_active_links(profile)
+        link = cls.objects.create(
+            profile=profile,
+            character=character,
+            is_active=True,
+        )
+        character.is_npc = False
+        character.save(update_fields=["is_npc"])
+        return link
 
 
 class CharacterRole(models.Model):

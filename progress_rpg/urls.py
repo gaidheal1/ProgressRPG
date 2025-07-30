@@ -17,7 +17,6 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path("admin/", admin.site.urls),
     # path('admin/timers/', custom_admin_site.urls),
-    # path('accounts/confirm-email/<str:key>/', confirm_email_and_redirect, name='account_confirm_email'),
     path("accounts/", include("allauth.urls")),
     path("api/v1/", include("api.urls")),
     path("", include("users.urls")),

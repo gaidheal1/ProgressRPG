@@ -110,6 +110,7 @@ class CustomUser(AbstractUser):
     objects = CustomUserManager()
     pending_delete = models.BooleanField(default=False)
     delete_at = models.DateTimeField(null=True, blank=True)
+    is_confirmed = models.BooleanField(default=False)
 
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"
@@ -220,10 +221,12 @@ class Profile(Person):
     total_activities = models.IntegerField(default=0)
     is_premium = models.BooleanField(default=False)
     is_online = models.BooleanField(default=False)
-    last_login = models.DateTimeField(default=timezone.now)
+    last_login = models.DateTimeField(default=timezone.now, null=True, blank=True)
     login_streak = models.PositiveIntegerField(default=1)
     login_streak_max = models.PositiveIntegerField(default=1)
     total_logins = models.PositiveIntegerField(default=0)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
     buffs = models.ManyToManyField(
         "gameplay.AppliedBuff", related_name="profiles", blank=True
     )
@@ -275,7 +278,7 @@ class Profile(Person):
     def __str__(self):
         return self.name if self.name else "Unnamed profile"
 
-    def add_activity(self, time: int, num: int = 1):
+    def add_activity(self, time: int = 0, num: int = 1, xp: int = 0):
         """
         Update the total time and number of activities for this profile.
 
@@ -286,6 +289,8 @@ class Profile(Person):
         """
         self.total_time += time
         self.total_activities += num
+        if xp:
+            self.add_xp(xp)
         self.save()
 
     def change_character(self, new_character: "Character"):

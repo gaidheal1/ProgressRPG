@@ -1,4 +1,7 @@
-{% load static %}
+{% load django_vite %}
+{% vite_hmr_client %}
+{% vite_asset 'src/main.jsx' %}
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,8 +10,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}Progress RPG{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+
+
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
@@ -50,12 +53,9 @@
             </div>
 
             <div class="icons">
-                <a href=""><img class="icon open-drawer-btn" src="{% static 'images/menu-icon.png' %}"
-                        alt="Menu Icon"></a>
-                <a href="{% url 'game' %}"><img class="icon" src="{% static 'images/home-icon.png' %}"
-                        alt="Home Icon"></a>
-                <a href="{% url 'profile' %}"><img class="icon" src="{% static 'images/account-icon.png' %}"
-                        alt="Account Icon"></a>
+                <a href="">Menu Icon"></a>
+                <a href="{% url 'game' %}">Home Icon</a>
+                <a href="{% url 'profile' %}">Account Icon</a>
             </div>
 
         </nav>
@@ -94,8 +94,8 @@
         <p>&copy; 2025 Progress RPG</p>
     </footer>
 
-    <script src="{% static 'js/base.js' %}"></script>
-    <!--<script type="module" src="/src/main.jsx"></script> -->
+
+
 </body>
 
 </html>

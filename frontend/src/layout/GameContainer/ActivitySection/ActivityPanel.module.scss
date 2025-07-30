@@ -1,0 +1,25 @@
+/* ActivityPanel.module.scss */
+@use '../../../styles/base/variables' as v;
+@use '../../../styles/semantic/typography' as t;
+
+
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+
+}
+
+.activityTotals {
+  display: flex;
+  margin-bottom: v.$spacing-sm;
+  gap: v.$spacing-gap;
+
+  @include t.apply-text-style(t.$text-body);
+
+  span {
+    &:first-child {
+      @include t.apply-text-style(t.$text-body);
+    }
+  }
+}

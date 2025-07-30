@@ -1,6 +1,6 @@
 # api/views.py
 from asgiref.sync import async_to_sync
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth import login, logout, get_user_model
 from django.core.mail import send_mail
@@ -11,11 +11,13 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import escape
 from django.views.decorators.csrf import csrf_exempt
+from django_filters.rest_framework import DjangoFilterBackend
 from django_ratelimit.decorators import ratelimit
+from urllib.parse import quote, unquote
 
 from allauth.account import app_settings as allauth_settings
-from allauth.account.models import EmailConfirmationHMAC
-from allauth.account.utils import complete_signup
+from allauth.account.models import EmailConfirmation, EmailAddress
+from allauth.account.utils import complete_signup, send_email_confirmation
 from dj_rest_auth.registration.views import RegisterView
 
 from rest_framework import viewsets, permissions, serializers, status, mixins
@@ -26,16 +28,18 @@ from rest_framework.decorators import (
     authentication_classes,
 )
 from rest_framework.exceptions import ValidationError
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 # from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.serializers import (
+    UserSerializer,
     ProfileSerializer,
     CharacterSerializer,
     ActivitySerializer,
@@ -45,28 +49,50 @@ from api.serializers import (
     Step1Serializer,
     # Step2Serializer,
     # Step3Serializer,
+    CustomRegisterSerializer,
     CustomTokenObtainPairSerializer,
+    CustomTokenRefreshSerializer,
 )
 
 from character.models import Character, PlayerCharacterLink
+from gameplay.filters import ActivityFilter
 from gameplay.models import Activity, Quest, ActivityTimer, QuestTimer, ServerMessage
 from gameplay.utils import check_quest_eligibility, send_group_message
+from server_management.models import MaintenanceWindow
 from users.models import Profile
+from users.utils import send_email_to_users
 
-import logging
+import logging, time
 
 logger = logging.getLogger("django")
 
 
 class IsOwnerProfile(permissions.BasePermission):
+    owner_attr = "profile"
+
     def has_object_permission(self, request, view, obj):
         profile = getattr(request.user, "profile", None)
+        if profile is None:
+            return False
 
+        # Check if object has 'profile' attribute and compare
         if hasattr(obj, "profile"):
             return obj.profile == profile
 
+        return False
+
+
+class IsOwnerCharacter(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        profile = getattr(request.user, "profile", None)
+        if profile is None:
+            return False
+
+        # Check if the object's character is linked to the profile and active
         if hasattr(obj, "character"):
-            return PlayerCharacterLink.get_profile(obj.character)
+            return PlayerCharacterLink.objects.filter(
+                profile=profile, character=obj.character, is_active=True
+            ).exists()
 
         return False
 
@@ -74,70 +100,149 @@ class IsOwnerProfile(permissions.BasePermission):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+    @csrf_exempt
+    @api_view(["POST"])
+    def test_post_view(request):
+        permission_classes = [IsAuthenticated]
+        return Response(
+            {"status": "ok", "message": f"Hello {request.user.email}! POST successful!"}
+        )
 
-@csrf_exempt
-@api_view(["POST"])
-def test_post_view(request):
-    permission_classes = [IsAuthenticated]
-    return Response(
-        {"status": "ok", "message": f"Hello {request.user.email}! POST successful!"}
-    )
+
+class CustomTokenRefreshView(TokenRefreshView):
+    serializer_class = CustomTokenRefreshSerializer
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def me_view(request):
-    profile = request.user.profile
-    serializer = ProfileSerializer(profile)
-    return Response(serializer.data)
+    user = request.user
+    serializer = UserSerializer(user)
+    return Response({"success": True, "user": serializer.data})
+
+
+@api_view(["GET"])
+def maintenance_status(request):
+    # Returns whether any maintenance window is currently active
+    window = MaintenanceWindow.objects.filter(is_active=True).first()
+    if window:
+        data = {
+            "maintenance_active": True,
+            "name": window.name,
+            "start_time": window.start_time.isoformat(),
+            "end_time": window.end_time.isoformat(),
+            "description": window.description,
+        }
+    else:
+        data = {"maintenance_active": False}
+    return Response(data)
 
 
 class CustomRegisterView(RegisterView):
+    serializer_class = CustomRegisterSerializer
+
     def perform_create(self, serializer):
         user = serializer.save(self.request)
 
         backend_path = settings.AUTHENTICATION_BACKENDS[0]
         user.backend = backend_path
 
-        # Complete signup (this triggers login)
-        complete_signup(self.request, user, allauth_settings.EMAIL_VERIFICATION, None)
+        email_address, created = EmailAddress.objects.get_or_create(
+            user=user,
+            email=user.email,
+            defaults={"verified": False, "primary": True},
+        )
+
+        email_address.save()
+
+        logger.debug(f"[REGISTER] EmailAddress: {email_address} (created={created})")
+
+        confirmation = EmailConfirmation.create(email_address)
+        confirmation.sent = timezone.now()
+        confirmation.save()
+
+        quoted_key = quote(confirmation.key)
+        activate_url = f"{settings.FRONTEND_URL}/#/confirm_email/{quoted_key}"
+
+        context = {
+            "user": user,
+            "activate_url": activate_url,
+        }
+
+        send_email_to_users(
+            users=[user],
+            subject="Confirm your Progress RPG email",
+            template_base="emails/email_confirmation_message",
+            context=context,
+            cc_admin=False,
+        )
+
+        """
+        if confirmation:
+
+            logger.debug(f"[REGISTER] Sent confirmation to: {user.email}")
+            logger.debug(f"[REGISTER] EmailConfirmation key: {confirmation.key}")
+            logger.debug(f"[REGISTER] Quoted key: {quoted_key}")
+            logger.debug(f"[REGISTER] Confirmation URL: {activate_url}")
+        else:
+            logger.warning(f"[REGISTER] No EmailConfirmation found for {user.email}")
+        """
         return user
 
     def get_response_data(self, user):
-        # Override to avoid Token and return JWT tokens instead
-
-        refresh = RefreshToken.for_user(user)
         return {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
+            "needs_confirmation": True,
+            "detail": "Registration successful. Please confirm your email to activate your account.",
         }
 
 
-def confirm_email_and_redirect(request, key):
-    try:
-        confirmation = EmailConfirmationHMAC.from_key(key)
-        if not confirmation:
+class ConfirmEmailView(APIView):
+    permission_classes = []  # No auth required for email confirmation
+
+    def get(self, request, key):
+        key = unquote(key)
+
+        try:
+            confirmation = EmailConfirmation.objects.get(key=key)
+            email_address = confirmation.email_address
+
+            if email_address.verified:
+                return Response(
+                    {
+                        "message": "Email already confirmed",
+                        "code": "already_confirmed",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            confirmation.confirm(request)
+
+            user = email_address.user
+
+            """
+            # Optional: set custom user field if you're tracking confirmation manually
+            if hasattr(user, 'is_confirmed'):
+                user.is_confirmed = True
+                user.save() """
+
+            # Create JWT tokens
+            refresh = RefreshToken.for_user(user)
+            access = str(refresh.access_token)
+
+            return Response(
+                {
+                    "message": "Email confirmed",
+                    "access": access,
+                    "refresh": str(refresh),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except EmailConfirmation.DoesNotExist:
+            logger.info(f"Confirmation object not found for key: {key}")
             raise Http404("Invalid or expired confirmation key")
-
-        # Confirm the email
-        confirmation.confirm(request)
-        user = confirmation.email_address.user
-
-        # Create JWT tokens
-        refresh = RefreshToken.for_user(user)
-        access = str(refresh.access_token)
-
-        return Response(
-            {
-                "message": "Email confirmed",
-                "access": access,
-                "refresh": str(refresh),
-            },
-            status=status.HTTP_200_OK,
-        )
-
-    except Exception:
-        raise Http404("Invalid confirmation link")
+        except Exception as e:
+            logger.warning(f"Unexpected error: {str(e)}")
+            raise Http404("Something went wrong")
 
 
 class ProfileViewSet(
@@ -213,9 +318,6 @@ class FetchInfoAPIView(APIView):
 
         logger.info(
             f"[FETCH INFO] Fetching data for profile {profile.id}, character {character.id}"
-        )
-        logger.debug(
-            f"[FETCH INFO] Timers status: {profile.activity_timer.status}/{character.quest_timer.status}"
         )
 
         qt = character.quest_timer
@@ -307,6 +409,8 @@ class CharacterViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ActivityViewSet(viewsets.ModelViewSet):
     serializer_class = ActivitySerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ActivityFilter
     permission_classes = [IsAuthenticated, IsOwnerProfile]
 
     def perform_create(self, serializer):
@@ -315,15 +419,6 @@ class ActivityViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         profile = self.request.user.profile
         queryset = Activity.objects.filter(profile=profile)
-
-        # Check if a 'date' query param is provided, e.g. ?date=2025-06-25
-        date_str = self.request.query_params.get("date")
-        if date_str:
-            try:
-                date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-                queryset = queryset.filter(created_at__date=date_obj)
-            except ValueError:
-                pass  # Invalid date format, just ignore filtering by date
 
         return queryset.order_by("-created_at")
 
@@ -383,7 +478,6 @@ class ActivityViewSet(viewsets.ModelViewSet):
                 {"error": "Activity not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
-        # Get updated name from request body
         activity_name = request.data.get("name")
         if not activity_name:
             return Response(
@@ -391,13 +485,8 @@ class ActivityViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        activity.update_name(activity_name)  # Assuming you have this method
-
         try:
-            profile.add_activity(profile.activity_timer.elapsed_time)
-            xp_reward = profile.activity_timer.complete()
-            profile.activity_timer.refresh_from_db()
-            profile.add_xp(xp_reward)
+            activity.update_name(activity_name)
         except Exception as e:
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -405,25 +494,15 @@ class ActivityViewSet(viewsets.ModelViewSet):
 
         # Return latest activities (today’s or recent 5)
         activities = Activity.objects.filter(
-            profile=profile, created_at__date=timezone.now().date()
-        ).order_by("-created_at")
+            profile=profile, completed_at__date=timezone.now().date()
+        ).order_by("-completed_at")
         if not activities.exists():
             activities = Activity.objects.filter(profile=profile).order_by(
-                "-created_at"
+                "-completed_at"
             )[:5]
 
         activities_list = ActivitySerializer(activities, many=True).data
         profile_data = ProfileSerializer(profile).data
-
-        message_text = f"Activity submitted. You got {xp_reward} XP!"
-        ServerMessage.objects.create(
-            group=profile.group_name,
-            type="notification",
-            action="notification",
-            data={},
-            message=message_text,
-            is_draft=False,
-        )
 
         return Response(
             {
@@ -431,7 +510,6 @@ class ActivityViewSet(viewsets.ModelViewSet):
                 "message": "Activity submitted",
                 "profile": profile_data,
                 "activities": activities_list,
-                "activity_rewards": xp_reward,
             }
         )
 
@@ -446,7 +524,7 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
     def list(self, request):
         quests = self.get_queryset()
         serializer = QuestSerializer(quests, many=True, context={"request": request})
-        return Response(serializer.data)
+        return Response({"quests": serializer.data})
 
     @action(detail=False, methods=["get"])
     def eligible(self, request):
@@ -460,44 +538,7 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = QuestSerializer(
             eligible_quests, many=True, context={"request": request}
         )
-        return Response(serializer.data)
-
-    @action(detail=False, methods=["post"])
-    def choose(self, request):
-        profile = request.user.profile
-        quest_id = request.data.get("quest_id")
-        if not quest_id:
-            return Response(
-                {"error": "quest_id is required"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        quest = get_object_or_404(Quest, id=quest_id)
-
-        try:
-            character = PlayerCharacterLink.get_character(profile)
-        except ValueError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        duration = request.data.get("duration")
-        try:
-            character.quest_timer.change_quest(quest, duration)
-            character.quest_timer.refresh_from_db()
-        except Exception as e:
-            return Response(
-                {"error": "Failed to change quest: " + str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-        quest_timer_data = QuestTimerSerializer(
-            character.quest_timer, context={"request": request}
-        ).data
-        return Response(
-            {
-                "success": True,
-                "quest_timer": quest_timer_data,
-                "message": f"Quest {quest.name} selected",
-            }
-        )
+        return Response({"eligible_quests": serializer.data})
 
     @action(detail=False, methods=["post"])
     def complete(self, request):
@@ -511,11 +552,8 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
             profile.activity_timer.refresh_from_db()
             character.quest_timer.refresh_from_db()
             completion_data = character.complete_quest()
-            if completion_data is None:
-                return Response(
-                    {"error": "Quest completion failed."},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
+            if not completion_data:
+                raise ValidationError("Quest completion failed - data was None.")
         except Exception as e:
             return Response(
                 {"error": "Failed to complete quest: " + str(e)},
@@ -534,7 +572,6 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
             {
                 "success": True,
                 "message": "Quest completed",
-                "xp_reward": 5,
                 "quests": quests_data,
                 "character": character_data,
                 "activity_timer_status": profile.activity_timer.status,
@@ -544,70 +581,185 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
 
-class ActivityTimerViewSet(viewsets.ReadOnlyModelViewSet):
+class BaseTimerViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Abstract base class for timer viewsets. Assumes each timer
+    is linked to a profile, and enforces IsAuthenticated + IsOwnerProfile.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Default queryset logic (override if needed)
+        return self.queryset.filter(profile=self.request.user.profile)
+
+    def handle_related_object(self, related_model, related_id, related_name="object"):
+        """
+        Generic helper to fetch a related model instance and return a DRF Response on failure.
+        """
+        try:
+            return related_model.objects.get(id=related_id), None
+        except related_model.DoesNotExist:
+            return None, Response(
+                {"error": f"{related_name.capitalize()} not found."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def control_timer(self, request, pk, command):
+        timer = self.get_object()
+
+        # Map commands to timer methods
+        commands_map = {
+            "start": timer.start,
+            "pause": timer.pause,
+            "reset": timer.reset,
+        }
+
+        if command not in commands_map:
+            return Response({"error": "Invalid timer command"}, status=400)
+
+        try:
+            commands_map[command]()
+            timer.refresh_from_db()
+            serializer = self.get_serializer(timer)
+            return Response({"success": True, "timer": serializer.data})
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+
+    @action(detail=True, methods=["post"])
+    def start(self, request, pk=None):
+        return self.control_timer(request, pk, "start")
+
+    @action(detail=True, methods=["post"])
+    def pause(self, request, pk=None):
+        return self.control_timer(request, pk, "pause")
+
+    @action(detail=True, methods=["post"])
+    def reset(self, request, pk=None):
+        return self.control_timer(request, pk, "reset")
+
+
+class ActivityTimerViewSet(BaseTimerViewSet):
     serializer_class = ActivityTimerSerializer
+    queryset = ActivityTimer.objects.all()
     permission_classes = [IsAuthenticated, IsOwnerProfile]
 
     def get_queryset(self):
-        return ActivityTimer.objects.filter(profile=self.request.user.profile)
+        timer = ActivityTimer.objects.filter(profile=self.request.user.profile)
+        # logger.debug(f"activitytimer viewset, timer: {timer}")
+        return timer
 
     @action(detail=True, methods=["post"])
     def set_activity(self, request, pk=None):
         timer = self.get_object()
-        activity_id = request.data.get("activity_id")
+        name = request.data.get("activityName")
 
+        if not name:
+            return Response({"error": "Missing activity name"}, status=400)
+
+        act_timer_updated = timer.new_activity(name)
+
+        logger.debug(f"activitytimer set_activity, timer: {act_timer_updated.activity}")
+        act_timer_updated.refresh_from_db()
+        serializer = self.get_serializer(act_timer_updated)
+        return Response({"success": True, "activity_timer": serializer.data})
+
+    @action(detail=True, methods=["post"])
+    def complete(self, request, pk=None):
+        timer = self.get_object()
         try:
-            activity = Activity.objects.get(id=activity_id)
-        except Activity.DoesNotExist:
-            return Response(
-                {"error": "Activity not found."}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Optional: validate activity belongs to user, if needed
-
-        timer.new_activity(activity)
-        serializer = self.get_serializer(timer)
-        return Response(serializer.data)
+            timer.complete()
+            serializer = self.get_serializer(timer)
+            return Response({"success": True, "timer": serializer.data})
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
 
 
-class QuestTimerViewSet(viewsets.ReadOnlyModelViewSet):
+class QuestTimerViewSet(BaseTimerViewSet):
     serializer_class = QuestTimerSerializer
-    permission_classes = [IsAuthenticated, IsOwnerProfile]
+    queryset = QuestTimer.objects.all()
+    permission_classes = [IsAuthenticated, IsOwnerCharacter]
 
     def get_queryset(self):
         profile = self.request.user.profile
-
-        # Get all active linked characters for this profile
         active_character_ids = PlayerCharacterLink.objects.filter(
             profile=profile, is_active=True
         ).values_list("character_id", flat=True)
 
-        # Filter quest timers by characters linked to this profile
         return QuestTimer.objects.filter(character_id__in=active_character_ids)
 
     @action(detail=True, methods=["post"])
     def change_quest(self, request, pk=None):
         timer = self.get_object()
+
+        # Confirm timer belongs to request.user.profile's character
+        try:
+            character = PlayerCharacterLink.get_character(request.user.profile)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if timer.character != character:
+            return Response(
+                {"error": "You do not have permission to modify this quest timer."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         quest_id = request.data.get("quest_id")
         duration = request.data.get("duration")
 
-        try:
-            quest = Quest.objects.get(id=quest_id)
-        except Quest.DoesNotExist:
-            return Response(
-                {"error": "Quest not found."}, status=status.HTTP_400_BAD_REQUEST
-            )
+        quest, error_response = self.handle_related_object(Quest, quest_id, "quest")
+        if error_response:
+            return error_response
 
-        # Optional: validate quest belongs to character, if necessary
         if not isinstance(duration, int):
+            try:
+                duration = int(duration)
+            except (ValueError, TypeError):
+                return Response(
+                    {"error": "Duration must be an integer."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        try:
+            timer.change_quest(quest, duration)
+            timer.refresh_from_db()
+        except Exception as e:
             return Response(
-                {"error": "Duration must be an integer."},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"error": "Failed to change quest: " + str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        serializer = self.get_serializer(timer)
+        return Response({"success": True, "quest_timer": serializer.data})
+
+    @action(detail=True, methods=["post"])
+    def complete(self, request, pk=None):
+        timer = self.get_object()
+        # logger.debug(f"You have arrived in the arrivals lounge.")
+        if not timer.quest:
+            return Response({"error": "No quest assigned to this timer."}, status=400)
+        quest_id = timer.quest.id
+
+        quest, error_response = self.handle_related_object(Quest, quest_id, "quest")
+        if error_response:
+            return error_response
+
+        try:
+            qt_updated, character_updated = timer.complete()
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to complete quest: {str(e)}"}, status=500
             )
 
-        timer.change_quest(quest, duration)
-        serializer = self.get_serializer(timer)
-        return Response(serializer.data)
+        qt_serialized = self.get_serializer(qt_updated)
+        character_serialized = CharacterSerializer(character_updated)
+        response = {
+            "success": True,
+            "quest_timer": qt_serialized.data,
+            "character": character_serialized.data,
+        }
+
+        logger.debug(f"Questtimer complete, response: {response}")
+        return Response(response)
 
 
 class DownloadUserDataAPIView(APIView):

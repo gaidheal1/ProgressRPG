@@ -1,0 +1,62 @@
+@use '../../two-columns' as tc;
+@use '../../../styles/base/variables' as v;
+@use '../../../styles/semantic/typography' as t;
+
+.infoBox {
+	@include tc.section-box;
+}
+
+.columns {
+	display: flex;
+	flex-direction: row;
+	gap: v.$spacing-gap;
+	justify-content: space-between;
+	align-items: center;
+	align-self: stretch;
+
+}
+
+.column {
+	display: flex;
+	flex-direction: column;
+	align-self: auto;
+	gap: 0;
+	flex: 1 1 45%;
+}
+
+.row {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+	align-items: baseline;
+	align-self: auto;
+	gap: v.$spacing-gap;
+}
+
+.title {
+	@include t.apply-text-style(t.$text-heading-2);
+}
+
+.label {
+	@include t.apply-text-style(t.$text-body);
+}
+
+.value {
+	@include t.apply-text-style(t.$text-body);
+}
+
+.nameLabel,
+.nameValue {
+	@include t.apply-text-style(t.$text-body);
+}
+
+.levelLabel,
+.levelValue {
+	@include t.apply-text-style(t.$text-body);
+}
+
+
+.xpLabel,
+.xpValue {
+	@include t.apply-text-style(t.$text-body);
+}

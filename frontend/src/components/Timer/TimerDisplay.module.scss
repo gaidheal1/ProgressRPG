@@ -1,0 +1,44 @@
+@use '../../styles/base/variables' as v;
+@use '../../styles/utilities/mixins' as m;
+@use '../../styles/semantic/typography' as t;
+@use '../../styles/tokens/typography' as tt;
+@use '../../styles/semantic/colors' as c;
+@use 'sass:map';
+
+.timer {
+	display: flex;
+	flex-direction: column;
+}
+
+.timerFrame {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: v.$spacing-gap;
+	border-radius: v.$border-radius;
+}
+
+.timerStatus {
+  //margin-right: v.$spacing-sm;
+  @include t.apply-text-style(t.$text-heading-2);
+}
+
+
+.timerText {
+	display: flex;
+	align-items: center;
+	text-align: center;
+	justify-content: center;
+	padding: v.$padding-base;
+	gap: v.$spacing-gap;
+
+	min-width: max-content;
+	width: v.$spacing-3xl;
+	border: 1px solid c.$color-border-primary;
+	border-radius: v.$border-radius;
+
+	@include t.apply-text-style(t.$text-body);
+	& {
+		font-weight: map.get(tt.$font-weight, bold);
+	}
+}

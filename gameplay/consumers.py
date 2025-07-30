@@ -18,6 +18,7 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         from django.contrib.auth.models import AnonymousUser
 
+        print("scope:", self.scope)
         user = self.scope.get("user", AnonymousUser())
         if user and user.is_authenticated:
             logger.info(f"[CONNECT] Authenticated user {user.id}. Connecting...")

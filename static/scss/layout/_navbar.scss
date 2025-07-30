@@ -79,7 +79,7 @@ header {
             justify-content: flex-end;
         }
 
-        @include respond-to(small) {
+        @include respond-to(sm) {
             .icons {
                 display: flex;
             }
@@ -90,7 +90,7 @@ header {
             }
         }
 
-        @include respond-to(big) {
+        @include respond-to(lg) {
 
             .right-links,
             .left-links {

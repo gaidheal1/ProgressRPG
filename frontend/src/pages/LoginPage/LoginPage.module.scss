@@ -1,0 +1,33 @@
+@use '../../styles/base/variables' as v;
+@use '../../styles/semantic/typography' as t;
+
+.form {
+  gap: v.$spacing-gap;
+
+  input {
+    padding: v.$spacing-sm;
+    border-radius: v.$border-radius;
+    border: 1px solid #ccc;
+    @include t.apply-text-style(t.$text-body);
+  }
+}
+
+.error {
+  color: red;
+  margin-bottom: v.$spacing-sm;
+  text-align: center;
+  @include t.apply-text-style(t.$text-body);
+}
+
+.footer {
+  text-align: center;
+  @include t.apply-text-style(t.$text-caption);
+
+  a {
+    @include t.apply-text-style(t.$text-body);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

@@ -31,13 +31,18 @@ os.environ.setdefault(
     os.getenv("DJANGO_SETTINGS_MODULE", "progress_rpg.settings.dev"),
 )
 
+
+APP_VERSION = "0.6.0-alpha"
+
 TOKEN_MODEL = None
+
 # Application definition
 
 INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "rest_framework",
+    "django_filters",
     "dj_rest_auth",
     "rest_framework_simplejwt",
     "allauth",
@@ -54,7 +59,7 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "django_extensions",
     "channels",
-    #'django-vite',
+    "django_vite",
     "users",
     "gameplay",
     "character",
@@ -68,13 +73,6 @@ INSTALLED_APPS = [
 ]
 
 SITE_ID = 1
-
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = "optional"  # or 'mandatory' if you want email confirmation
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_REQUIRED = True
-
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -128,13 +126,16 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
 }
 
 REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "api.serializers.CustomRegisterSerializer",
 }
-
-ACCOUNT_ADAPTER = "allauth.account.adapter.DefaultAccountAdapter"
 
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
@@ -167,10 +168,18 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
+ACCOUNT_ADAPTER = "users.adapters.CustomAccountAdapter"
 AUTH_USER_MODEL = "users.CustomUser"
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_EMAIL_CONFIRMATION_HTML_TEMPLATE = (
+    "account/email/email_confirmation_message.html"
+)
+ACCOUNT_EMAIL_CONFIRMATION_TEMPLATE = "account/email/email_confirmation_message.txt"
 
 
 # Internationalization
@@ -184,12 +193,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [Path(BASE_DIR / 'static')]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+# STATICFILES_DIRS = [Path(BASE_DIR / 'static')]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

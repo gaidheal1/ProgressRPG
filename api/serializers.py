@@ -1,6 +1,6 @@
 from dj_rest_auth.registration.serializers import RegisterSerializer
+from django.contrib.sites.shortcuts import get_current_site
 from rest_framework import serializers
-
 
 from character.models import Character, PlayerCharacterLink
 from gameplay.models import (
@@ -14,11 +14,18 @@ from gameplay.models import (
 )
 from users.models import Profile, InviteCode
 
+from rest_framework_simplejwt.serializers import (
+    TokenObtainPairSerializer,
+    TokenRefreshSerializer,
+)
 
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
+import logging
+
+logger = logging.getLogger("django")
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -29,9 +36,31 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
-        # Allow login with email instead of username
         attrs["username"] = attrs.get("email")
-        return super().validate(attrs)
+        data = super().validate(attrs)
+
+        return {
+            "access_token": data["access"],
+            "refresh_token": data["refresh"],
+        }
+
+
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        return {
+            "access_token": data["access"],
+        }
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "email",
+            "is_staff",
+            "is_confirmed",
+        ]
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -109,6 +138,32 @@ class QuestResultSerializer(serializers.ModelSerializer):
         fields = ["dynamic_rewards", "xp_rate", "coin_reward"]
 
 
+class ActivitySerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
+    last_updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
+
+    class Meta:
+        model = Activity
+        fields = [
+            "id",
+            "name",
+            "duration",
+            "created_at",
+            "last_updated",
+            "completed_at",
+            "profile",
+            "skill",
+            "project",
+        ]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "last_updated",
+            "completed_at",
+            "profile",
+        ]
+
+
 class QuestSerializer(serializers.ModelSerializer):
     results = QuestResultSerializer(read_only=True)  # source='results',
 
@@ -129,41 +184,30 @@ class QuestSerializer(serializers.ModelSerializer):
         ]
 
 
-class ActivitySerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
-    last_updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
-
-    class Meta:
-        model = Activity
-        fields = [
-            "id",
-            "name",
-            "duration",
-            "created_at",
-            "last_updated",
-            "profile",
-            "skill",
-            "project",
-        ]
-        read_only_fields = ["id", "created_at", "last_updated", "profile"]
-
-
 class ActivityTimerSerializer(serializers.ModelSerializer):
     activity = ActivitySerializer(read_only=True)
+    # logger.debug(f"API Activity serializer: {activity}")
     elapsed_time = serializers.SerializerMethodField()
 
     class Meta:
         model = ActivityTimer
         fields = [
+            # Base timer fields
             "id",
             "status",
             "elapsed_time",
             "created_at",
-            "last_updated",  # Base timer fields
+            "last_updated",
+            # Activity timer specific fields
             "activity",
-            "profile",  # Activity timer specific fields
+            "profile",
         ]
-        read_only_fields = ["id", "created_at", "last_updated", "profile"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "last_updated",
+            "profile",
+        ]
 
     def get_elapsed_time(self, obj):
         return obj.get_elapsed_time()
@@ -177,15 +221,17 @@ class QuestTimerSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestTimer
         fields = [
+            # Base timer fields
             "id",
             "status",
             "elapsed_time",
             "created_at",
-            "last_updated",  # Base timer fields
+            "last_updated",
+            # Quest timer specific fields
             "quest",
             "duration",
             "remaining_time",
-            "character",  # Quest timer specific fields
+            "character",
         ]
         read_only_fields = [
             "id",
@@ -204,6 +250,20 @@ class QuestTimerSerializer(serializers.ModelSerializer):
 class CustomRegisterSerializer(RegisterSerializer):
     invite_code = serializers.CharField(write_only=True, required=True)
     agree_to_terms = serializers.BooleanField(write_only=True, required=True)
+    email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ("email", "password1", "password2", "invite_code", "agree_to_terms")
+
+    def get_email_context(self):
+        context = super().get_email_context()
+        request = self.context.get("request")
+        if request:
+            current_site = get_current_site(request)
+            context["domain"] = current_site.domain
+            context["protocol"] = "https" if request.is_secure() else "http"
+        return context
 
     def validate_invite_code(self, value):
         try:
@@ -219,13 +279,22 @@ class CustomRegisterSerializer(RegisterSerializer):
             )
         return value
 
-    def custom_signup(self, user):
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("A user with that email already exists.")
+        return value
+
+    def custom_signup(self, request, user):
         code = self.validated_data.get("invite_code")
         try:
             invite = InviteCode.objects.get(code=code, is_active=True)
-            invite.mark_used(user)
+            invite.use()
             user.profile.invited_by_code = code
             user.profile.save()
         except InviteCode.DoesNotExist:
             # Should not happen due to earlier validation, but fail safe
             pass
+
+    def save(self, request):
+        user = super().save(request)
+        return user
