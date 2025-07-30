@@ -31,7 +31,11 @@ os.environ.setdefault(
     os.getenv("DJANGO_SETTINGS_MODULE", "progress_rpg.settings.dev"),
 )
 
+
+APP_VERSION = "0.6.0-alpha"
+
 TOKEN_MODEL = None
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -69,13 +73,6 @@ INSTALLED_APPS = [
 ]
 
 SITE_ID = 1
-
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_REQUIRED = True
-
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -170,11 +167,15 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",  # fallback default
 ]
 
+
 ACCOUNT_ADAPTER = "users.adapters.CustomAccountAdapter"
 AUTH_USER_MODEL = "users.CustomUser"
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_EMAIL_CONFIRMATION_HTML_TEMPLATE = (
     "account/email/email_confirmation_message.html"
 )
