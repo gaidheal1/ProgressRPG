@@ -16,7 +16,7 @@ from django_ratelimit.decorators import ratelimit
 from urllib.parse import quote, unquote
 
 from allauth.account import app_settings as allauth_settings
-from allauth.account.models import EmailConfirmationHMAC, EmailConfirmation
+from allauth.account.models import EmailConfirmation, EmailAddress
 from allauth.account.utils import complete_signup, send_email_confirmation
 from dj_rest_auth.registration.views import RegisterView
 
@@ -58,9 +58,11 @@ from character.models import Character, PlayerCharacterLink
 from gameplay.filters import ActivityFilter
 from gameplay.models import Activity, Quest, ActivityTimer, QuestTimer, ServerMessage
 from gameplay.utils import check_quest_eligibility, send_group_message
+from server_management.models import MaintenanceWindow
 from users.models import Profile
+from users.utils import send_email_to_users
 
-import logging
+import logging, time
 
 logger = logging.getLogger("django")
 
@@ -119,6 +121,23 @@ def me_view(request):
     return Response({"success": True, "user": serializer.data})
 
 
+@api_view(["GET"])
+def maintenance_status(request):
+    # Returns whether any maintenance window is currently active
+    window = MaintenanceWindow.objects.filter(is_active=True).first()
+    if window:
+        data = {
+            "maintenance_active": True,
+            "name": window.name,
+            "start_time": window.start_time.isoformat(),
+            "end_time": window.end_time.isoformat(),
+            "description": window.description,
+        }
+    else:
+        data = {"maintenance_active": False}
+    return Response(data)
+
+
 class CustomRegisterView(RegisterView):
     serializer_class = CustomRegisterSerializer
 
@@ -128,19 +147,46 @@ class CustomRegisterView(RegisterView):
         backend_path = settings.AUTHENTICATION_BACKENDS[0]
         user.backend = backend_path
 
-        email_address = user.emailaddress_set.get(email=user.email)
-        confirmation = EmailConfirmationHMAC(email_address)
-        print("Expected key:", confirmation.key)
-        key = quote(confirmation.key)
+        email_address, created = EmailAddress.objects.get_or_create(
+            user=user,
+            email=user.email,
+            defaults={"verified": False, "primary": True},
+        )
 
-        signup_context = {
-            "activate_url": f"{settings.FRONTEND_URL}/#/confirm_email/{key}",
-            "redirect_url": "https://example.com/",
+        email_address.save()
+
+        logger.debug(f"[REGISTER] EmailAddress: {email_address} (created={created})")
+
+        confirmation = EmailConfirmation.create(email_address)
+        confirmation.sent = timezone.now()
+        confirmation.save()
+
+        quoted_key = quote(confirmation.key)
+        activate_url = f"{settings.FRONTEND_URL}/#/confirm_email/{quoted_key}"
+
+        context = {
+            "user": user,
+            "activate_url": activate_url,
         }
 
-        print("Sending confirmation link to:", signup_context["activate_url"])
-        send_email_confirmation(self.request, user, signup_context)
+        send_email_to_users(
+            users=[user],
+            subject="Confirm your Progress RPG email",
+            template_base="emails/email_confirmation_message",
+            context=context,
+            cc_admin=False,
+        )
 
+        """
+        if confirmation:
+
+            logger.debug(f"[REGISTER] Sent confirmation to: {user.email}")
+            logger.debug(f"[REGISTER] EmailConfirmation key: {confirmation.key}")
+            logger.debug(f"[REGISTER] Quoted key: {quoted_key}")
+            logger.debug(f"[REGISTER] Confirmation URL: {activate_url}")
+        else:
+            logger.warning(f"[REGISTER] No EmailConfirmation found for {user.email}")
+        """
         return user
 
     def get_response_data(self, user):
@@ -155,17 +201,24 @@ class ConfirmEmailView(APIView):
 
     def get(self, request, key):
         key = unquote(key)
-        print("Raw key from URL:", key)
+
         try:
-            confirmation = EmailConfirmationHMAC.from_key(key)
-            print("Confirmation object:", confirmation)
+            confirmation = EmailConfirmation.objects.get(key=key)
+            email_address = confirmation.email_address
 
-            if not confirmation:
-                raise Http404("Invalid or expired confirmation key")
+            if email_address.verified:
+                return Response(
+                    {
+                        "message": "Email already confirmed",
+                        "code": "already_confirmed",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-            # Confirm the email address
             confirmation.confirm(request)
-            user = confirmation.email_address.user
+
+            user = email_address.user
+
             """
             # Optional: set custom user field if you're tracking confirmation manually
             if hasattr(user, 'is_confirmed'):
@@ -184,9 +237,12 @@ class ConfirmEmailView(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
-
-        except Exception:
-            raise Http404("Invalid confirmation link")
+        except EmailConfirmation.DoesNotExist:
+            logger.info(f"Confirmation object not found for key: {key}")
+            raise Http404("Invalid or expired confirmation key")
+        except Exception as e:
+            logger.warning(f"Unexpected error: {str(e)}")
+            raise Http404("Something went wrong")
 
 
 class ProfileViewSet(
@@ -263,9 +319,6 @@ class FetchInfoAPIView(APIView):
         logger.info(
             f"[FETCH INFO] Fetching data for profile {profile.id}, character {character.id}"
         )
-        # logger.debug(
-        #    f"[FETCH INFO] Timers status: {profile.activity_timer.status}/{character.quest_timer.status}"
-        # )
 
         qt = character.quest_timer
         if qt.time_finished() and qt.status != "completed":

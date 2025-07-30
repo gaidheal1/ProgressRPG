@@ -100,9 +100,9 @@ def send_email_to_users(users, subject, template_base, context=None, cc_admin=Fa
         plain_message,
         from_email,
         emails,
-        fail_silently=False,
     )
     email.attach_alternative(html_message, "text/html")
+
     email.send()
 
 

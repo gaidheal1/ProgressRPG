@@ -21,30 +21,37 @@ export default function ConfirmationPage() {
       return;
     }
 
+    // Prevent re-confirmation in the same session
     const confirmedKey = sessionStorage.getItem("confirmedKey");
     if (confirmedKey === key) {
       setStatus("success");
-      setMessage("Email already confirmed!");
+      setMessage("Email already confirmed! Redirecting...");
       setTimeout(() => navigate("/onboarding"), 2000);
       return;
     }
-
     async function confirmEmail() {
       try {
-        const res = await fetch(`${API_URL}/auth/confirm_email/${key}/`);
+        const res = await fetch(`${API_URL}/auth/confirm_email/${encodeURIComponent(key)}/`);
         const data = await res.json();
 
         if (res.ok) {
           setStatus("success");
           setMessage("Email confirmed! Logging you in...");
 
-          // Optional: auto-login if you want
+          // Auto-login
           if (data.access && data.refresh && login) {
             await login(data.access, data.refresh);
           }
 
           sessionStorage.setItem("confirmedKey", key);
           setTimeout(() => navigate("/onboarding"), 2000);
+        } else if (res.status === 400 && data?.code === "already_confirmed") {
+          // Handle already confirmed message
+          setStatus("success");
+          setMessage("Email already confirmed! Redirecting...");
+          setTimeout(() => navigate("/onboarding"), 2000);
+
+
         } else {
           setStatus("error");
           setMessage(data?.message || "Confirmation failed.");

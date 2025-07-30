@@ -5,12 +5,13 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 
-from django.urls import path, include
+from django.urls import path, include, register_converter
 from rest_framework.routers import DefaultRouter
 from django_channels_jwt.views import AsgiValidateTokenView
 
 from .views import (
     me_view,
+    maintenance_status,
     CustomRegisterView,
     ConfirmEmailView,
     OnboardingViewSet,
@@ -28,6 +29,23 @@ from .views import (
     # test_post_view,
 )
 
+
+class KeyConverter:
+    regex = "[^/]+"
+
+    def to_python(self, value):
+        from urllib.parse import unquote
+
+        return unquote(value)
+
+    def to_url(self, value):
+        from urllib.parse import quote
+
+        return quote(value)
+
+
+register_converter(KeyConverter, "key")
+
 router = DefaultRouter()
 router.register(r"profile", ProfileViewSet, basename="profile")
 router.register(r"character", CharacterViewSet, basename="character")
@@ -41,9 +59,10 @@ router.register(r"onboarding", OnboardingViewSet, basename="onboarding")
 urlpatterns = [
     path("", include(router.urls)),
     path("me/", me_view, name="me"),
+    path("maintenance_status/", maintenance_status, name="maintenance_status"),
     path("fetch_info/", FetchInfoAPIView.as_view(), name="fetch_info"),
     path(
-        "auth/confirm_email/<str:key>/",
+        "auth/confirm_email/<key:key>/",
         ConfirmEmailView.as_view(),
         name="confirm_email",
     ),
