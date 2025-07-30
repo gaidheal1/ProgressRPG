@@ -17,7 +17,7 @@ export default function Form({
 }) {
   return (
     <div className={`${styles.formFrame} ${frameClass || ''}`}>
-      {title && <h2 className={styles.formTitle}>{title}</h2>}
+      {title && <h1 className={styles.formTitle}>{title}</h1>}
 
       <form onSubmit={onSubmit} className={`${styles.form} ${className || ''}`}>
 

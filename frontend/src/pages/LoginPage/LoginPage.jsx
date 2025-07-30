@@ -46,7 +46,7 @@ export default function LoginPage() {
 
   return (
     <Form
-      title="🔐 Log In"
+      title="🔐 Log in"
       onSubmit={handleSubmit}
       isSubmitting={submitting}
       submitLabel="Log In"
