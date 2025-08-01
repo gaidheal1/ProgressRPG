@@ -241,6 +241,10 @@ class Profile(Person):
     onboarding_step = models.PositiveIntegerField(choices=ONBOARDING_STEPS, default=0)
 
     @property
+    def needs_onboarding(self):
+        return self.onboarding_step < 4
+
+    @property
     def group_name(self):
         """Returns the WebSocket group name for this profile."""
         return f"profile_{self.id}"
