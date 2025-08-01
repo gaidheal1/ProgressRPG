@@ -198,6 +198,7 @@ class Character(Person, LifeCycleMixin):
         "gameplay.Buff", related_name="characters", blank=True
     )
     is_npc = models.BooleanField(default=True)
+    can_link = models.BooleanField(default=False)
     position = models.OneToOneField(
         "locations.Position", on_delete=models.SET_NULL, null=True
     )
@@ -272,6 +273,10 @@ class Character(Person, LifeCycleMixin):
         logger.info(f"[CHAR.COMPLETE_QUEST] Quest completion successful")
         return rewards_summary
 
+    @classmethod
+    def has_available(cls):
+        return cls.objects.filter(is_npc=True, can_link=True).exists()
+
 
 class PlayerCharacterLink(models.Model):
     profile = models.ForeignKey(
@@ -298,11 +303,17 @@ class PlayerCharacterLink(models.Model):
         return links.first().character
 
     @classmethod
-    def get_profile(cls, character):
-        link = PlayerCharacterLink.objects.filter(
-            character=character, is_active=True
-        ).first()
-        return link.profile if link else None
+    def get_profile(cls, character: Character) -> Profile:
+        links = PlayerCharacterLink.objects.filter(character=character, is_active=True)
+        if not links.exists():
+            raise ValueError("Character has no active Profile link.")
+
+        if links.count() > 1:
+            logger.warning(
+                f"[PROFILE] Multiple active profile links found for character {character.id} — returning the first one"
+            )
+
+        return links.first().profile
 
     def unlink(self):
         """Marks link as inactive and records unlink date"""
