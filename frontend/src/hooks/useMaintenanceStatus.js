@@ -11,7 +11,7 @@ export function useMaintenanceStatus() {
   useEffect(() => {
     async function fetchMaintenance() {
       try {
-        const data = await apiFetch('/maintenance-status/');
+        const data = await apiFetch('/maintenance_status/');
 
         if (data.maintenance_active) {
           setMaintenance({

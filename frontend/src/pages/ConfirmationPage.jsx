@@ -4,7 +4,6 @@ import { useAuth } from "../context/AuthContext";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_URL = `${BASE_URL}/api/v1`;
-console.log("API_URL:", API_URL);
 
 export default function ConfirmationPage() {
   const { key } = useParams();
