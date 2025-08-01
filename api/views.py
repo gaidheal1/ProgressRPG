@@ -190,9 +190,12 @@ class CustomRegisterView(RegisterView):
         return user
 
     def get_response_data(self, user):
+        available_character = Character.has_available()
+
         return {
             "needs_confirmation": True,
             "detail": "Registration successful. Please confirm your email to activate your account.",
+            "characters_available": available_character,
         }
 
 
@@ -263,47 +266,59 @@ class OnboardingViewSet(viewsets.ViewSet):
     def get_profile(self, request):
         return request.user.profile
 
+    @action(detail=False, methods=["get"])
+    def status(self, request):
+        profile = self.get_profile(request)
+        if profile.onboarding_step == 0:
+            profile.onboarding_step = 1
+            profile.save()
+        return Response({"step": request.user.profile.onboarding_step})
+
     @action(detail=False, methods=["post"])
     def progress(self, request):
         profile = self.get_profile(request)
         step = profile.onboarding_step
 
-        if step == 1:
-            serializer = Step1Serializer(profile, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                profile.onboarding_step = 2
-                profile.save()
-                return Response(
-                    {
-                        "message": "Profile updated and onboarding step set to 2.",
-                        "step": 2,
-                    }
-                )
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        handlers = {
+            1: self.handle_step1,
+            2: self.handle_step2,
+            3: self.handle_step3,
+        }
 
-        elif step == 2:
-            link = PlayerCharacterLink.objects.filter(
-                profile=profile, is_active=True
-            ).first()
-            if not link:
-                return Response(
-                    {"error": "No active character link found."}, status=404
-                )
+        handler = handlers.get(step)
+        if handler:
+            return handler(profile, request)
+        return Response({"message": "Onboarding complete."}, status=200)
 
-            profile.onboarding_step = 3
+    def handle_step1(self, profile, request):
+        serializer = Step1Serializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            profile.onboarding_step = 2
             profile.save()
-            return Response({"message": "Character confirmed", "step": 3})
-
-        elif step == 3:
-            profile.onboarding_step = 4
-            profile.save()
-            return Response({"message": "Tutorial complete", "step": 4})
-
-        else:
             return Response(
-                {"message": "Onboarding complete."}, status=status.HTTP_200_OK
+                {
+                    "message": "Step 1 complete.",
+                    "step": 2,
+                }
             )
+        return Response(serializer.errors, status=400)
+
+    def handle_step2(self, profile, request):
+        character = PlayerCharacterLink.get_character(profile)
+        if not character:
+            return Response({"error": "No active character link found."}, status=404)
+
+        profile.onboarding_step = 3
+        profile.save()
+        return Response({"message": "Step 2 complete.", "step": 3})
+
+    def handle_step3(self, profile, request):
+        profile.onboarding_step = 4
+        profile.save()
+        return Response(
+            {"message": "Stage 3 complete. Onboarding finished!", "step": 4}
+        )
 
 
 class FetchInfoAPIView(APIView):
