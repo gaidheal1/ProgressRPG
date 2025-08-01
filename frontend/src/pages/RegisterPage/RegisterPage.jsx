@@ -15,7 +15,7 @@ export default function RegisterPage() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const location = useLocation();
   const [formState, setFormState] = useState("default");
-
+  const [characterAvailable, setCharacterAvailable] = useState(false);
 
   useEffect(() => {
     // Reset form or state when location changes (even to the same path)
@@ -32,7 +32,7 @@ export default function RegisterPage() {
       return;
     }
 
-    const { success, errors, errorMessage, confirmationRequired } = await register(
+    const { success, errors, errorMessage, confirmationRequired, characterAvailable: availableCharacters = true } = await register(
       email,
       password,
       confirmPassword,
@@ -62,9 +62,12 @@ export default function RegisterPage() {
   return (
     <div>
       {formState === "submitted" ? (
-        <p>
-          Thanks for registering! Please check your email and follow the confirmation link before logging in.
-        </p>
+        <div>
+          <p>
+            Thanks for registering! Please check your email and follow the confirmation link before logging in.
+          </p>
+          {!characterAvailable && <p>We don't currently have any characters available for you to link with! Please still confirm your email, and we will let you know as soon as a character becomes available.</p>}
+        </div>
       ) : (
         <Form
           title="📝 Register"

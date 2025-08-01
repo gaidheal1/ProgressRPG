@@ -54,6 +54,7 @@ export default function useRegister() {
         success: true,
         confirmationRequired: true,
         message: 'Please check your email to confirm your account.',
+        availableCharacters: data.characters_available,
       };
     } catch (err) {
       console.error('[useRegister] Unexpected error:', err);
