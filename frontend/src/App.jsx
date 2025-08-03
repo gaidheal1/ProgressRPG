@@ -1,5 +1,4 @@
 import React from 'react';
-import { AuthProvider } from './context/AuthContext';
 import { GameProvider } from './context/GameContext';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useMaintenanceStatus } from './hooks/useMaintenanceStatus';
@@ -30,17 +29,11 @@ import {
   Navigate
 } from 'react-router-dom';
 
+import PrivateRoute from './components/PrivateRoute';
+import RequireOnboardingComplete from './components/RequireOnboardingComplete';
+
 const appVersion = packageJson.version;
 
-function PrivateRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return <div>Loading...</div>; // or spinner
-  }
-
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
-}
 
 function AppRoutes() {
   return (
@@ -67,9 +60,11 @@ function AppRoutes() {
               path="/game"
               element={
                 <PrivateRoute>
-                  <ErrorBoundary FallbackComponent={ErrorFallback}>
-                    <Game />
-                  </ErrorBoundary>
+                  <RequireOnboardingComplete>
+                    <ErrorBoundary FallbackComponent={ErrorFallback}>
+                      <Game />
+                    </ErrorBoundary>
+                  </RequireOnboardingComplete>
                 </PrivateRoute>
               }
             />
