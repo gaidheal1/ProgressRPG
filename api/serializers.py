@@ -58,8 +58,10 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             "email",
-            "is_staff",
             "is_confirmed",
+            "is_staff",
+            "is_superuser",
+            "date_of_birth",
         ]
 
 
@@ -106,6 +108,8 @@ class CharacterSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "first_name",
+            "last_name",
+            "backstory",
             "sex",
             "xp",
             "xp_next_level",
@@ -114,6 +118,7 @@ class CharacterSerializer(serializers.ModelSerializer):
             "coins",
             "total_quests",
             "is_npc",
+            "can_link",
         ]
         read_only_fields = [
             "id",

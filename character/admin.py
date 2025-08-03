@@ -33,6 +33,17 @@ def mark_as_npc(modeladmin, request, queryset):
     )
 
 
+@admin.action(description="Mark selected characters as available to link")
+def mark_as_canlink(modeladmin, request, queryset):
+    for character in queryset:
+        character.can_link = True
+        character.save(update_fields=["can_link"])
+
+    messages.success(
+        request, f"{queryset.count()} character(s) marked as available to link."
+    )
+
+
 @admin.register(Character)
 class CharacterAdmin(admin.ModelAdmin):
     # def current_player(self, obj):
@@ -41,7 +52,7 @@ class CharacterAdmin(admin.ModelAdmin):
 
     # current_player.short_description = 'Current Player'
     fieldsets = (
-        (None, {"fields": ("first_name", "last_name", "is_npc")}),
+        (None, {"fields": ("first_name", "last_name", "is_npc", "can_link")}),
         ("Life & Story", {"fields": ("backstory", "parents", "sex")}),
         (
             "Pregnancy Details",
@@ -61,10 +72,12 @@ class CharacterAdmin(admin.ModelAdmin):
         "backstory",
         "get_profile",
         "is_npc",
+        "can_link",
         "birth_date",
     ]
     list_filter = [
         "is_npc",
+        "can_link",
     ]
     # list_editable = ['birth_date']
     search_fields = [
@@ -75,7 +88,7 @@ class CharacterAdmin(admin.ModelAdmin):
         "get_profile",
     ]
     inlines = [LinkInline]
-    actions = [mark_as_npc]
+    actions = [mark_as_npc, mark_as_canlink]
 
     @admin.display(description="Profile")
     def get_profile(self, obj):
