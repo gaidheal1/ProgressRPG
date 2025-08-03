@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useOnboarding from '../hooks/useOnboarding';
 import Form from '../components/Form/Form';
-import Button from '../components/Button/Button';
 import Input from '../components/Input/Input';
+import { useGame } from '../context/GameContext';
 
 function Step0() {
   return <p>Begin your journey through onboarding.</p>;
@@ -25,8 +25,17 @@ function Step1({ value, onChange }) {
   );
 }
 
-function Step2() {
-  return <p>✅ Character linked? Click to confirm.</p>;
+function Step2({ characterAvailable, character }) {
+  if (!characterAvailable) {
+    return (
+      <p style={{ color: 'red' }}>
+        No characters are currently available. Please check back later.
+      </p>
+    )
+  } else {
+    console.log("[ONBOARDING] Char:", character);
+    return <p>✅ You have been linked with a character called {character.first_name}. His backstory: {character.backstory}</p>;
+  }
 }
 
 function Step3() {
@@ -35,13 +44,11 @@ function Step3() {
 
 
 export default function OnboardingPage() {
-  console.log('OnboardingPage render');
   const navigate = useNavigate();
-  //const navigate = () => {};
-  const { step, progress, error, loading } = useOnboarding();
+  const { step, progress, error, loading, characterAvailable } = useOnboarding();
   const [formData, setFormData] = useState({});
   const [submitting, setSubmitting] = useState(false);
-
+  const { character, setCharacter } = useGame();
 
   // Auto-redirect if onboarding is already done
   useEffect(() => {
@@ -58,6 +65,11 @@ export default function OnboardingPage() {
     setSubmitting(true);
     const result = await progress(formData);
     setSubmitting(false);
+    console.log("[ONBOARDING] Result:", result);
+
+    if (result?.step === 2) {
+      setCharacter(result.character);
+    };
     if (result?.step === 4) navigate('/game');
   };
 
@@ -68,10 +80,16 @@ export default function OnboardingPage() {
           <Step1
             value={formData.display_name || ''}
             onChange={(val) => setFormData({ ...formData, display_name: val })}
+            characterAvailable={characterAvailable}
           />
         );
       case 2:
-        return <Step2 />;
+        return (
+          <Step2
+            characterAvailable={characterAvailable}
+            character={character}
+          />
+        );
       case 3:
         return <Step3 />;
       default:
@@ -101,12 +119,13 @@ export default function OnboardingPage() {
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      <Form onSubmit={handleNext}>
+      <Form
+        onSubmit={handleNext}
+        submitLabel={getButtonLabel()}
+        isSubmitting={submitting}
+        disabled={!characterAvailable && step === 2}
+      >
         {renderStep()}
-
-        <Button type="submit" disabled={submitting}>
-          {submitting ? 'Submitting...' : getButtonLabel()}
-        </Button>
       </Form>
     </div>
   );
