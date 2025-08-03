@@ -10,12 +10,11 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate();
-  const register = useRegister();
+  const { register, characterAvailable } = useRegister();
   const [inviteCode, setInviteCode] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const location = useLocation();
   const [formState, setFormState] = useState("default");
-  const [characterAvailable, setCharacterAvailable] = useState(false);
 
   useEffect(() => {
     // Reset form or state when location changes (even to the same path)
@@ -32,7 +31,7 @@ export default function RegisterPage() {
       return;
     }
 
-    const { success, errors, errorMessage, confirmationRequired, characterAvailable: availableCharacters = true } = await register(
+    const { success, errors, errorMessage, confirmationRequired } = await register(
       email,
       password,
       confirmPassword,

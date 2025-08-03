@@ -1,11 +1,12 @@
 // hooks/useRegister.js
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 export default function useRegister() {
   const { login } = useAuth();
+  const [characterAvailable, setCharacterAvailable] = useState(false);
 
   const register = useCallback(async (email, password1, password2, inviteCode, agreeToTerms) => {
     try {
@@ -65,5 +66,5 @@ export default function useRegister() {
       };
     }
   }, [login]);
-  return register;
+  return { register, characterAvailable };
 }
