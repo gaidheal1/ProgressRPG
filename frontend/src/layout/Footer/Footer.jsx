@@ -9,7 +9,7 @@ export default function Footer() {
 
   return (
     <footer className={styles.footer}>
-      {user?.is_staff && isAuthenticated && (
+      {user?.is_superuser && isAuthenticated && (
         <a href="http://localhost:8000/admin" target="_blank" rel="noopener noreferrer">
           Admin Panel
         </a>
