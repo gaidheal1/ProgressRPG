@@ -24,8 +24,8 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const userData = await apiFetch('/me/');
-        setUser(userData);
+        const data = await apiFetch('/me/');
+        setUser(data.user);
         setIsAuthenticated(true);
       } catch (err) {
         logout();
@@ -46,10 +46,11 @@ export function AuthProvider({ children }) {
 
     // Fetch user info after login
     try {
-      const userData = await apiFetch('/me/');
-      setUser(userData);
+      const data = await apiFetch('/me/');
+      console.log("[AUTH PROVIDER] data:", data);
+      setUser(data.user);
       setIsAuthenticated(true);
-      return userData;
+      return data;
     } catch (err) {
       setUser(null);
       setIsAuthenticated(false);
