@@ -14,6 +14,7 @@ class CustomUserAdmin(UserAdmin):
         "email",
         "is_staff",
         "is_active",
+        "created_at",
     ]
     list_filter = [
         "is_staff",
@@ -48,7 +49,7 @@ class CustomUserAdmin(UserAdmin):
         ),
     )
     search_fields = ["email"]
-    ordering = ("email",)
+    ordering = ("-created_at",)
     readonly_fields = ["created_at"]
 
 
