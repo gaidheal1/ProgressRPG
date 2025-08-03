@@ -15,7 +15,7 @@ import dj_database_url
 from decouple import Config, RepositoryEnv, config
 import os
 from dotenv import load_dotenv
-import logging, ssl
+import logging, ssl, sentry_sdk
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -31,6 +31,13 @@ os.environ.setdefault(
     os.getenv("DJANGO_SETTINGS_MODULE", "progress_rpg.settings.dev"),
 )
 
+sentry_sdk.init(
+    dsn="https://644b2888f8bc11ad45e1975cde787ef6@o4509508988764160.ingest.de.sentry.io/4509508990926928",
+    # Add data like request headers and IP for users,
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    send_default_pii=True,
+    traces_sample_rate=1.0,
+)
 
 APP_VERSION = "0.6.0-alpha"
 
