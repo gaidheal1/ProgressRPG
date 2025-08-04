@@ -45,7 +45,6 @@ log=$(git log "$latest_tag"..HEAD --pretty=format:"- %s")
 changelog_entry="## $new_tag - $(date +%Y-%m-%d)
 
 $log
-
 "
 
 echo "📝 Generated changelog entry:"
