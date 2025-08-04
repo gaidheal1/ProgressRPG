@@ -2,6 +2,12 @@
 
 ## v0.10.2 - 2025-08-04
 
+- fix: check if tag exists before creating
+- remove trailing whitespace from shell script
+- Update changelog for v0.10.2
+
+## v0.10.2 - 2025-08-04
+
 
 
 
