@@ -12,7 +12,7 @@ import Home from './pages/Home/Home';
 import LoginPage from './pages/LoginPage/LoginPage';
 import LogoutPage from './pages/LogoutPage/LogoutPage';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
-import OnboardingPage from './pages/OnboardingPage';
+import OnboardingPage from './pages/OnboardingPage/OnboardingPage';
 import Game from './pages/Game/Game';
 import ProfilePage from './pages/Profile/Profile';
 import ConfirmationPage from './pages/ConfirmationPage';
