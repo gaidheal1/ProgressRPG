@@ -297,6 +297,12 @@ class OnboardingViewSet(viewsets.ViewSet):
 
     def handle_step1(self, profile, request):
         serializer = Step1Serializer(profile, data=request.data, partial=True)
+        characters_available = Character.has_available()
+        character = PlayerCharacterLink.get_character(profile)
+        if character is not None:
+            character_data = CharacterSerializer(
+                character, context={"request": request}
+            ).data
         if serializer.is_valid():
             serializer.save()
             profile.onboarding_step = 2
@@ -305,7 +311,8 @@ class OnboardingViewSet(viewsets.ViewSet):
                 {
                     "message": "Step 1 complete.",
                     "step": profile.onboarding_step,
-                    "characters_available": Character.has_available(),
+                    "characters_available": characters_available,
+                    "character": character_data if character else None,
                 }
             )
         return Response(serializer.errors, status=400)
