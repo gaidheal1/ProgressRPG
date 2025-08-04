@@ -30,21 +30,59 @@ select choice in "Patch ($major.$minor.$((patch + 1)))" \
   esac
 done
 
+# Safety check: does the tag already exist?
+if git rev-parse "$new_tag" >/dev/null 2>&1; then
+  echo "❗ Tag $new_tag already exists."
+
+  # Try auto-incrementing patch number for patch or minor bumps only
+  if [[ "$new_tag" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+    base_major="${BASH_REMATCH[1]}"
+    base_minor="${BASH_REMATCH[2]}"
+    base_patch="${BASH_REMATCH[3]}"
+
+    echo "Trying to find next available patch number..."
+    found_new_tag=false
+    for ((p=base_patch+1; p<=base_patch+10; p++)); do
+      candidate="v${base_major}.${base_minor}.${p}"
+      if ! git rev-parse "$candidate" >/dev/null 2>&1; then
+        read -p "Use next available tag $candidate? (y/n): " use_candidate
+        if [[ "$use_candidate" =~ ^[Yy]$ ]]; then
+          new_tag=$candidate
+          echo "Using tag $new_tag"
+          found_new_tag=true
+          break
+        fi
+      fi
+    done
+
+    if ! $found_new_tag; then
+      echo "No available patch tags found."
+    fi
+  fi
+
+  # If tag still exists (didn't pick new one)
+  if git rev-parse "$new_tag" >/dev/null 2>&1; then
+    read -p "Do you want to DELETE the existing tag $new_tag locally and remotely? (WARNING: This will rewrite history) (y/n): " delete_confirm
+    if [[ "$delete_confirm" =~ ^[Yy]$ ]]; then
+      echo "Deleting local tag $new_tag..."
+      git tag -d "$new_tag"
+      echo "Deleting remote tag $new_tag..."
+      git push --delete origin "$new_tag"
+      echo "Tag $new_tag deleted."
+    else
+      echo "Aborting due to existing tag."
+      exit 1
+    fi
+  fi
+fi
+
 # Confirm
-echo "➡️ New tag would be: $new_tag"
+echo "➡️ New tag will be: $new_tag"
 read -p "Proceed? (y/n): " confirm
 if [[ $confirm != "y" && $confirm != "Y" ]]; then
   echo "❌ Tagging cancelled."
   exit 1
 fi
-
-
-# Safety check: does the tag already exist?
-if git rev-parse "$new_tag" >/dev/null 2>&1; then
-  echo "❗ Tag $new_tag already exists. Please choose a different version or delete the existing tag."
-  exit 1
-fi
-
 
 # Get commit messages since last tag
 log=$(git log "$latest_tag"..HEAD --pretty=format:"- %s")
@@ -69,7 +107,10 @@ git push origin "$new_tag"
 
 # Prepend changelog entry to CHANGELOG.md (or create file)
 if [ -f CHANGELOG.md ]; then
-  echo -e "# Changelog\n\n$changelog_entry$(tail -n +2 CHANGELOG.md)" > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+  # Remove existing # Changelog heading (first line), then prepend new entry and add back heading
+  tail -n +2 CHANGELOG.md > CHANGELOG.tmp
+  echo -e "# Changelog\n\n$changelog_entry$(cat CHANGELOG.tmp)" > CHANGELOG.md
+  rm CHANGELOG.tmp
 else
   echo -e "# Changelog\n\n$changelog_entry" > CHANGELOG.md
 fi
