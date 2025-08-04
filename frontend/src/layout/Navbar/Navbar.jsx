@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './Navbar.module.scss';
 import Button from '../../components/Button/Button';
+import ButtonFrame from '../../components/Button/ButtonFrame';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -56,9 +57,39 @@ export default function Navbar() {
         </div>
 
         <div className={styles.icons}>
-          <Link to="/menu">Menu Icon</Link>
-          <Link to="/game">Home Icon</Link>
-          <Link to="/profile">Account Icon</Link>
+          {isAuthenticated ? (
+            <>
+              {/* <Link to="/menu">Menu</Link> */}
+              <Link to="/game">
+                <Button variant="secondary" className={styles.navLink}>
+                  Game
+                </Button>
+              </Link>
+              <Link to="/profile">
+                <Button variant="secondary" className={styles.navLink}>
+                  Account
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/home">
+                <Button variant="secondary" className={styles.navLink}>
+                  Home
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button variant="secondary" className={styles.navLink}>
+                  Register
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button variant="primary" className={styles.navLink}>
+                  Register
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </nav>
     </header>
