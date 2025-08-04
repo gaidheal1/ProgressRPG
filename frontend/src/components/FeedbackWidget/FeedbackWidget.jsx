@@ -23,12 +23,12 @@ const FeedbackWidget = () => {
             <p>Spotted a bug? Got an idea? Choose where to send your feedback:</p>
             <div className={styles.buttonGroup}>
               <a
-                href="https://github.com/gaidheal1/ProgressRPG/issues/new/choose"
+                href="https://github.com/gaidheal1/ProgressRPG/issues/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`${styles.modalButton} ${styles.github}`}
               >
-                👩‍💻 GitHub
+                👩‍💻 GitHub Issues
               </a>
               <a
                 href="https://forms.gle/7MnVUirk25GWhVfy9"
