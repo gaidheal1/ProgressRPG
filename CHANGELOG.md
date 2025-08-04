@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.10.3 - 2025-08-04
+
+- fix: on tag existing, release script now tries other tags and prompts with options
+- Update changelog for v0.10.2
+
 ## v0.10.2 - 2025-08-04
 
 - fix: check if tag exists before creating
