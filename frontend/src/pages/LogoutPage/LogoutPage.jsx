@@ -3,16 +3,16 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function LogoutPage() {
-  console.log('[LogoutPage] mounted');
+  //console.log('[LogoutPage] mounted');
   const { logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('[LogoutPage] Triggering logout...');
+    //console.log('[LogoutPage] Triggering logout...');
     logout();
 
     const timer = setTimeout(() => {
-      console.log('[LogoutPage] Navigating to /');
+      //console.log('[LogoutPage] Navigating to /');
       navigate('/');
     }, 800); // Slight delay for smoother UX
 

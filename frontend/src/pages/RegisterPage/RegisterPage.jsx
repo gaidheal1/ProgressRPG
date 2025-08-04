@@ -54,7 +54,7 @@ export default function RegisterPage() {
     } else {
       setError(errorMessage);
       setFieldErrors(errors || {});
-      console.log(errorMessage);
+      //console.log(errorMessage);
     }
   };
 

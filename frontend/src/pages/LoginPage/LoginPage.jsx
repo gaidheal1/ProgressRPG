@@ -21,12 +21,12 @@ export default function LoginPage() {
     setError('');
 
     const result1 = await loginWithJwt(email, password);
-    console.log('LoginPage login result1:', result1);
+    //console.log('LoginPage login result1:', result1);
 
     if (result1.success) {
       try {
         const result2 = await login(result1.tokens.access_token, result1.tokens.refresh_token);
-        console.log('[HANDLE SUBMIT] result2:', result2);
+        //console.log('[HANDLE SUBMIT] result2:', result2);
         if (result2.onboarding_step && result2.onboarding_step < 4) {
           navigate('/onboarding');
         } else {
