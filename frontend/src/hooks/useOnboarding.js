@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { apiFetch } from '../../utils/api';
 
 export default function useOnboarding() {
-  console.log('useOnboarding render');
+  //console.log('useOnboarding render');
   const [step, setStep] = useState(1);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -14,7 +14,7 @@ export default function useOnboarding() {
     const fetchStatus = async () => {
       try {
         const data = await apiFetch('/onboarding/status/');
-        console.log("useOnboarding 'status' api data:", data);
+        //console.log("useOnboarding 'status' api data:", data);
         setStep(data.step);
         setCharacterAvailable(data.characters_available ?? true);
         setError('');
@@ -36,7 +36,7 @@ export default function useOnboarding() {
         method: 'POST',
         body: JSON.stringify(payload),
       });
-      console.log("useOnboarding 'progress' api data:", data);
+      //console.log("useOnboarding 'progress' api data:", data);
       if (typeof data.step === 'number') {
         setStep(data.step);
       }

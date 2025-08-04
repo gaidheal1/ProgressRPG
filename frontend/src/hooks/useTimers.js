@@ -196,21 +196,21 @@ export default function useTimers({ mode }) {
       setDuration(newDuration);
       const quest = newSubject;
       let stagesEd = quest?.stages || [];
-      console.log('stagesEd:', stagesEd);
+      //console.log('stagesEd:', stagesEd);
 
       // Calculate total duration of stages
       const totalStagesDuration = stagesEd.reduce((sum, stage) => {
         const dur = stage.duration ?? stage.endTime;
         return dur ? sum + dur : sum;
       }, 0);
-      console.log(`Total stages duration: ${totalStagesDuration} seconds`);
+      //console.log(`Total stages duration: ${totalStagesDuration} seconds`);
 
       // Shuffle stages
       if (!quest.stagesFixed) {
-        console.log("Quest stages are random!");
+        //console.log("Quest stages are random!");
         stagesEd = shuffle([...stagesEd]);
       }
-      console.log('stagesEd:', stagesEd);
+      //console.log('stagesEd:', stagesEd);
 
       // Loop stages if necessary
       if (newDuration > totalStagesDuration) {
@@ -227,31 +227,30 @@ export default function useTimers({ mode }) {
           globalIndex: index,
         }));
       }
-      console.log('stagesEd:', stagesEd);
+      //console.log('stagesEd:', stagesEd);
 
       setProcessedStages(stagesEd);
       setGlobalStageIndex(0);
-      console.log(`Duration? ${stagesEd[0].duration} ... or endTime? ${stagesEd[0].endTime}`);
+      //console.log(`Duration? ${stagesEd[0].duration} ... or endTime? ${stagesEd[0].endTime}`);
       setStageTimeRemaining(stagesEd[0].duration ?? stagesEd[0].endTime ?? 0);
-      console.log('stageTimeRemaining:', stageTimeRemaining);
+      //console.log('stageTimeRemaining:', stageTimeRemaining);
 
     } else if (mode === "activity") {
-      console.log("assign activity, id:", id);
       setDuration(newDuration);
       const data = await apiFetch(`/${mode}_timers/${id}/set_activity/`, {
         method: 'POST',
         body: JSON.stringify({ activityName: newSubject }),
       });
 
-      console.log(`${mode} timer assign, api data:`, data);
+      //console.log(`${mode} timer assign, api data:`, data);
     }
   }, [mode, id]);
 
   // Cleanup on unmount
   useEffect(() => {
-    console.log(`[useTimers] mounted for ${mode}`);
+    //console.log(`[useTimers] mounted for ${mode}`);
     return () => {
-      console.log(`[useTimers] mounted for ${mode}`);
+      //console.log(`[useTimers] mounted for ${mode}`);
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;

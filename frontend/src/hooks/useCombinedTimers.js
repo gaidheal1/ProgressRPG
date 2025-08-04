@@ -13,7 +13,7 @@ export default function useCombinedTimers() {
     const bothReady = isReady(activityTimer.status) && isReady(questTimer.status);
 
     if (bothReady && !timersRunningRef.current) {
-      console.log('[COMBINED TIMERS] Both ready!');
+      // console.log('[COMBINED TIMERS] Both ready!');
       timersRunningRef.current = true;
 
       (async () => {
@@ -32,7 +32,7 @@ export default function useCombinedTimers() {
 
   // Submit activity
   const submitActivity = async () => {
-    console.log('[COMBINED TIMERS] Submit activity');
+    // console.log('[COMBINED TIMERS] Submit activity');
 
     timersRunningRef.current = false;
     const canComplete = (status) => ["active", "waiting", "paused"].includes(status);
@@ -48,12 +48,12 @@ export default function useCombinedTimers() {
 
   // Quest auto-complete
   useEffect(() => {
-    console.log('[COMBINED TIMERS] Checking quest completion', {
+    /* console.log('[COMBINED TIMERS] Checking quest completion', {
       status: questTimer.status,
       remaining: questTimer.remaining,
       completing: completingRef.current,
 
-    });
+    }); */
 
     if (
       questTimer.status === "active" &&

@@ -23,7 +23,7 @@ export function useBootstrapGameData() {
         const info = await apiFetch('/fetch_info/');
         setPlayer(info.profile);
         setCharacter(info.character);
-        console.log("info:", info);
+        //console.log("info:", info);
         setActivityTimerInfo(info.activity_timer);
         setQuestTimerInfo(info.quest_timer);
       } catch (err) {

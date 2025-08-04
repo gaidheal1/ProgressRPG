@@ -5,13 +5,13 @@ import { usePlayer } from '../context/PlayerContext';
 
 export default function useProfileSocket(onEvent) {
   const { player } = usePlayer();
-  console.log("Player inside ws:", player);
+  //console.log("Player inside ws:", player);
   const url = new URL(rawBaseUrl);
   const socketRef = useRef(null);
 
   useEffect(() => {
     if (!player || !player.id) {
-      console.log('WebSocket Waiting for player...');
+      //console.log('WebSocket Waiting for player...');
       return;
     }
 
@@ -20,14 +20,14 @@ export default function useProfileSocket(onEvent) {
     socketRef.current = socket;
 
     socket.onopen = () => {
-      console.log('[WS] Connected');
+      //console.log('[WS] Connected');
       socket.send(JSON.stringify({ type: 'ping' }));
     };
 
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('[WS] Received:', data);
+        //console.log('[WS] Received:', data);
         onEvent?.(data);
       } catch (e) {
         console.error('[WS] JSON parse error:', e);
