@@ -8,7 +8,7 @@ export default function ToastManager({ messages }) {
   useEffect(() => {
     const newToasts = messages.map((msg, index) => {
       const id = typeof msg === 'object' && msg.id ? msg.id : uuidv4();
-      console.log("Toast id:", id);
+      //console.log("Toast id:", id);
       return { id, content: normalizeMessage(msg) };
     });
 

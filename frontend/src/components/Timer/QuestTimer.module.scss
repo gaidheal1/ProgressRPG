@@ -38,7 +38,7 @@
 }
 
 .currentStage {
-  border-left: v.$spacing-xs solid c.$color-border-accent;
+  //border-left: v.$spacing-xs solid c.$color-border-accent;
   padding-left: v.$spacing-sm;
   @include t.apply-text-style(t.$text-body);
 }

@@ -16,12 +16,12 @@ export default function QuestModal({ onClose, onChooseQuest }) {
   };
 
   const handleChooseQuest = () => {
-    console.log('onChoose!')
+    //console.log('onChoose!')
     if (!selectedQuest || !selectedDuration) return;
 
-    console.log('Still here!')
+    //console.log('Still here!')
     onChooseQuest?.(selectedQuest, selectedDuration);
-    console.log('Selected, duration:', selectedQuest, selectedDuration);
+    //console.log('Selected, duration:', selectedQuest, selectedDuration);
 
     onClose();
   };

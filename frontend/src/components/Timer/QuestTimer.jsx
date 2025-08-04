@@ -22,8 +22,8 @@ export default function QuestTimer() {
   } = quest || {};
   const displayTime = formatDuration(remaining);
 
-  console.log(`[Quest Timer] questTimer:`, questTimer);
-  console.log(`[Quest Timer] processedStages:`, processedStages);
+  // console.log(`[Quest Timer] questTimer:`, questTimer);
+  // console.log(`[Quest Timer] processedStages:`, processedStages);
 
   const visibleStages = useMemo(() => {
   return processedStages.map((item, index) => ({
