@@ -38,6 +38,14 @@ if [[ $confirm != "y" && $confirm != "Y" ]]; then
   exit 1
 fi
 
+
+# Safety check: does the tag already exist?
+if git rev-parse "$new_tag" >/dev/null 2>&1; then
+  echo "❗ Tag $new_tag already exists. Please choose a different version or delete the existing tag."
+  exit 1
+fi
+
+
 # Get commit messages since last tag
 log=$(git log "$latest_tag"..HEAD --pretty=format:"- %s")
 
