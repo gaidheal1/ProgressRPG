@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: read
-  secrets: read
+  actions: read
 
 jobs:
   build:
