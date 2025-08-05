@@ -1,95 +1,42 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { BrowserRouter, useLocation } from 'react-router-dom';
+
 import { GameProvider } from './context/GameContext';
-import { ErrorBoundary } from 'react-error-boundary';
 import { useMaintenanceStatus } from './hooks/useMaintenanceStatus';
-import ErrorFallback from './components/ErrorFallback';
+import { useAuth } from './context/AuthContext';
+
+import AppRoutes from "./routes/AppRoutes";
 import Navbar from './layout/Navbar/Navbar';
 import Footer from './layout/Footer/Footer';
 import FeedbackWidget from './components/FeedbackWidget/FeedbackWidget';
 import StaticBanner from './components/StaticBanner/StaticBanner';
+import MaintenancePage from "./pages/MaintenancePage";
 
-import Home from './pages/Home/Home';
-import LoginPage from './pages/LoginPage/LoginPage';
-import LogoutPage from './pages/LogoutPage/LogoutPage';
-import RegisterPage from './pages/RegisterPage/RegisterPage';
-import OnboardingPage from './pages/OnboardingPage/OnboardingPage';
-import Game from './pages/Game/Game';
-import ProfilePage from './pages/Profile/Profile';
-import ConfirmationPage from './pages/ConfirmationPage';
-import MaintenancePage from './pages/MaintenancePage';
-// import NotFound from './pages/NotFound'; // optional 404
+import { initGA, logPageView } from '../utils/analytics';
 
 import packageJson from '../package.json';
-import { useAuth } from './context/AuthContext';
-
-import {
-  HashRouter,
-  Routes,
-  Route,
-  Navigate
-} from 'react-router-dom';
-
-import PrivateRoute from './components/PrivateRoute';
-import RequireOnboardingComplete from './components/RequireOnboardingComplete';
-
 const appVersion = packageJson.version;
+const announcement = `Progress RPG is in alpha status, and under active development. Bugs may appear, and data may be lost. Thank you for testing! Version ${appVersion}`;
 
+function RouteChangeTracker() {
+  const location = useLocation();
 
-function AppRoutes() {
-  return (
-    <>
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/logout" element={<LogoutPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/confirm_email/:key" element={<ConfirmationPage />} />
+  useEffect(() => {
+    logPageView(location.pathname + location.search);
+  }, [location]);
 
-            {/* Protected routes */}
-            <Route
-              path="/onboarding"
-              element={
-                <PrivateRoute>
-                  <OnboardingPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/game"
-              element={
-                <PrivateRoute>
-                  <RequireOnboardingComplete>
-                    <ErrorBoundary FallbackComponent={ErrorFallback}>
-                      <Game />
-                    </ErrorBoundary>
-                  </RequireOnboardingComplete>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <PrivateRoute>
-                  <ErrorBoundary FallbackComponent={ErrorFallback}>
-                    <ProfilePage />
-                  </ErrorBoundary>
-                </PrivateRoute>
-              }
-            />
-            <Route path="*" element={<h2>404: Page Not Found</h2>} />
-          </Routes>
-        </main>
-      </ErrorBoundary>
-    </>
-  );
+  return null;
 }
+
 
 function App() {
   const { isAuthenticated } = useAuth();
-  const announcement = `Progress RPG is in alpha status, and under active development. Bugs may appear, and data disappear, without warning. Version ${appVersion}`;
   const maintenance = useMaintenanceStatus();
+
+  useEffect(() => {
+    initGA();
+  }, [])
+
 
   if (maintenance.loading) {
     return <div>Loading...</div>
@@ -98,9 +45,11 @@ function App() {
   if (maintenance.active) {
     return <MaintenancePage {...maintenance.details} />;
   }
+
   return (
     <GameProvider>
-      <HashRouter>
+      <BrowserRouter>
+        <RouteChangeTracker />
         <div className="app-container">
           <Navbar />
           <StaticBanner message={announcement} />
@@ -108,7 +57,7 @@ function App() {
           <Footer />
           {isAuthenticated && <FeedbackWidget />}
         </div>
-      </HashRouter>
+      </BrowserRouter>
     </GameProvider>
   );
 }

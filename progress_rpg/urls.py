@@ -24,8 +24,11 @@ urlpatterns = [
     path("", include("payments.urls")),
     path("", include("gameworld.urls")),
     path("", include("server_management.urls")),
-    path("", TemplateView.as_view(template_name="users/index.html"), name="index"),
     re_path(r"^\.well-known/.*$", lambda request: HttpResponseNotFound()),
+    re_path(
+        r"^(?!api|admin|static|media).*",
+        TemplateView.as_view(template_name="index.html"),
+    ),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 """ # Serve media files during development
