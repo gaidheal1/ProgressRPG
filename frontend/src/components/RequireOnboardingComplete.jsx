@@ -1,3 +1,4 @@
+// RequireOnboardingComplete.jsx
 import { Navigate } from 'react-router-dom';
 import useOnboarding from '../hooks/useOnboarding';
 
