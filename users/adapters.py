@@ -6,9 +6,7 @@ from allauth.account.utils import user_email
 
 class CustomAccountAdapter(DefaultAccountAdapter):
     def send_confirmation_mail(self, request, emailconfirmation, signup):
-        activate_url = (
-            f"{settings.FRONTEND_URL}/#/confirm_email/{emailconfirmation.key}"
-        )
+        activate_url = f"{settings.FRONTEND_URL}/confirm_email/{emailconfirmation.key}"
         ctx = {
             "user": emailconfirmation.email_address.user,
             "current_site": get_current_site(request),

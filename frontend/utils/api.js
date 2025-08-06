@@ -1,4 +1,4 @@
-// src/utils/api.js
+/#/ src/utils/api.js
 import { jwtDecode } from "jwt-decode";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
@@ -19,7 +19,7 @@ function clearAuthAndRedirect() {
   localStorage.removeItem('refreshToken');
 
   // Redirect to login or show login modal
-  window.location.href = '/#/login'; // ✅ Direct browser redirect
+  window.location.href = '/login'; // ✅ Direct browser redirect
 }
 
 

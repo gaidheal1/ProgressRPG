@@ -4,7 +4,7 @@ import { injectAxe, checkA11y } from 'axe-playwright';
 
 test.skip('game screen has no obvious accessibility violations', async ({ page }) => {
   // First, go to the login page and log in
-  await page.goto('http://localhost:5173/#/login');
+  await page.goto('http://localhost:5173/login');
   await page.fill('input[name="email"]', 'gaidheal01+test1@gmail.com');
   await page.fill('input[name="password"]', 'correcthorsebatterystaple');
   const form = page.locator('form');

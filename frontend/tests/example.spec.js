@@ -10,7 +10,7 @@ test('homepage has expected content', async ({ page }) => {
 
 
 test('user can log in and gets redirected', async ({ page }) => {
-  await page.goto('http://localhost:5173/#/login');
+  await page.goto('http://localhost:5173/login');
 
   //await page.pause();
   // Fill in email and password inputs by their name attribute

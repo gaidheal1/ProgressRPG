@@ -162,7 +162,7 @@ class CustomRegisterView(RegisterView):
         confirmation.save()
 
         quoted_key = quote(confirmation.key)
-        activate_url = f"{settings.FRONTEND_URL}/#/confirm_email/{quoted_key}"
+        activate_url = f"{settings.FRONTEND_URL}/confirm_email/{quoted_key}"
 
         context = {
             "user": user,
