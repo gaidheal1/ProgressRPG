@@ -6,23 +6,23 @@
 	background: #fff;
 	border-radius: 8px;
 	box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
-  
+
 	h2 {
 	  text-align: center;
 	  margin-bottom: 1.5rem;
 	}
-  
+
 	p {
 	  text-align: center;
 	  margin-top: 1rem;
 	}
-  
+
 	a {
 	  color: #006400;
 	  text-decoration: underline;
 	}
   }
-  
+
 
 form {
 	display: flex;
@@ -49,7 +49,7 @@ form {
 		border-radius: 4px;
 		font-size: 1rem;
 	}
-	
+
 	.error {
 		color: red;
 		font-size: 0.875em;

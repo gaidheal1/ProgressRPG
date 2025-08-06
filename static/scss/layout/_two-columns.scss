@@ -6,11 +6,11 @@
 	align-items: flex-start;
 	gap: 0.5rem;
 	width: 100%;
-	
+
 	@include respond-to (small) {
 		flex-direction: column;
 	}
-	
+
 	@include respond-to (big) {
 		flex-direction: row;
 	}
@@ -25,14 +25,14 @@
 	background: #E8FFF1;
 	border: 1px solid rgba(0, 0, 0, 0.45);
 	border-radius: 0.5rem;
-	
+
 	@include respond-to (small) {
 		flex: 1 1 100%;
 		width: 100%;
 		max-width: 100%;
 		align-self: stretch;
 	}
-	
+
 	@include respond-to (big) {
 		flex: 1 1 50%;
 		align-self: stretch;
@@ -55,7 +55,7 @@
 	&.justify-between {
 		justify-content: space-between;
 	  }
-	
+
 	&.justify-center {
 	justify-content: center;
 	}

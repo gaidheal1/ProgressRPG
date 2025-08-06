@@ -1,0 +1,46 @@
+@use '../styles/utilities/mixins' as m;
+@use '../styles/base/variables' as v;
+@use '../styles/semantic/colors' as c;
+
+@mixin two-column-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: v.$spacing-gap;
+  width: 100%;
+  max-width: 100vw;
+  flex-direction: column;
+
+  @include m.respond-to(sm) {
+    flex-direction: row;
+  }
+
+}
+
+@mixin section-box {
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: v.$spacing-gap;
+  padding: v.$padding-base;
+  background: c.$color-bg;
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  border-radius: v.$border-radius;
+  align-self: stretch;
+  max-width: 100%;
+
+  width: 100%;
+
+  @include m.respond-to(sm) {
+    flex: 1 1 50%;
+    width: 50%;
+  }
+}
+
+
+@mixin bodyRow {
+  display: flex;
+  flex-direction: column;
+  gap: v.$spacing-gap;
+}

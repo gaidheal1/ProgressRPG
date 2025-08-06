@@ -6,18 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0025_alter_customuser_managers'),
+        ("users", "0025_alter_customuser_managers"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='InviteCode',
+            name="InviteCode",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.CharField(max_length=50, unique=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('max_uses', models.PositiveIntegerField(blank=True, null=True)),
-                ('uses', models.PositiveIntegerField(default=0)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("code", models.CharField(max_length=50, unique=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("max_uses", models.PositiveIntegerField(blank=True, null=True)),
+                ("uses", models.PositiveIntegerField(default=0)),
             ],
         ),
     ]

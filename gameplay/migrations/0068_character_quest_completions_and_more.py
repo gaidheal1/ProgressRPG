@@ -7,23 +7,32 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('character', '0001_initial'),
-        ('gameplay', '0067_remove_character_quest_completions_and_more'),
+        ("character", "0001_initial"),
+        ("gameplay", "0067_remove_character_quest_completions_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='character',
-            name='quest_completions',
-            field=models.ManyToManyField(related_name='completed_byWIP', through='gameplay.QuestCompletion', to='gameplay.quest'),
+            model_name="character",
+            name="quest_completions",
+            field=models.ManyToManyField(
+                related_name="completed_byWIP",
+                through="gameplay.QuestCompletion",
+                to="gameplay.quest",
+            ),
         ),
         migrations.AddField(
-            model_name='questcompletion',
-            name='character_wip',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='gameplay.character'),
+            model_name="questcompletion",
+            name="character_wip",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="gameplay.character",
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='questcompletion',
-            unique_together={('character', 'quest')},
+            name="questcompletion",
+            unique_together={("character", "quest")},
         ),
     ]

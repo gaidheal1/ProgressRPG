@@ -6,21 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0074_alter_activity_xp_rate'),
+        ("gameplay", "0074_alter_activity_xp_rate"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='quest',
-            name='xp_rate',
+            model_name="quest",
+            name="xp_rate",
         ),
         migrations.RemoveField(
-            model_name='questresults',
-            name='xp_reward',
+            model_name="questresults",
+            name="xp_reward",
         ),
         migrations.AddField(
-            model_name='questresults',
-            name='xp_rate',
+            model_name="questresults",
+            name="xp_rate",
             field=models.IntegerField(default=1),
         ),
     ]

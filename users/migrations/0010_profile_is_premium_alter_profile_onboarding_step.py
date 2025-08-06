@@ -6,18 +6,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0009_profile_onboarding_step'),
+        ("users", "0009_profile_onboarding_step"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='is_premium',
+            model_name="profile",
+            name="is_premium",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='profile',
-            name='onboarding_step',
-            field=models.PositiveIntegerField(choices=[(0, 'Not started'), (1, 'Step 1: Profile creation'), (2, 'Step 2: Character generation'), (3, 'Step 3: Subscription'), (4, 'Completed')], default=0),
+            model_name="profile",
+            name="onboarding_step",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "Not started"),
+                    (1, "Step 1: Profile creation"),
+                    (2, "Step 2: Character generation"),
+                    (3, "Step 3: Subscription"),
+                    (4, "Completed"),
+                ],
+                default=0,
+            ),
         ),
     ]

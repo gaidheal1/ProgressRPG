@@ -6,17 +6,17 @@
 	align-items: flex-start;
 	justify-content: center;
 	isolation: isolate;
-	
+
 	//height: 3.5rem;
 	padding: 0;
 	//border-radius: 0.25rem 0.25rem 0 0;
 
-	@include respond-to(small) {
+	@include respond-to(sm) {
 		width: 100%;
 		max-width: none;
 	}
 
-	@include respond-to(big) {
+	@include respond-to(lg) {
 		width: 80%;
 		max-width: 30rem;
 	}

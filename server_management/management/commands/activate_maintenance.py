@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from server_management.models import MaintenanceWindow
 
+
 class Command(BaseCommand):
     help = "Activates maintenance mode"
 

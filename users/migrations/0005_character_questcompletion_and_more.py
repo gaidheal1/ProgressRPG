@@ -7,31 +7,67 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0006_remove_questrequirement_quest_needed_and_more'),
-        ('users', '0004_alter_customuser_managers'),
+        ("gameplay", "0006_remove_questrequirement_quest_needed_and_more"),
+        ("users", "0004_alter_customuser_managers"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Character',
+            name="Character",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='users.profile')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="users.profile"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='QuestCompletion',
+            name="QuestCompletion",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('times_completed', models.PositiveIntegerField(default=0)),
-                ('character', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='users.character')),
-                ('quest', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='gameplay.quest')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("times_completed", models.PositiveIntegerField(default=0)),
+                (
+                    "character",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="users.character",
+                    ),
+                ),
+                (
+                    "quest",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="gameplay.quest"
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='character',
-            name='quest_completions',
-            field=models.ManyToManyField(related_name='completed_by', through='users.QuestCompletion', to='gameplay.quest'),
+            model_name="character",
+            name="quest_completions",
+            field=models.ManyToManyField(
+                related_name="completed_by",
+                through="users.QuestCompletion",
+                to="gameplay.quest",
+            ),
         ),
     ]

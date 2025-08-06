@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0075_remove_quest_xp_rate_remove_questresults_xp_reward_and_more'),
+        (
+            "gameplay",
+            "0075_remove_quest_xp_rate_remove_questresults_xp_reward_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='project',
-            name='description',
+            model_name="project",
+            name="description",
             field=models.TextField(max_length=2000),
         ),
     ]

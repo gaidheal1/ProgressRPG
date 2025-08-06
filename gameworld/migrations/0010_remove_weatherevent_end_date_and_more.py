@@ -7,42 +7,52 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('locations', '0001_initial'),
-        ('gameworld', '0009_weather_weatherevent_weathertype_and_more'),
+        ("locations", "0001_initial"),
+        ("gameworld", "0009_weather_weatherevent_weathertype_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='weatherevent',
-            name='end_date',
+            model_name="weatherevent",
+            name="end_date",
         ),
         migrations.RemoveField(
-            model_name='weatherevent',
-            name='start_date',
+            model_name="weatherevent",
+            name="start_date",
         ),
         migrations.AddField(
-            model_name='weatherevent',
-            name='end',
+            model_name="weatherevent",
+            name="end",
             field=models.DateTimeField(null=True),
         ),
         migrations.AddField(
-            model_name='weatherevent',
-            name='start',
+            model_name="weatherevent",
+            name="start",
             field=models.DateTimeField(null=True),
         ),
         migrations.AlterField(
-            model_name='weather',
-            name='date',
+            model_name="weather",
+            name="date",
             field=models.DateTimeField(),
         ),
         migrations.AlterField(
-            model_name='weather',
-            name='weather_event',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='gameworld.weatherevent'),
+            model_name="weather",
+            name="weather_event",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="gameworld.weatherevent",
+            ),
         ),
         migrations.AlterField(
-            model_name='weatherevent',
-            name='location',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='locations.location'),
+            model_name="weatherevent",
+            name="location",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="locations.location",
+            ),
         ),
     ]

@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0049_alter_dailystats_recorddate'),
+        ("gameplay", "0049_alter_dailystats_recorddate"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='quest',
-            name='intro_text',
+            model_name="quest",
+            name="intro_text",
             field=models.TextField(blank=True, max_length=2000),
         ),
         migrations.AddField(
-            model_name='quest',
-            name='outro_text',
+            model_name="quest",
+            name="outro_text",
             field=models.TextField(blank=True, max_length=2000),
         ),
     ]

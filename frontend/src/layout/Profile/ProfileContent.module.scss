@@ -1,0 +1,11 @@
+@use '../two-columns' as tc;
+
+
+.profileContent {
+  //outline: 2px solid red;
+  @include tc.two-column-layout;
+}
+
+.profileSection {
+  @include tc.section-box;
+}

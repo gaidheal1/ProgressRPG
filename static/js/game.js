@@ -106,7 +106,7 @@ class Quest {
       } else {
         console.log("Quest complete!");
       }
-    } 
+    }
 
   updateProgress(elapsedTime) {
     while (
@@ -121,7 +121,7 @@ class Quest {
     document.getElementById("current-quest-title").textContent = this.name;
     document.getElementById("current-quest-intro").textContent = this.intro;
     document.getElementById("current-quest-outro").textContent = this.outro;
-    
+
     const stagesList = document.getElementById("quest-stages-list");
     stagesList.style.display = "flex";
 
@@ -249,7 +249,7 @@ class Timer extends EventEmitter {
 
   updateTimer() {
     this.elapsedTime = this.pausedTime + Math.round((Date.now() - this.startTime) / 1000);
-    
+
     if (this.mode === "quest") {
       this.remainingTime = this.duration - this.elapsedTime;
       window.currentQuest.updateProgress(this.elapsedTime);
@@ -725,7 +725,7 @@ function handleQuestCompleteResponse(data) {
     );
     submitQuestDisplayUpdate();
     window.questSelected = false;
-    
+
     // document.getElementById("current-stage-section").style.display = "none";
     // document
     //   .getElementById("start-activity-btn")

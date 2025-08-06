@@ -1,0 +1,44 @@
+@use 'sass:map';
+@use '../base/variables' as v;
+
+// Media query mixin for responsive breakpoints
+@mixin respond-to($breakpoint) {
+  $value: map.get(v.$breakpoints, $breakpoint);
+
+  @if value {
+    @media (min-width: $value) {
+      @content;
+    }
+  } @else {
+    @warn "No value found for breakpoint `#{$breakpoint}`.";
+  }
+}
+
+@mixin apply-text-style($style) {
+  $base: map.get($style, base);
+
+  @if $base {
+    @each $prop, $value in $base {
+      #{$prop}: #{$value};
+    }
+  }
+
+  // Responsive layers
+  @each $breakpoint, $settings in $style {
+    @if $breakpoint != base {
+      @include respond-to($breakpoint) {
+        @each $prop, $value in $settings {
+          #{$prop}: #{$value};
+        }
+      }
+    }
+  }
+}
+
+
+@mixin a11y-focus {
+  &:focus-visible {
+    outline: 2px solid v.$color-accent;
+    outline-offset: 2px;
+  }
+}

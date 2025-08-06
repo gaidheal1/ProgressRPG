@@ -1,0 +1,84 @@
+@use '../../styles/base/variables' as v;
+@use '../../styles/utilities/mixins' as m;
+@use '../../styles/semantic/typography' as t;
+@use '../../styles/semantic/colors' as c;
+@use 'sass:map';
+
+.feedbackWidget {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 1000;
+
+  .feedbackButton {
+    padding: 0.75rem 1rem;
+  }
+
+  .feedbackModal {
+    position: fixed;
+    bottom: 4.5rem;
+    right: 1rem;
+    width: 90vw;
+    max-width: 320px;
+    background-color: c.$color-bg;
+    border: 1px solid c.$color-border-primary;
+    border-radius: v.$border-radius;
+    box-shadow: 0 v.$spacing-sm v.$spacing-md rgba(0,0,0,0.2);
+    padding: 1rem;
+    z-index: 1001;
+    animation: slide-up 0.2s ease-out;
+
+    @keyframes slide-up {
+      from {
+        opacity: 0;
+        transform: translateY(10%);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .closeButton {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.75rem;
+    }
+
+    .modalContent {
+
+      .buttonGroup {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .modalButton {
+          padding: 0.5rem 0.75rem;
+          border-radius: v.$border-radius;
+          text-align: center;
+          text-decoration: none;
+          font-weight: 500;
+
+          @include t.apply-text-style(t.$text-button);
+          @include c.apply-text-tone(map.get(c.$text-tone, inverted));
+
+          &.github {
+            background-color: #24292e;
+          }
+
+          &.form {
+            background-color: #34a853;
+          }
+
+          &.discord {
+            background-color: #5865f2;
+          }
+
+          &:hover {
+            opacity: 0.9;
+          }
+        }
+      }
+    }
+  }
+}

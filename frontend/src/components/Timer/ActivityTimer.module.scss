@@ -1,0 +1,21 @@
+@use '../../styles/base/variables' as v;
+@use '../../layout/two-columns' as tc;
+@use '../../styles/semantic/typography' as t;
+@use '../../styles/semantic/colors' as c;
+
+.currentActivitySection {
+  display: flex;
+  flex-direction: column;
+  gap: v.$spacing-gap;
+  padding: v.$spacing-sm v.$spacing-md;
+  border-radius: v.$border-radius;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  width: 100%;
+  margin: 0 auto;
+  background-color: c.$color-bg;
+}
+
+
+.activityRow {
+  @include tc.bodyRow;
+}

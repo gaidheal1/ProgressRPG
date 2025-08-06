@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0016_remove_profile_profile_picture_alter_profile_buffs'),
+        ("users", "0016_remove_profile_profile_picture_alter_profile_buffs"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='xp_next_level',
+            model_name="profile",
+            name="xp_next_level",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

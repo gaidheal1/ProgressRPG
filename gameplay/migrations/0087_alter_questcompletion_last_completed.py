@@ -7,13 +7,13 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0086_alter_quest_duration_choices'),
+        ("gameplay", "0086_alter_quest_duration_choices"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='questcompletion',
-            name='last_completed',
+            model_name="questcompletion",
+            name="last_completed",
             field=models.DateTimeField(default=django.utils.timezone.now),
         ),
     ]

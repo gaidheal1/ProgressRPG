@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0022_alter_quest_frequency'),
+        ("gameplay", "0022_alter_quest_frequency"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='character',
-            name='total_quests',
+            model_name="character",
+            name="total_quests",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

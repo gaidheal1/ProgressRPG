@@ -1,0 +1,31 @@
+@use './variables' as v;
+@use '../semantic/colors' as c;
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+// Enhanced focus indicator for keyboard navigation
+:focus-visible {
+  outline: 2px solid c.$color-border-accent;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@mixin visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

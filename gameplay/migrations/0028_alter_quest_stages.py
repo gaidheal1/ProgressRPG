@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0027_quest_stages_delete_queststage'),
+        ("gameplay", "0027_quest_stages_delete_queststage"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='quest',
-            name='stages',
+            model_name="quest",
+            name="stages",
             field=models.JSONField(default=dict),
         ),
     ]

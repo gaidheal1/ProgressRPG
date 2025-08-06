@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0011_profile_last_login_profile_login_streak'),
+        ("users", "0011_profile_last_login_profile_login_streak"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='profile',
-            name='login_streak',
+            model_name="profile",
+            name="login_streak",
             field=models.PositiveIntegerField(default=1),
         ),
     ]

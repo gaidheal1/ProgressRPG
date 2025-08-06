@@ -7,35 +7,72 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameworld', '0010_remove_weatherevent_end_date_and_more'),
+        ("gameworld", "0010_remove_weatherevent_end_date_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='GameCalendar',
+            name="GameCalendar",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start_year', models.IntegerField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("start_year", models.IntegerField()),
             ],
         ),
         migrations.CreateModel(
-            name='Season',
+            name="Season",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(choices=[('Spring', 'Spring'), ('Summer', 'Summer'), ('Autumn', 'Autumn'), ('Winter', 'Winter')], max_length=6)),
-                ('start_date', models.DateField()),
-                ('end_date', models.DateField()),
-                ('year', models.IntegerField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        choices=[
+                            ("Spring", "Spring"),
+                            ("Summer", "Summer"),
+                            ("Autumn", "Autumn"),
+                            ("Winter", "Winter"),
+                        ],
+                        max_length=6,
+                    ),
+                ),
+                ("start_date", models.DateField()),
+                ("end_date", models.DateField()),
+                ("year", models.IntegerField()),
             ],
         ),
         migrations.AddField(
-            model_name='weatherevent',
-            name='season',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='gameworld.season'),
+            model_name="weatherevent",
+            name="season",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="gameworld.season",
+            ),
         ),
         migrations.AlterField(
-            model_name='weather',
-            name='season',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='gameworld.season'),
+            model_name="weather",
+            name="season",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="gameworld.season",
+            ),
         ),
     ]

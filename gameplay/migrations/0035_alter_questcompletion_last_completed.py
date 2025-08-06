@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0034_appliedbuff_alter_quest_duration'),
+        ("gameplay", "0034_appliedbuff_alter_quest_duration"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='questcompletion',
-            name='last_completed',
+            model_name="questcompletion",
+            name="last_completed",
             field=models.DateTimeField(),
         ),
     ]

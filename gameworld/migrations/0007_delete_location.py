@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0066_remove_character_location_and_more'),
-        ('gameworld', '0006_alter_characterprogression_base_progression_rate_and_more'),
+        ("gameplay", "0066_remove_character_location_and_more"),
+        ("gameworld", "0006_alter_characterprogression_base_progression_rate_and_more"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='Location',
+            name="Location",
         ),
     ]

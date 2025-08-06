@@ -7,36 +7,66 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0016_character_coins_character_level_character_xp_and_more'),
-        ('users', '0009_profile_onboarding_step'),
+        ("gameplay", "0016_character_coins_character_level_character_xp_and_more"),
+        ("users", "0009_profile_onboarding_step"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ActivityTimer',
+            name="ActivityTimer",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start_time', models.DateTimeField(blank=True, null=True)),
-                ('elapsed_time', models.IntegerField(default=0)),
-                ('is_running', models.BooleanField(default=False)),
-                ('profile', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='activity_timer', to='users.profile')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("start_time", models.DateTimeField(blank=True, null=True)),
+                ("elapsed_time", models.IntegerField(default=0)),
+                ("is_running", models.BooleanField(default=False)),
+                (
+                    "profile",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="activity_timer",
+                        to="users.profile",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='QuestTimer',
+            name="QuestTimer",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start_time', models.DateTimeField(blank=True, null=True)),
-                ('elapsed_time', models.IntegerField(default=0)),
-                ('is_running', models.BooleanField(default=False)),
-                ('duration', models.IntegerField()),
-                ('character', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='quest_timer', to='gameplay.character')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("start_time", models.DateTimeField(blank=True, null=True)),
+                ("elapsed_time", models.IntegerField(default=0)),
+                ("is_running", models.BooleanField(default=False)),
+                ("duration", models.IntegerField()),
+                (
+                    "character",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="quest_timer",
+                        to="gameplay.character",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

@@ -1,13 +1,14 @@
 db.sqlite3
-.venv
 venv
 venv-windows
 venv-linux
 __pycache__/
+.venv
 .env
 env.env
 env
-node_modules
+node_modules/
+test-results/
 .dockerignore
 gunicorn_config.py
 backup_file.sql

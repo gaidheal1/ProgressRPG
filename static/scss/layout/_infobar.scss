@@ -29,12 +29,12 @@
 	align-self: auto;
 	gap: 0.25rem;
 	flex: 1 1 45%;
-	
+
 	&.left {
 		justify-content: flex-start;
 		order: 0;
 	}
-	
+
 	&.right {
 		justify-content: flex-end;
 		order: 1;
@@ -59,7 +59,7 @@
 	align-items: center;
 	color: #000000;
 	letter-spacing: 0.4px;
-	
+
 	white-space: normal;
 	word-break: break-word;
 	text-align: right;

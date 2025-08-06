@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameworld', '0005_alter_characterprogression_date_started'),
+        ("gameworld", "0005_alter_characterprogression_date_started"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='characterprogression',
-            name='base_progression_rate',
+            model_name="characterprogression",
+            name="base_progression_rate",
             field=models.PositiveIntegerField(default=1),
         ),
         migrations.AlterField(
-            model_name='characterprogression',
-            name='player_acceleration_factor',
+            model_name="characterprogression",
+            name="player_acceleration_factor",
             field=models.PositiveIntegerField(default=2),
         ),
     ]

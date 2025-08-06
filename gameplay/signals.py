@@ -21,16 +21,27 @@ logger = logging.getLogger("django")
 def handle_new_activity(sender, instance, created, **kwargs):
     """Handles all activity submission jobs"""
     if created:
-        try:
-            logger.info(f"[HANDLE NEW ACTIVITY] New activity created: {instance.id}, profile: {instance.profile.id}")
+        """try:
+            logger.info(
+                f"[HANDLE NEW ACTIVITY] New activity created: {instance.id}, profile: {instance.profile.id}"
+            )
             instance.profile.add_activity(instance.duration, 1)
         except IntegrityError as e:
-            logger.error(f"[HANDLE NEW ACTIVITY] IntegrityError while adding activity for profile {instance.profile.id}: {e}", exc_info=True)
+            logger.error(
+                f"[HANDLE NEW ACTIVITY] IntegrityError while adding activity for profile {instance.profile.id}: {e}",
+                exc_info=True,
+            )
         except ObjectDoesNotExist as e:
-            logger.error(f"[HANDLE NEW ACTIVITY] ObjectDoesNotExist error for activity {instance.id}: {e}", exc_info=True)
+            logger.error(
+                f"[HANDLE NEW ACTIVITY] ObjectDoesNotExist error for activity {instance.id}: {e}",
+                exc_info=True,
+            )
         except Exception as e:
-            logger.error(f"[HANDLE NEW ACTIVITY] Unexpected error for activity {instance.id}: {e}", exc_info=True)
-
+            logger.error(
+                f"[HANDLE NEW ACTIVITY] Unexpected error for activity {instance.id}: {e}",
+                exc_info=True,
+            )
+        """
         # Event Progress Updates
         """
         try:
@@ -50,7 +61,7 @@ def handle_new_activity(sender, instance, created, **kwargs):
 @receiver(user_logged_in)
 def update_login_streak(sender, request, user, **kwargs):
     """Updates the user's login streak."""
-    if hasattr(user, 'profile'):
+    if hasattr(user, "profile"):
         profile = user.profile
         try:
             last_login_date = profile.last_login.date()
@@ -58,16 +69,21 @@ def update_login_streak(sender, request, user, **kwargs):
 
             if current_date == last_login_date + timedelta(days=1):
                 profile.login_streak += 1
-                if profile.login_streak_max < profile.login_streak: 
+                if profile.login_streak_max < profile.login_streak:
                     profile.login_streak_max = profile.login_streak
             elif current_date > last_login_date + timedelta(days=1):
                 profile.login_streak = 1
 
             profile.last_login = now()
             profile.save()
-            logger.debug(f"[UPDATE LOGIN STREAK] Login streak updated for profile {profile.id}: streak {profile.login_streak}, max streak {profile.login_streak_max}")
+            logger.debug(
+                f"[UPDATE LOGIN STREAK] Login streak updated for profile {profile.id}: streak {profile.login_streak}, max streak {profile.login_streak_max}"
+            )
         except Exception as e:
-            logger.error(f"[UPDATE LOGIN STREAK] Error updating login streak for user {user.id}: {e}", exc_info=True)
+            logger.error(
+                f"[UPDATE LOGIN STREAK] Error updating login streak for user {user.id}: {e}",
+                exc_info=True,
+            )
 
 
 @receiver(post_save, sender=Quest)
@@ -76,11 +92,19 @@ def create_quest_results(sender, instance, created, **kwargs):
     if created:
         try:
             QuestResults.objects.create(quest=instance)
-            logger.info(f"[CREATE QUEST RESULTS] Quest results created for quest: {instance.id}")
+            logger.info(
+                f"[CREATE QUEST RESULTS] Quest results created for quest: {instance.id}"
+            )
         except IntegrityError as e:
-            logger.error(f"[CREATE QUEST RESULTS] IntegrityError while creating quest results for quest {instance.id}: {e}", exc_info=True)
+            logger.error(
+                f"[CREATE QUEST RESULTS] IntegrityError while creating quest results for quest {instance.id}: {e}",
+                exc_info=True,
+            )
         except Exception as e:
-            logger.error(f"[CREATE QUEST RESULTS] Unexpected error while creating quest results for quest {instance.id}: {e}", exc_info=True)
+            logger.error(
+                f"[CREATE QUEST RESULTS] Unexpected error while creating quest results for quest {instance.id}: {e}",
+                exc_info=True,
+            )
 
 
 @receiver(post_save, sender=ServerMessage)
@@ -92,6 +116,5 @@ def server_message_created(sender, instance, created, **kwargs):
 
         channel_layer = get_channel_layer()
         async_to_sync(send_group_message)(
-            instance.group,
-            {"type": "send_pending_messages"}
+            instance.group, {"type": "send_pending_messages"}
         )

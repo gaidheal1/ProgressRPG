@@ -6,18 +6,38 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0077_alter_questcompletion_times_completed'),
+        ("gameplay", "0077_alter_questcompletion_times_completed"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='activitytimer',
-            name='status',
-            field=models.CharField(choices=[('active', 'Active'), ('paused', 'Paused'), ('waiting', 'Waiting'), ('completed', 'Completed'), ('empty', 'Empty')], default='empty', max_length=20),
+            model_name="activitytimer",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("active", "Active"),
+                    ("paused", "Paused"),
+                    ("waiting", "Waiting"),
+                    ("completed", "Completed"),
+                    ("empty", "Empty"),
+                ],
+                default="empty",
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='questtimer',
-            name='status',
-            field=models.CharField(choices=[('active', 'Active'), ('paused', 'Paused'), ('waiting', 'Waiting'), ('completed', 'Completed'), ('empty', 'Empty')], default='empty', max_length=20),
+            model_name="questtimer",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("active", "Active"),
+                    ("paused", "Paused"),
+                    ("waiting", "Waiting"),
+                    ("completed", "Completed"),
+                    ("empty", "Empty"),
+                ],
+                default="empty",
+                max_length=20,
+            ),
         ),
     ]

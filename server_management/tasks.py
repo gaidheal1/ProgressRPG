@@ -8,7 +8,6 @@ import logging
 logger = logging.getLogger("django")
 
 
-
 @shared_task
 def send_warning(message="Warning: maintenance is approaching!"):
     print("⚠️ Warning: Scheduled maintenance is approaching!")
@@ -22,12 +21,15 @@ def send_warning(message="Warning: maintenance is approaching!"):
         is_draft=False,
     )
 
+
 @shared_task
 def activate_maintenance(window_id):
     """Activates the maintenance window when scheduled."""
     logger.info(f"[TASK ACTIVATE MAINTENANCE]")
 
-    message = "Maintenance is starting! Your timers will be paused and your progress saved."
+    message = (
+        "Maintenance is starting! Your timers will be paused and your progress saved."
+    )
 
     ServerMessage.objects.create(
         group="online_users",
@@ -37,13 +39,13 @@ def activate_maintenance(window_id):
         message=message,
         is_draft=False,
     )
-    
+
     window = MaintenanceWindow.objects.get(id=window_id)
 
     if not window.is_active:
-            window.activate_maintenance()
-            
+        window.activate_maintenance()
+
+
 @shared_task
 def deactivate_maintenance():
     subprocess.run(["python", "server_management/scripts/deactivate_maintenance.py"])
-

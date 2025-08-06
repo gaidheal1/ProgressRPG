@@ -6,28 +6,38 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0063_remove_activitytimer_is_running_and_more'),
+        ("gameplay", "0063_remove_activitytimer_is_running_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='quest',
-            name='duration_choices',
+            model_name="quest",
+            name="duration_choices",
             field=models.JSONField(default=list),
         ),
         migrations.AlterField(
-            model_name='quest',
-            name='default_duration',
-            field=models.IntegerField(choices=[(300, '5 minutes'), (600, '10 minutes'), (900, '15 minutes'), (1200, '20 minutes'), (1500, '25 minutes'), (1800, '30 minutes')], default=5),
+            model_name="quest",
+            name="default_duration",
+            field=models.IntegerField(
+                choices=[
+                    (300, "5 minutes"),
+                    (600, "10 minutes"),
+                    (900, "15 minutes"),
+                    (1200, "20 minutes"),
+                    (1500, "25 minutes"),
+                    (1800, "30 minutes"),
+                ],
+                default=5,
+            ),
         ),
         migrations.AlterField(
-            model_name='questcompletion',
-            name='last_completed',
+            model_name="questcompletion",
+            name="last_completed",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AlterField(
-            model_name='questcompletion',
-            name='times_completed',
+            model_name="questcompletion",
+            name="times_completed",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

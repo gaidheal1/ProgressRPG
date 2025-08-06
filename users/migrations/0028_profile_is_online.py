@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0027_invitecode_created_at_invitecode_expires_at'),
+        ("users", "0027_invitecode_created_at_invitecode_expires_at"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='is_online',
+            model_name="profile",
+            name="is_online",
             field=models.BooleanField(default=False),
         ),
     ]
