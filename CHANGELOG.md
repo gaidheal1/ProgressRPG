@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.12.0 - 2025-08-06
+
+- fix: added dry-run shortcut (-DR)
+- feat: rewrite toasts to add toast context at top level; rewrite websockets for connection handling
+- Update changelog for v0.11.1
+
 ## v0.11.1 - 2025-08-06
 
 - fix: adjusting routes to remove hashes
