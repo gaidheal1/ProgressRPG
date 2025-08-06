@@ -1,35 +1,35 @@
 // context/WebSocketContext.jsx
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import React, { createContext, useContext, useRef, useCallback } from 'react';
 import { useGame } from './GameContext';
-import { useToasts } from '../hooks/useToasts';
+import { useToast } from './ToastContext';
 import { useWebSocketConnection } from '../hooks/useWebSocketConnection';
+import { handleGlobalWebSocketEvent } from '../websockets/handleGlobalWebSocketEvent';
 
 const WebSocketContext = createContext();
 
 export function WebSocketProvider({ children }) {
   const { player } = useGame();
-  const { showToast } = useToasts();
+  const { showToast } = useToast();
   const eventHandlersRef = useRef(new Set());
 
- // Memoize event handlers to keep stable references and fresh closures
   const onMessage = useCallback((data) => {
-    if (data.type === 'notification' && data.message) {
-      showToast(data.message);
-    }
+    //console.log("[WS Provider] showToast:", showToast);
+    handleGlobalWebSocketEvent(data, { showToast });
+
     eventHandlersRef.current.forEach((handler) => handler(data));
   }, [showToast]);
 
   const onError = useCallback(() => {
-    showToast('WebSocket connection error');
-  }, [showToast]);
+    console.error('WebSocket connection error');
+  }, []);
 
   const onClose = useCallback(() => {
-    showToast('WebSocket disconnected');
-  }, [showToast]);
+    console.warn('WebSocket disconnected');
+  }, []);
 
   const onOpen = useCallback(() => {
-    showToast('WebSocket connected!');
-  }, [showToast]);
+    //console.log('WebSocket connected!');
+  }, []);
 
   const { send, isConnected } = useWebSocketConnection(
     player?.id,

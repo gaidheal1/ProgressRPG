@@ -5,6 +5,7 @@ import { GameProvider } from './context/GameContext';
 import { useMaintenanceStatus } from './hooks/useMaintenanceStatus';
 import { useAuth } from './context/AuthContext';
 import { WebSocketProvider } from './context/WebSocketContext';
+import { ToastProvider } from './context/ToastContext';
 
 import AppRoutes from "./routes/AppRoutes";
 import Navbar from './layout/Navbar/Navbar';
@@ -48,20 +49,22 @@ function App() {
   }
 
   return (
-    <GameProvider>
-      <WebSocketProvider>
-        <BrowserRouter>
-          <RouteChangeTracker />
-          <div className="app-container">
-            <Navbar />
-            <StaticBanner message={announcement} />
-            <AppRoutes />
-            <Footer />
-            {isAuthenticated && <FeedbackWidget />}
-          </div>
-        </BrowserRouter>
-      </WebSocketProvider>
-    </GameProvider>
+    <ToastProvider>
+      <GameProvider>
+        <WebSocketProvider>
+          <BrowserRouter>
+            <RouteChangeTracker />
+            <div className="app-container">
+              <Navbar />
+              <StaticBanner message={announcement} />
+              <AppRoutes />
+              <Footer />
+              {isAuthenticated && <FeedbackWidget />}
+            </div>
+          </BrowserRouter>
+        </WebSocketProvider>
+      </GameProvider>
+    </ToastProvider>
   );
 }
 

@@ -27,7 +27,6 @@ export default function QuestSection() {
         <Button
           className="primary"
           onClick={() => {
-            console.log('Show quests button clicked');
             setModalOpen(true);
           }}
         >
@@ -38,7 +37,6 @@ export default function QuestSection() {
         <QuestModal
           onClose={() => setModalOpen(false)}
           onChooseQuest={(quest, duration) => {
-            console.log('Quest selected:', quest.name, duration);
             assignSubject(quest, duration);
             setModalOpen(false);
           }}

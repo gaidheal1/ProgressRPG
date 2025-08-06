@@ -13,13 +13,42 @@ export function useWebSocketConnection(
   const reconnectAttempts = useRef(0);
 
   const [isConnected, setIsConnected] = useState(false);
+  const connectingRef = useRef(false);
 
   const maxReconnectAttempts = 10;
   const baseReconnectInterval = 1000; // 1 second
   const reconnectDecay = 1.5;
 
   const connectWebSocket = useCallback(async () => {
+    if (connectingRef.current) {
+      //console.log('[WS] Already connecting, skipping');
+      return;
+    }
+
     if (!playerId) return;
+
+    connectingRef.current = true;
+
+    if (socketRef.current) {
+      if (
+      socketRef.current.readyState === WebSocket.OPEN ||
+      socketRef.current.readyState === WebSocket.CONNECTING
+      ) {
+        //console.log('[WS] Socket already open or connecting, skipping new connection');
+       return;
+      }
+      // Only close if socket is OPEN or CONNECTING
+      if (
+        socketRef.current.readyState === WebSocket.OPEN ||
+        socketRef.current.readyState === WebSocket.CONNECTING
+      ) {
+        socketRef.current.close();
+        socketRef.current = null;
+      }
+    }
+
+    // Add small delay before actually connecting
+    await new Promise((r) => setTimeout(r, 100));
 
     try {
       const { uuid } = await apiFetch('/ws_auth/');
@@ -29,18 +58,16 @@ export function useWebSocketConnection(
       const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = `${protocol}//${url.hostname}:${url.port}/ws/profile_${playerId}/?uuid=${uuid}`;
 
-      if (socketRef.current) {
-        socketRef.current.close();
-        socketRef.current = null;
-      }
+      //console.log(`[WS] Attempting connection for player ${playerId}...`);
+      //console.log('[WS] WebSocket URL:', wsUrl);
 
       const socket = new WebSocket(wsUrl);
       socketRef.current = socket;
 
       socket.onopen = () => {
+        connectingRef.current = false;
         setIsConnected(true);
         reconnectAttempts.current = 0;
-        socket.send(JSON.stringify({ type: 'ping' }));
 
         onOpen?.();
       };
@@ -50,7 +77,7 @@ export function useWebSocketConnection(
           const data = JSON.parse(event.data);
           onMessage?.(data);
         } catch (e) {
-          console.error('[WS] JSON parse error:', e);
+          //console.error('[WS] JSON parse error:', e);
         }
       };
 
@@ -59,14 +86,16 @@ export function useWebSocketConnection(
         onError?.(err);
       };
 
-      socket.onclose = () => {
+      socket.onclose = (event) => {
+        //console.log(`[WS] Socket closed. Code: ${event.code}, Reason: ${event.reason}, Clean: ${event.wasClean}`);
+        connectingRef.current = false;
         setIsConnected(false);
         onClose?.();
 
         if (reconnectAttempts.current < maxReconnectAttempts) {
           const timeout = baseReconnectInterval * (reconnectDecay ** reconnectAttempts.current);
           reconnectAttempts.current += 1;
-
+          //console.log(`[WS] Scheduling reconnect attempt ${reconnectAttempts.current} in ${timeout}ms`);
           reconnectTimeout.current = setTimeout(() => {
             connectWebSocket();
           }, timeout);
@@ -76,6 +105,7 @@ export function useWebSocketConnection(
       };
     } catch (err) {
       console.error('[WS] Failed to authenticate or connect:', err);
+      connectingRef.current = false;
       onError?.(err);
 
       if (reconnectAttempts.current < maxReconnectAttempts) {
@@ -95,8 +125,13 @@ export function useWebSocketConnection(
     connectWebSocket();
 
     return () => {
-      if (reconnectTimeout.current) clearTimeout(reconnectTimeout.current);
+      //console.log('[WS] Effect cleanup: closing socket');
+      if (reconnectTimeout.current) {
+        clearTimeout(reconnectTimeout.current);
+        reconnectTimeout.current = null;
+      }
       if (socketRef.current) {
+        //console.log('[WS] Closing socket', socketRef.current);
         socketRef.current.close();
         socketRef.current = null;
       }

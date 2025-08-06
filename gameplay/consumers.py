@@ -74,7 +74,7 @@ class TimerConsumer(AsyncJsonWebsocketConsumer):
 
     async def disconnect(self, close_code):
         logger.info(
-            f"[DISCONNECT] WebSocket disconnecting with close code: {close_code}"
+            f"[DISCONNECT] WebSocket disconnecting. Player: {self.profile.id} | Code: {close_code}"
         )
         await database_sync_to_async(self.profile.set_offline)()
         await self.channel_layer.group_discard("online_users", self.channel_name)

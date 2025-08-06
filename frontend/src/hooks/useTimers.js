@@ -56,16 +56,16 @@ export default function useTimers({ mode }) {
     }
   }, [globalStageIndex, stages]);
 
+
   // Start timer
   const start = useCallback(async () => {
     if (status === "active") return;
     if (!subject) return;
-    console.log(`[useTimers] Start ${mode}`);
+    //console.log(`[useTimers] Start ${mode}`);
 
     const data = await apiFetch(`/${mode}_timers/${id}/start/`, {
       method: 'POST',
     });
-    console.log(`${mode} timer start, api data:`, data);
     setStatus("active");
     startTimeRef.current = Date.now();
     pausedTimeRef.current = elapsed;
@@ -89,6 +89,7 @@ export default function useTimers({ mode }) {
 
   }, [elapsed, status, tickMain, tickStage, subject, id]);
 
+
   // Pause timer
   const pause = useCallback(async () => {
     if (
@@ -97,11 +98,10 @@ export default function useTimers({ mode }) {
     ) return;
     if (!startTimeRef.current) return;
 
-    console.log(`[useTimers] Pause ${mode}`);
+    //console.log(`[useTimers] Pause ${mode}`);
     const data = await apiFetch(`/${mode}_timers/${id}/pause/`, {
       method: 'POST',
     });
-    console.log(`${mode} timer pause, api data:`, data);
     const now = Date.now();
     const secondsPassed = Math.floor((now - startTimeRef.current) / 1000);
     pausedTimeRef.current += secondsPassed;
@@ -128,7 +128,7 @@ export default function useTimers({ mode }) {
 
   // Complete timer
   const complete = useCallback(async () => {
-    console.log(`[useTimers] Complete ${mode}`);
+    //console.log(`[useTimers] Complete ${mode}`);
     if (status === "completed") return;
 
     setStatus("completed");
@@ -137,7 +137,7 @@ export default function useTimers({ mode }) {
       method: 'POST',
     });
 
-    console.log(`${mode} timer complete, api data:`, data);
+    //console.log(`${mode} timer complete, api data:`, data);
 
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -152,15 +152,12 @@ export default function useTimers({ mode }) {
 
   // Reset timer
   const reset = useCallback(async () => {
-    console.log(`Reset ${mode} before status check:`, status);
     if (status === "empty") return;
-    console.log(`[useTimers] Reset ${mode}`);
+    //console.log(`[useTimers] Reset ${mode}`);
 
     const data = await apiFetch(`/${mode}_timers/${id}/reset/`, {
       method: 'POST',
     });
-
-    console.log(`${mode} timer reset, api data:`, data);
 
     setStatus("empty");
     setDuration(0);
@@ -182,7 +179,7 @@ export default function useTimers({ mode }) {
 
   // Assign subject to timer
   const assignSubject = useCallback(async (newSubject, newDuration = 0, newStatus = "waiting", newElapsed = 0) => {
-    console.log(`[useTimers] Assign ${mode}`);
+    //console.log(`[useTimers] Assign ${mode}`);
     setSubject(newSubject);
     setStatus(newStatus);
     setElapsed(newElapsed);
@@ -265,7 +262,7 @@ export default function useTimers({ mode }) {
 
   const loadFromServer = useCallback((serverData) => {
     if (!serverData) return;
-    console.log("timer from server:", serverData);
+    //console.log("timer from server:", serverData);
     const { id, status, elapsed_time, duration, activity, quest, stages } = serverData;
 
     setId(id || 0);
@@ -281,7 +278,7 @@ export default function useTimers({ mode }) {
       setSubject(quest);
       setDuration(duration || 0);
 
-      console.log('quest.stages:', quest.stages);
+      //console.log('quest.stages:', quest.stages);
       setStages(quest.stages || []);
     }
   }, [mode]);
