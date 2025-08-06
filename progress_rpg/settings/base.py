@@ -197,6 +197,13 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+DJANGO_VITE = {
+    "default": {
+        "manifest_path": os.path.join(
+            BASE_DIR, "frontend", "dist", ".vite", "manifest.json"
+        ),
+    },
+}
 
 # Static files (CSS, JavaScript, Images)
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
