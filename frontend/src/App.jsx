@@ -4,6 +4,7 @@ import { BrowserRouter, useLocation } from 'react-router-dom';
 import { GameProvider } from './context/GameContext';
 import { useMaintenanceStatus } from './hooks/useMaintenanceStatus';
 import { useAuth } from './context/AuthContext';
+import { WebSocketProvider } from './context/WebSocketContext';
 
 import AppRoutes from "./routes/AppRoutes";
 import Navbar from './layout/Navbar/Navbar';
@@ -48,16 +49,18 @@ function App() {
 
   return (
     <GameProvider>
-      <BrowserRouter>
-        <RouteChangeTracker />
-        <div className="app-container">
-          <Navbar />
-          <StaticBanner message={announcement} />
-          <AppRoutes />
-          <Footer />
-          {isAuthenticated && <FeedbackWidget />}
-        </div>
-      </BrowserRouter>
+      <WebSocketProvider>
+        <BrowserRouter>
+          <RouteChangeTracker />
+          <div className="app-container">
+            <Navbar />
+            <StaticBanner message={announcement} />
+            <AppRoutes />
+            <Footer />
+            {isAuthenticated && <FeedbackWidget />}
+          </div>
+        </BrowserRouter>
+      </WebSocketProvider>
     </GameProvider>
   );
 }
