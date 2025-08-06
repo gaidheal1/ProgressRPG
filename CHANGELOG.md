@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.11.1 - 2025-08-06
+
+- fix: adjusting routes to remove hashes
+- Update changelog for v0.11.0
+
 ## v0.11.0 - 2025-08-06
 
 - feat: rewrite websockets, move to context. WIP but getting there?!
