@@ -26,7 +26,6 @@ from .views import (
     DeleteAccountAPIView,
     CustomTokenObtainPairView,
     CustomTokenRefreshView,
-    # test_post_view,
 )
 
 
@@ -57,27 +56,30 @@ router.register(r"onboarding", OnboardingViewSet, basename="onboarding")
 
 
 urlpatterns = [
+    # General urls
     path("", include(router.urls)),
     path("me/", me_view, name="me"),
     path("maintenance_status/", maintenance_status, name="maintenance_status"),
     path("fetch_info/", FetchInfoAPIView.as_view(), name="fetch_info"),
-    path(
-        "auth/confirm_email/<key:key>/",
-        ConfirmEmailView.as_view(),
-        name="confirm_email",
-    ),
+    # Auth urls
     path("ws_auth/", AsgiValidateTokenView.as_view(), name="ws_auth"),
     path("auth/", include(auth_urls)),
     path("auth/", include("users.urls")),
     path("auth/jwt/create/", CustomTokenObtainPairView.as_view(), name="jwt_create"),
     path("auth/jwt/refresh/", CustomTokenRefreshView.as_view(), name="jwt_refresh"),
     path("auth/jwt/verify/", TokenVerifyView.as_view(), name="jwt_verify"),
+    # Registration urls
     path("auth/registration/", CustomRegisterView.as_view(), name="custom_register"),
+    path(
+        "auth/confirm_email/<key:key>/",
+        ConfirmEmailView.as_view(),
+        name="confirm_email",
+    ),
+    # Account urls
     path(
         "download_user_data/",
         DownloadUserDataAPIView.as_view(),
         name="api_download_user_data",
     ),
     path("delete_account/", DeleteAccountAPIView.as_view(), name="api_delete_account"),
-    # path("auth/test_post/", test_post_view, name="test_post"),
 ]
