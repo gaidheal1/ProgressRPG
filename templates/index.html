@@ -1,3 +1,4 @@
+{% load static %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -5,8 +6,8 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Progress RPG</title>
-    <script type="module" crossorigin src="/assets/index-BJI50VBl.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CV877fIH.css">
+    <script type="module" crossorigin src="/static/assets/index-BJI50VBl.js"></script>
+    <link rel="stylesheet" crossorigin href="{% static 'assets/index-CV877fIH.css' %}">
   </head>
   <body>
     <div id="root"></div>
