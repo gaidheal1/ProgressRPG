@@ -3,23 +3,19 @@
     "file": "assets/Form-BKLS7OIo.css",
     "src": "_Form-BKLS7OIo.css"
   },
-  "_Form-Dd6jwBQ7.js": {
-    "file": "assets/Form-Dd6jwBQ7.js",
+  "_Form-CR4xLxfO.js": {
+    "file": "assets/Form-CR4xLxfO.js",
     "name": "Form",
     "imports": [
       "src/main.jsx",
-      "_Input-BzcLRSRp.js"
+      "_Input-CCR74ZYl.js"
     ],
     "css": [
       "assets/Form-BKLS7OIo.css"
     ]
   },
-  "_Infobar-Dmp6riYB.css": {
-    "file": "assets/Infobar-Dmp6riYB.css",
-    "src": "_Infobar-Dmp6riYB.css"
-  },
-  "_Infobar-FvhJIUR4.js": {
-    "file": "assets/Infobar-FvhJIUR4.js",
+  "_Infobar-BfwMTy-_.js": {
+    "file": "assets/Infobar-BfwMTy-_.js",
     "name": "Infobar",
     "imports": [
       "src/main.jsx"
@@ -28,12 +24,16 @@
       "assets/Infobar-Dmp6riYB.css"
     ]
   },
+  "_Infobar-Dmp6riYB.css": {
+    "file": "assets/Infobar-Dmp6riYB.css",
+    "src": "_Infobar-Dmp6riYB.css"
+  },
   "_Input-BQv6EeFT.css": {
     "file": "assets/Input-BQv6EeFT.css",
     "src": "_Input-BQv6EeFT.css"
   },
-  "_Input-BzcLRSRp.js": {
-    "file": "assets/Input-BzcLRSRp.js",
+  "_Input-CCR74ZYl.js": {
+    "file": "assets/Input-CCR74ZYl.js",
     "name": "Input",
     "imports": [
       "src/main.jsx"
@@ -43,7 +43,7 @@
     ]
   },
   "src/main.jsx": {
-    "file": "assets/main-mIsZZiLH.js",
+    "file": "assets/main-DrP0ZUP_.js",
     "name": "main",
     "src": "src/main.jsx",
     "isEntry": true,
@@ -62,7 +62,7 @@
     ]
   },
   "src/pages/ConfirmationPage.jsx": {
-    "file": "assets/ConfirmationPage-B1CpYWog.js",
+    "file": "assets/ConfirmationPage-iYMbusFd.js",
     "name": "ConfirmationPage",
     "src": "src/pages/ConfirmationPage.jsx",
     "isDynamicEntry": true,
@@ -71,21 +71,21 @@
     ]
   },
   "src/pages/Game/Game.jsx": {
-    "file": "assets/Game-Bz9k7KBr.js",
+    "file": "assets/Game-Cu7XASxS.js",
     "name": "Game",
     "src": "src/pages/Game/Game.jsx",
     "isDynamicEntry": true,
     "imports": [
       "src/main.jsx",
-      "_Infobar-FvhJIUR4.js",
-      "_Input-BzcLRSRp.js"
+      "_Infobar-BfwMTy-_.js",
+      "_Input-CCR74ZYl.js"
     ],
     "css": [
       "assets/Game-J4MGZt-m.css"
     ]
   },
   "src/pages/Home/Home.jsx": {
-    "file": "assets/Home-DNAnTyiD.js",
+    "file": "assets/Home-CeV7--_u.js",
     "name": "Home",
     "src": "src/pages/Home/Home.jsx",
     "isDynamicEntry": true,
@@ -94,21 +94,21 @@
     ]
   },
   "src/pages/LoginPage/LoginPage.jsx": {
-    "file": "assets/LoginPage-DAO_4DMX.js",
+    "file": "assets/LoginPage-DVZq0YPV.js",
     "name": "LoginPage",
     "src": "src/pages/LoginPage/LoginPage.jsx",
     "isDynamicEntry": true,
     "imports": [
       "src/main.jsx",
-      "_Form-Dd6jwBQ7.js",
-      "_Input-BzcLRSRp.js"
+      "_Form-CR4xLxfO.js",
+      "_Input-CCR74ZYl.js"
     ],
     "css": [
       "assets/LoginPage-BJ4kZmdd.css"
     ]
   },
   "src/pages/LogoutPage/LogoutPage.jsx": {
-    "file": "assets/LogoutPage-K22B97d1.js",
+    "file": "assets/LogoutPage-DCY_ZuGL.js",
     "name": "LogoutPage",
     "src": "src/pages/LogoutPage/LogoutPage.jsx",
     "isDynamicEntry": true,
@@ -117,41 +117,41 @@
     ]
   },
   "src/pages/OnboardingPage/OnboardingPage.jsx": {
-    "file": "assets/OnboardingPage-DMvqTyoY.js",
+    "file": "assets/OnboardingPage-B_XH0sMI.js",
     "name": "OnboardingPage",
     "src": "src/pages/OnboardingPage/OnboardingPage.jsx",
     "isDynamicEntry": true,
     "imports": [
       "src/main.jsx",
-      "_Form-Dd6jwBQ7.js",
-      "_Input-BzcLRSRp.js"
+      "_Form-CR4xLxfO.js",
+      "_Input-CCR74ZYl.js"
     ],
     "css": [
       "assets/OnboardingPage-DiKdVLJ-.css"
     ]
   },
   "src/pages/Profile/Profile.jsx": {
-    "file": "assets/Profile-Cl-m8eDO.js",
+    "file": "assets/Profile-38ZZ54TD.js",
     "name": "Profile",
     "src": "src/pages/Profile/Profile.jsx",
     "isDynamicEntry": true,
     "imports": [
       "src/main.jsx",
-      "_Infobar-FvhJIUR4.js"
+      "_Infobar-BfwMTy-_.js"
     ],
     "css": [
       "assets/Profile-Bc336P9J.css"
     ]
   },
   "src/pages/RegisterPage/RegisterPage.jsx": {
-    "file": "assets/RegisterPage-HCD9B_p2.js",
+    "file": "assets/RegisterPage-BZbpTj-K.js",
     "name": "RegisterPage",
     "src": "src/pages/RegisterPage/RegisterPage.jsx",
     "isDynamicEntry": true,
     "imports": [
       "src/main.jsx",
-      "_Form-Dd6jwBQ7.js",
-      "_Input-BzcLRSRp.js"
+      "_Form-CR4xLxfO.js",
+      "_Input-CCR74ZYl.js"
     ]
   }
 }
