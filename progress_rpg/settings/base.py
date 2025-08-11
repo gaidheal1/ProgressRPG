@@ -200,7 +200,7 @@ USE_TZ = True
 DJANGO_VITE = {
     "default": {
         "manifest_path": os.path.join(
-            BASE_DIR, "static", "frontend", ".vite", "manifest.json"
+            BASE_DIR, "static", "assets", ".vite", "manifest.json"
         ),
     },
 }
@@ -210,7 +210,7 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = [
-    BASE_DIR / "static" / "frontend",
+    BASE_DIR / "static",
 ]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"

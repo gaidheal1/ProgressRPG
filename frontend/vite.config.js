@@ -5,13 +5,13 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/static/frontend',
+  base: '/static/assets',
   server: {
     open: true,
     host: true,
   },
   build: {
-    outDir: path.resolve(__dirname, '../static/frontend'),
+    outDir: path.resolve(__dirname, '../static/assets'),
     emptyOutDir: true,
     manifest: true,        // ✅ tells Vite to generate manifest.json
     rollupOptions: {
