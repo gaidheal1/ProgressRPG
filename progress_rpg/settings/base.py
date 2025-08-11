@@ -199,9 +199,7 @@ USE_TZ = True
 
 DJANGO_VITE = {
     "default": {
-        "manifest_path": os.path.join(
-            BASE_DIR, "frontend", "dist", ".vite", "manifest.json"
-        ),
+        "manifest_path": os.path.join(BASE_DIR, "static", "frontend", "manifest.json"),
     },
 }
 
