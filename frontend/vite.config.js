@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -10,10 +11,10 @@ export default defineConfig({
     host: true,
   },
   build: {
-    outDir: 'dist',        // default, optional
+    outDir: path.resolve(__dirname, 'static/frontend'),
     manifest: true,        // ✅ tells Vite to generate manifest.json
     rollupOptions: {
-      input: '/src/main.jsx', // change this if your entry is elsewhere
+      input: path.resolve(__dirname, '/src/main.jsx'),
     },
   },
 })
