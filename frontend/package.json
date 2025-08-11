@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --base /",
     "build": "vite build",
+    "heroku-postbuild": "npm run build && python manage.py collectstatic --noinput",
     "lint": "eslint .",
     "preview": "vite preview"
   },
