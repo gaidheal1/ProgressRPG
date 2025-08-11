@@ -4,9 +4,9 @@
   "version": "0.6.0-alpha",
   "type": "module",
   "scripts": {
-    "dev": "vite --base /",
+    "dev": "vite",
     "build": "vite build",
-    "heroku-postbuild": "npm run build && python manage.py collectstatic --noinput",
+    "heroku-postbuild": "rm -rf staticfiles && npm install && npm run build && python manage.py collectstatic --noinput",
     "lint": "eslint .",
     "preview": "vite preview"
   },
