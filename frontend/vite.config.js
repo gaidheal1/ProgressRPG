@@ -12,6 +12,7 @@ export default defineConfig({
   },
   build: {
     outDir: path.resolve(__dirname, '../static/frontend'),
+    emptyOutDir: true,
     manifest: true,        // ✅ tells Vite to generate manifest.json
     rollupOptions: {
       input: path.resolve(__dirname, '/src/main.jsx'),

@@ -20,5 +20,4 @@ Makefile
 logs/
 staticfiles/
 static/.sass-cache/
-/static/frontend/
 mypy.ini
