@@ -81,11 +81,17 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
 #    default_db_config["CONN_MAX_AGE"] = 0
 
 if os.environ.get("PGBOUNCER") == "1":
-    os.environ["DATABASE_URL"] = os.environ.get(
-        "DATABASE_URL_PGBOUNCER", os.environ["DATABASE_URL"]
-    )
+    pgbouncer_url = os.environ.get("DATABASE_URL_PGBOUNCER")
+    if pgbouncer_url:
+        os.environ["DATABASE_URL"] = pgbouncer_url
+    elif "DATABASE_URL" not in os.environ:
+        raise ValueError(
+            "PGBOUNCER is enabled but no DATABASE_URL or DATABASE_URL_PGBOUNCER found."
+        )
 
 DB_URL = os.environ.get("DATABASE_URL")
+if not DB_URL:
+    raise ValueError("DATABASE_URL is not set in the environment.")
 
 DATABASES = {"default": dj_database_url.parse(DB_URL, conn_max_age=60)}
 
