@@ -8,6 +8,7 @@ __pycache__/
 env.env
 env
 node_modules/
+/frontend/dist/
 test-results/
 .dockerignore
 gunicorn_config.py
@@ -19,4 +20,5 @@ Makefile
 logs/
 staticfiles/
 static/.sass-cache/
+/static/frontend/
 mypy.ini
