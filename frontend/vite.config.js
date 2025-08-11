@@ -11,7 +11,8 @@ export default defineConfig({
     host: true,
   },
   build: {
-    outDir: path.resolve(__dirname, '../static/frontend/'),
+    outDir: path.resolve(__dirname, '../static/'),
+    assetsDir: 'frontend/assets',
     emptyOutDir: true,
     manifest: true,
     rollupOptions: {
