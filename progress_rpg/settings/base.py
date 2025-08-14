@@ -20,11 +20,12 @@ import logging, ssl, sentry_sdk
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-os.environ.setdefault("DEBUG", "True")
-DEBUG = os.getenv("DEBUG", "True") == "True"
-
-dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+dotenv_path = BASE_DIR / ".env"
 load_dotenv(dotenv_path)
+
+DEBUG = os.getenv("DEBUG", "True") == "True"
+os.environ.setdefault("DEBUG", "True")
+
 
 os.environ.setdefault(
     "DJANGO_SETTINGS_MODULE",
@@ -197,21 +198,32 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+
+# Vite settings
+
+DEV_MODE = os.getenv("DJANGO_VITE_DEV_MODE", "True") == "True"
+print("DEV_MODE =", DEV_MODE)
+
 DJANGO_VITE = {
     "default": {
-        "manifest_path": os.path.join(BASE_DIR, "static", ".vite", "manifest.json"),
-    },
+        "dev_mode": DEV_MODE,
+        "dev_server_port": 5173,
+        "dev_server_host": "localhost",
+        "static_url_prefix": "frontend/",
+        "manifest_path": BASE_DIR / "static" / "frontend" / ".vite" / "manifest.json",
+    }
 }
 
 # Static files
+
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 STATIC_URL = "/static/"
-STATICFILES_BASE = os.path.join(BASE_DIR, "static")
-REACT_JS_BUILD_DIR = os.path.join(STATICFILES_BASE, "frontend")
+STATICFILES_BASE = BASE_DIR / "static"
 STATICFILES_DIRS = [
     STATICFILES_BASE,
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
