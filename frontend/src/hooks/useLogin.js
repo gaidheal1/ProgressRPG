@@ -2,6 +2,8 @@
 import { useCallback } from 'react';
 import { API_BASE_URL } from '../config';
 
+console.log("API_BASE_URL:", API_BASE_URL);
+
 const API_URL = `${API_BASE_URL}/api/v1`;
 
 export default function useLogin() {
