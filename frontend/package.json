@@ -1,12 +1,12 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "0.6.0-alpha",
+  "version": "0.12.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "heroku-postbuild": "rm -rf staticfiles && npm install && npm run build && python manage.py collectstatic --noinput",
+    "heroku-postbuild": "cd frontend && npm install && npm run build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
