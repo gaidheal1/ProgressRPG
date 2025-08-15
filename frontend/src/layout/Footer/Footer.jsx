@@ -11,7 +11,7 @@ export default function Footer() {
   return (
     <footer className={styles.footer}>
       {user?.is_superuser && isAuthenticated && (
-        <a href={`${API_BASE_URL}admin`} target="_blank" rel="noopener noreferrer">
+        <a href={`${API_BASE_URL}/admin`} target="_blank" rel="noopener noreferrer">
           Admin Panel
         </a>
       )}
