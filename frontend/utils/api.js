@@ -1,7 +1,8 @@
 // src/utils/api.js
 import { jwtDecode } from "jwt-decode";
+import { API_BASE_URL } from "../src/config";
 
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
+const API_URL = `${API_BASE_URL}/api/v1`;
 
 
 function isTokenExpiringSoon(token, bufferSeconds = 60) {

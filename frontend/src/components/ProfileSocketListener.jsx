@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useGame } from '../context/GameContext';
+import { API_BASE_URL } from '../config';
 
 export default function ProfileSocketListener({ onEvent }) {
   const { player } = useGame();
@@ -19,7 +20,7 @@ export default function ProfileSocketListener({ onEvent }) {
 
 
         // Step 2: Request UUID from Django
-        const url_raw = import.meta.env.VITE_API_BASE_URL;
+        const url_raw = API_BASE_URL;
         const response = await fetch(`${url_raw}/api/v1/ws_auth/`, {
             method: 'GET',
             headers: {

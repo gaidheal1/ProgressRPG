@@ -80,7 +80,7 @@ export default function Navbar() {
               </Link>
               <Link to="/login">
                 <Button variant="secondary" className={styles.navLink}>
-                  Register
+                  Log in
                 </Button>
               </Link>
               <Link to="/register">

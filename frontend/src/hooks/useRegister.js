@@ -1,8 +1,9 @@
 // hooks/useRegister.js
 import { useCallback, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
+const API_URL = `${API_BASE_URL}/api/v1`;
 
 export default function useRegister() {
   const { login } = useAuth();
