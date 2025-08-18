@@ -6,6 +6,11 @@ import Input from '../../components/Input/Input';
 import { useGame } from '../../context/GameContext';
 import styles from './OnboardingPage.module.scss';
 
+import mob1 from '../../assets/images/tutorial-mob-p1-v2.png';
+import mob2 from '../../assets/images/tutorial-mob-p2-v2.png';
+import desk from '../../assets/images/tutorial-mob-desktop-v2.png';
+
+
 function Step0() {
   return <p>Begin your journey through onboarding.</p>;
 }
@@ -49,9 +54,9 @@ function Step2({ characterAvailable, character }) {
 function Step3() {
   return (
     <div className="onboarding-screenshots">
-      <img src="/images/tutorial-mob-p1-v2.png" className={styles.mobileOnly} alt="Mobile top" />
-      <img src="/images/tutorial-mob-p2-v2.png" className={styles.mobileOnly} alt="Mobile bottom" />
-      <img src="/images/tutorial-desktop-v2.png" className={styles.desktopOnly} alt="Desktop full" />
+      <img src={mob1} className={styles.mobileOnly} alt="Mobile top" />
+      <img src={mob2} className={styles.mobileOnly} alt="Mobile bottom" />
+      <img src={desk} className={styles.desktopOnly} alt="Desktop full" />
     </div>
   );
 }
