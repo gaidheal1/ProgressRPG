@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './Form.module.scss';
 import Button from '../Button/Button';
 import ButtonFrame from '../Button/ButtonFrame';
@@ -15,6 +15,30 @@ export default function Form({
   className,
   frameClass,
 }) {
+  const [touched, setTouched] = useState({});
+
+   const handleBlur = (name) => {
+    setTouched((prev) => ({ ...prev, [name]: true }));
+  };
+
+  const getError = (field) => {
+    if (!touched[field.name]) return null;
+
+    if (field.required && !field.value) {
+      return 'This field is required';
+    }
+
+    if (field.minLength && field.value?.length < field.minLength) {
+      return `Must be at least ${field.minLength} characters`;
+    }
+
+    if (field.maxLength && field.value?.length > field.maxLength) {
+      return `Must be no more than ${field.maxLength} characters`;
+    }
+
+    return null;
+  };
+
   return (
     <div className={`${styles.formFrame} ${frameClass || ''}`}>
       {title && <h1 className={styles.formTitle}>{title}</h1>}
@@ -33,7 +57,8 @@ export default function Form({
               helpText={field.helpText}
               required={field.required}
               autoComplete={field.autoComplete}
-              error={field.error}
+              error={getError(field)}
+              onBlur={() => handleBlur(field.name)}
             />
         ))}
 
