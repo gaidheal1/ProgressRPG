@@ -21,3 +21,4 @@ logs/
 staticfiles/
 static/.sass-cache/
 mypy.ini
+celerybeat-schedule
