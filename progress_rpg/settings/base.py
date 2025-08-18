@@ -216,7 +216,7 @@ DJANGO_VITE = {
 }
 
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost")
 
 if FRONTEND_URL.startswith("http://localhost"):
     if is_vite_running():
