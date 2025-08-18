@@ -12,6 +12,8 @@ export default function Input({
   required = false,
   autoComplete,
   checked,
+  minLength,
+  maxLength,
 }) {
   const isCheckbox = type === 'checkbox';
 
@@ -38,6 +40,8 @@ export default function Input({
         aria-invalid={!!error}
         autoComplete={autoComplete}
         required={required}
+        minLength={minLength}
+        maxLength={maxLength}
       />
 
       {helpText && !error && (
