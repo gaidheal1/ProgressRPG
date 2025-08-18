@@ -22,13 +22,13 @@
 }
 
 .required {
-  color: red;
+  //color: red;
   margin-left: v.$spacing-xs;
 }
 
 .inputField {
   padding: v.$padding-base;
-
+  max-width: 30rem;
   border: 1px solid rgba(0, 0, 0, 0.3);
   border-radius: v.$border-radius;
   transition: border 0.2s, background 0.2s;
@@ -47,7 +47,7 @@
     border-color: c.$color-border-accent;
   }
 
-  &:invalid {
+  &.inputError {
     border-color: red;
     background-color: c.$color-bg;
   }

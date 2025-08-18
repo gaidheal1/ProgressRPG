@@ -22,7 +22,11 @@ export default function Form({
   };
 
   const getError = (field) => {
-    if (!touched[field.name]) return null;
+    if (!touched[field.name]) return '';
+
+    if (fieldErrors[field.name]?.[0]) {
+      return fieldErrors[field.name][0];
+    }
 
     if (field.required && !field.value) {
       return 'This field is required';
@@ -36,7 +40,7 @@ export default function Form({
       return `Must be no more than ${field.maxLength} characters`;
     }
 
-    return null;
+    return '';
   };
 
   return (

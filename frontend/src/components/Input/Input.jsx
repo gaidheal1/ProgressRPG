@@ -28,7 +28,7 @@ export default function Input({
       <input
         id={id}
         type={type}
-        className={`${styles.inputField} ${error ? styles.errorInput : ''}`}
+        className={`${styles.inputField} ${error ? styles.inputError : ''}`}
         value={isCheckbox ? undefined : value}
         checked={isCheckbox ? checked : undefined}
         onChange={(e) => {
