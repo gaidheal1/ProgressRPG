@@ -27,6 +27,11 @@ export default function useRegister() {
 
       const data = await response.json();
 
+      // Update character availability state here
+      if (typeof data.characters_available === 'boolean') {
+        setCharacterAvailable(data.characters_available);
+      }
+
       if (!response.ok) {
         return {
           success: false,
