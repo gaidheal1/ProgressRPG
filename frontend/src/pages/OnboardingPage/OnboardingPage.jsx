@@ -8,7 +8,7 @@ import styles from './OnboardingPage.module.scss';
 
 import mob1 from '../../assets/images/tutorial-mob-p1-v2.png';
 import mob2 from '../../assets/images/tutorial-mob-p2-v2.png';
-import desk from '../../assets/images/tutorial-mob-desktop-v2.png';
+import desk from '../../assets/images/tutorial-desktop-v2.png';
 
 
 function Step0() {

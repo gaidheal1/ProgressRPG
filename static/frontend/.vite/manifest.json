@@ -3,19 +3,19 @@
     "file": "assets/Form-BKLS7OIo.css",
     "src": "_Form-BKLS7OIo.css"
   },
-  "_Form-BNvjEyKw.js": {
-    "file": "assets/Form-BNvjEyKw.js",
+  "_Form-C-d2tXXS.js": {
+    "file": "assets/Form-C-d2tXXS.js",
     "name": "Form",
     "imports": [
       "src/main.jsx",
-      "_Input-vG2l26YZ.js"
+      "_Input-D1oo0TuY.js"
     ],
     "css": [
       "assets/Form-BKLS7OIo.css"
     ]
   },
-  "_Infobar-Bore9KXe.js": {
-    "file": "assets/Infobar-Bore9KXe.js",
+  "_Infobar-BrRaITJs.js": {
+    "file": "assets/Infobar-BrRaITJs.js",
     "name": "Infobar",
     "imports": [
       "src/main.jsx"
@@ -32,8 +32,8 @@
     "file": "assets/Input-B0g5bQer.css",
     "src": "_Input-B0g5bQer.css"
   },
-  "_Input-vG2l26YZ.js": {
-    "file": "assets/Input-vG2l26YZ.js",
+  "_Input-D1oo0TuY.js": {
+    "file": "assets/Input-D1oo0TuY.js",
     "name": "Input",
     "imports": [
       "src/main.jsx"
@@ -42,8 +42,20 @@
       "assets/Input-B0g5bQer.css"
     ]
   },
+  "src/assets/images/tutorial-desktop-v2.png": {
+    "file": "assets/tutorial-desktop-v2-Bzq3r1J3.png",
+    "src": "src/assets/images/tutorial-desktop-v2.png"
+  },
+  "src/assets/images/tutorial-mob-p1-v2.png": {
+    "file": "assets/tutorial-mob-p1-v2-DSRjmsbx.png",
+    "src": "src/assets/images/tutorial-mob-p1-v2.png"
+  },
+  "src/assets/images/tutorial-mob-p2-v2.png": {
+    "file": "assets/tutorial-mob-p2-v2-D2yXt8FA.png",
+    "src": "src/assets/images/tutorial-mob-p2-v2.png"
+  },
   "src/main.jsx": {
-    "file": "assets/main-czsaRuJ1.js",
+    "file": "assets/main-n0C-m6AC.js",
     "name": "main",
     "src": "src/main.jsx",
     "isEntry": true,
@@ -62,7 +74,7 @@
     ]
   },
   "src/pages/ConfirmationPage.jsx": {
-    "file": "assets/ConfirmationPage-DnvrZyZ7.js",
+    "file": "assets/ConfirmationPage-BnspAFEI.js",
     "name": "ConfirmationPage",
     "src": "src/pages/ConfirmationPage.jsx",
     "isDynamicEntry": true,
@@ -71,21 +83,21 @@
     ]
   },
   "src/pages/Game/Game.jsx": {
-    "file": "assets/Game-r8WQzxiw.js",
+    "file": "assets/Game-DCbNhNJH.js",
     "name": "Game",
     "src": "src/pages/Game/Game.jsx",
     "isDynamicEntry": true,
     "imports": [
       "src/main.jsx",
-      "_Infobar-Bore9KXe.js",
-      "_Input-vG2l26YZ.js"
+      "_Infobar-BrRaITJs.js",
+      "_Input-D1oo0TuY.js"
     ],
     "css": [
       "assets/Game-J4MGZt-m.css"
     ]
   },
   "src/pages/Home/Home.jsx": {
-    "file": "assets/Home-CNIVoN4t.js",
+    "file": "assets/Home-CdO-ndAp.js",
     "name": "Home",
     "src": "src/pages/Home/Home.jsx",
     "isDynamicEntry": true,
@@ -94,21 +106,21 @@
     ]
   },
   "src/pages/LoginPage/LoginPage.jsx": {
-    "file": "assets/LoginPage-DpAIFg_6.js",
+    "file": "assets/LoginPage-BKndYYI8.js",
     "name": "LoginPage",
     "src": "src/pages/LoginPage/LoginPage.jsx",
     "isDynamicEntry": true,
     "imports": [
       "src/main.jsx",
-      "_Form-BNvjEyKw.js",
-      "_Input-vG2l26YZ.js"
+      "_Form-C-d2tXXS.js",
+      "_Input-D1oo0TuY.js"
     ],
     "css": [
       "assets/LoginPage-BJ4kZmdd.css"
     ]
   },
   "src/pages/LogoutPage/LogoutPage.jsx": {
-    "file": "assets/LogoutPage-Di44k2HU.js",
+    "file": "assets/LogoutPage-BLj5GeA9.js",
     "name": "LogoutPage",
     "src": "src/pages/LogoutPage/LogoutPage.jsx",
     "isDynamicEntry": true,
@@ -117,41 +129,46 @@
     ]
   },
   "src/pages/OnboardingPage/OnboardingPage.jsx": {
-    "file": "assets/OnboardingPage-BMkDPIl3.js",
+    "file": "assets/OnboardingPage-BGhv9_Zm.js",
     "name": "OnboardingPage",
     "src": "src/pages/OnboardingPage/OnboardingPage.jsx",
     "isDynamicEntry": true,
     "imports": [
       "src/main.jsx",
-      "_Form-BNvjEyKw.js",
-      "_Input-vG2l26YZ.js"
+      "_Form-C-d2tXXS.js",
+      "_Input-D1oo0TuY.js"
     ],
     "css": [
       "assets/OnboardingPage-DiKdVLJ-.css"
+    ],
+    "assets": [
+      "assets/tutorial-mob-p1-v2-DSRjmsbx.png",
+      "assets/tutorial-mob-p2-v2-D2yXt8FA.png",
+      "assets/tutorial-desktop-v2-Bzq3r1J3.png"
     ]
   },
   "src/pages/Profile/Profile.jsx": {
-    "file": "assets/Profile-BU71B-hG.js",
+    "file": "assets/Profile-DXtZeHzs.js",
     "name": "Profile",
     "src": "src/pages/Profile/Profile.jsx",
     "isDynamicEntry": true,
     "imports": [
       "src/main.jsx",
-      "_Infobar-Bore9KXe.js"
+      "_Infobar-BrRaITJs.js"
     ],
     "css": [
       "assets/Profile-Bc336P9J.css"
     ]
   },
   "src/pages/RegisterPage/RegisterPage.jsx": {
-    "file": "assets/RegisterPage-Cjf4BC0k.js",
+    "file": "assets/RegisterPage-B7yC3DCZ.js",
     "name": "RegisterPage",
     "src": "src/pages/RegisterPage/RegisterPage.jsx",
     "isDynamicEntry": true,
     "imports": [
       "src/main.jsx",
-      "_Form-BNvjEyKw.js",
-      "_Input-vG2l26YZ.js"
+      "_Form-C-d2tXXS.js",
+      "_Input-D1oo0TuY.js"
     ]
   }
 }
