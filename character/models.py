@@ -335,7 +335,8 @@ class PlayerCharacterLink(models.Model):
             is_active=True,
         )
         character.is_npc = False
-        character.save(update_fields=["is_npc"])
+        character.can_link = False
+        character.save(update_fields=["is_npc", "can_link"])
         return link
 
 
