@@ -16,6 +16,7 @@ from decouple import Config, RepositoryEnv, config
 import os
 from dotenv import load_dotenv
 import logging, ssl, sentry_sdk
+from .utils import is_vite_running
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -213,6 +214,18 @@ DJANGO_VITE = {
         "manifest_path": BASE_DIR / "static" / "frontend" / ".vite" / "manifest.json",
     }
 }
+
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
+if FRONTEND_URL.startswith("http://localhost"):
+    if is_vite_running():
+        FRONTEND_URL = f"{FRONTEND_URL}:5173"
+        print("Vite status: Vite server is running!")
+    else:
+        FRONTEND_URL = f"{FRONTEND_URL}:8000"
+        print("Vite status: Django serving React from static files")
+
 
 # Static files
 
