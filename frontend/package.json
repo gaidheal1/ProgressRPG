@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build:development": "vite build --mode development",
+    "build:staging": "vite build --mode staging",
     "heroku-postbuild": "cd frontend && npm install && npm run build",
     "lint": "eslint .",
     "preview": "vite preview"
