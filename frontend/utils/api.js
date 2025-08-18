@@ -86,6 +86,14 @@ export async function apiFetch(path, options = {}, explicitAccessToken=null) {
       throw new Error('Unauthorized');
     }
 
+    if (response.status === 503) {
+      // optionally parse JSON if included
+      const data = await response.json().catch(() => ({}));
+      // redirect or show toast
+      window.location.href = "/maintenance";
+      return Promise.reject(new Error(data.detail || "Maintenance mode"));
+    }
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(errorText || 'API error');

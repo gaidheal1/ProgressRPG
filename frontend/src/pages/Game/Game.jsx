@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 
 import { useGame } from '../../context/GameContext';
 import { useWebSocket } from '../../context/WebSocketContext';
-import useWebSocketEvent from '../../hooks/useWebSocketEvent';
+import { useWebSocketEvent } from '../../hooks/useWebSocketEvent';
 
 import styles from './Game.module.scss';
 import GameContainer from '../../layout/GameContainer/GameContainer';

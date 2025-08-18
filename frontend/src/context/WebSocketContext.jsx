@@ -4,20 +4,22 @@ import { useGame } from './GameContext';
 import { useToast } from './ToastContext';
 import { useWebSocketConnection } from '../hooks/useWebSocketConnection';
 import { handleGlobalWebSocketEvent } from '../websockets/handleGlobalWebSocketEvent';
+import { useMaintenanceStatus } from '../hooks/useMaintenanceStatus';
 
 const WebSocketContext = createContext();
 
 export function WebSocketProvider({ children }) {
   const { player } = useGame();
   const { showToast } = useToast();
+  const { refetch: maintenanceRefetch } = useMaintenanceStatus();
   const eventHandlersRef = useRef(new Set());
 
   const onMessage = useCallback((data) => {
     //console.log("[WS Provider] showToast:", showToast);
-    handleGlobalWebSocketEvent(data, { showToast });
+    handleGlobalWebSocketEvent(data, { showToast, maintenanceRefetch });
 
     eventHandlersRef.current.forEach((handler) => handler(data));
-  }, [showToast]);
+  }, [showToast, maintenanceRefetch ]);
 
   const onError = useCallback(() => {
     console.error('WebSocket connection error');
