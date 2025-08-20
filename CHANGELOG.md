@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.15.1-dev - 2025-08-20
+
+- fix: display options with suffix
+- fix: update api base url retrieval
+
 ## v0.12.0 - 2025-08-06
 
 - fix: added dry-run shortcut (-DR)
