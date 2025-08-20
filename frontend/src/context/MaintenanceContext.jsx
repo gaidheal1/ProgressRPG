@@ -1,4 +1,4 @@
-// contexts/MaintenanceContext.js
+// context/MaintenanceContext.js
 import React, { createContext, useContext, useState } from 'react';
 
 const MaintenanceContext = createContext();
@@ -7,6 +7,8 @@ export function MaintenanceProvider({ children }) {
   const [maintenance, setMaintenance] = useState({
     active: false,
     details: null,
+    previousLocation: null,
+    justEnded: false,
   });
 
   return (

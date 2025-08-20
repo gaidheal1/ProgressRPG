@@ -10,7 +10,7 @@ export function useMaintenanceStatus() {
     try {
       const data = await apiFetch('/maintenance_status/');
       if (data.maintenance_active) {
-        setMaintenance({
+        const payload = {
           active: true,
           details: {
             name: data.name,
@@ -18,13 +18,17 @@ export function useMaintenanceStatus() {
             startTime: data.start_time,
             endTime: data.end_time,
           },
-        });
+        };
+        setMaintenance(payload);
+        return payload;
       } else {
         setMaintenance({ active: false, details: null });
+        return { active: false, details: null };
       }
     } catch (error) {
       console.error('Error fetching maintenance status:', error);
       setMaintenance({ active: false, details: null });
+      return { active: false, details: null };
     }
   }, [setMaintenance]);
 

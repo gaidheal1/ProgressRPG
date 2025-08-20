@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.shortcuts import redirect
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from server_management.models import MaintenanceWindow
@@ -41,6 +40,7 @@ class MaintenanceModeMiddleware:
             "/admin/",
             "/healthcheck/",
             "/maintenance/",
+            "/api/v1/maintenance_status/",
         ]
         if any(request.path.startswith(exempt) for exempt in exempt_paths):
             return self.get_response(request)

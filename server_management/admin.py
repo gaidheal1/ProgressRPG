@@ -68,7 +68,7 @@ class MaintenanceWindowAdmin(admin.ModelAdmin):
             )
             self.message_user(
                 request,
-                f"Maintenance window '{window.name}' has finished. Enjoy playing!",
+                f"Maintenance window '{window.name}' deactivated.",
             )
         else:
             self.message_user(

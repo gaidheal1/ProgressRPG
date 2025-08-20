@@ -13,6 +13,7 @@ import Navbar from './layout/Navbar/Navbar';
 import Footer from './layout/Footer/Footer';
 import FeedbackWidget from './components/FeedbackWidget/FeedbackWidget';
 import StaticBanner from './components/StaticBanner/StaticBanner';
+import MaintenanceWatcher from './components/MaintenanceWatcher';
 
 import { initGA, logPageView } from '../utils/analytics';
 
@@ -46,6 +47,7 @@ function App() {
           <WebSocketProvider>
             <BrowserRouter>
               <RouteChangeTracker />
+              <MaintenanceWatcher />
               <div className="app-container">
                 <Navbar />
                 <StaticBanner message={announcement} />
