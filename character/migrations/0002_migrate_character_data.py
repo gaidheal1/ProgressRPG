@@ -5,9 +5,9 @@ from django.db import migrations
 
 def migrate_character_data(apps, schema_editor):
     # Get the old Character model from 'gameplay' app
-    OldCharacter = apps.get_model('gameplay', 'Character')
+    OldCharacter = apps.get_model("gameplay", "Character")
     # Get the new Character model from 'character' app
-    NewCharacter = apps.get_model('character', 'Character')
+    NewCharacter = apps.get_model("character", "Character")
 
     # Copy data from the old to the new model
     for old_character in OldCharacter.objects.all():
@@ -24,14 +24,14 @@ def migrate_character_data(apps, schema_editor):
         )
         new_character.save()
         print("Old character parents:", old_character.parents.all())
-        new_character.parents.set(old_character.parents.values_list('id', flat=True))
+        new_character.parents.set(old_character.parents.values_list("id", flat=True))
         new_character.save()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('character', '0001_initial'),
+        ("character", "0001_initial"),
     ]
 
     operations = [

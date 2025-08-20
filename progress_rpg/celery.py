@@ -3,19 +3,24 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", os.getenv("DJANGO_SETTINGS_MODULE", "progress_rpg.settings.dev"))
+os.environ.setdefault(
+    "DJANGO_SETTINGS_MODULE",
+    os.getenv("DJANGO_SETTINGS_MODULE", "progress_rpg.settings.dev"),
+)
 
 
-app = Celery('progress_rpg')
+app = Celery("progress_rpg")
 
-app.config_from_object('django.conf:settings', namespace='CELERY')
+app.config_from_object("django.conf:settings", namespace="CELERY")
 app.conf.broker_connection_retry_on_startup = True
 
 app.autodiscover_tasks()
 
+
 @app.task(bind=True)
 def debug_task(self):
-    print(f'Request: {self.request!r}')
+    print(f"Request: {self.request!r}")
+
 
 app.conf.beat_schedule = {
     # 'update-quests-every-hour': {
@@ -34,8 +39,8 @@ app.conf.beat_schedule = {
     #     'task': 'gameworld.tasks.check_character_pregnancies',
     #     'schedule': crontab(day_of_week=0, hour=0, minute=0),
     # },
-    'check_user_deletion': {
-        'task': 'users.tasks.perform_account_deletion',
-        'schedule': crontab(minute=0, hour=0)
+    "check_user_deletion": {
+        "task": "users.tasks.perform_account_wipe",
+        "schedule": crontab(minute=0, hour=0),
     }
 }

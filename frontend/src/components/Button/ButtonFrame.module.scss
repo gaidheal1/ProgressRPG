@@ -1,0 +1,19 @@
+@use '../../styles/utilities/mixins' as m;
+@use '../../styles/base/variables' as v;
+
+.buttonFrame {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  gap: v.$spacing-gap;
+  width: 100%;
+  flex-grow: 0;
+
+  @include m.respond-to(sm) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+}

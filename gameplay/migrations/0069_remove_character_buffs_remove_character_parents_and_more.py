@@ -6,32 +6,32 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0068_character_quest_completions_and_more'),
+        ("gameplay", "0068_character_quest_completions_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='character',
-            name='buffs',
+            model_name="character",
+            name="buffs",
         ),
         migrations.RemoveField(
-            model_name='character',
-            name='parents',
+            model_name="character",
+            name="parents",
         ),
         migrations.RemoveField(
-            model_name='character',
-            name='quest_completions',
+            model_name="character",
+            name="quest_completions",
         ),
         migrations.RemoveField(
-            model_name='playercharacterlink',
-            name='character',
+            model_name="playercharacterlink",
+            name="character",
         ),
         migrations.RemoveField(
-            model_name='playercharacterlink',
-            name='profile',
+            model_name="playercharacterlink",
+            name="profile",
         ),
         migrations.RemoveField(
-            model_name='questcompletion',
-            name='character_wip',
+            model_name="questcompletion",
+            name="character_wip",
         ),
     ]

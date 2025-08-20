@@ -1,0 +1,20 @@
+// _card.scss
+@use '../utilities/mixins' as m;
+@use '../semantic/spacing' as s;
+@use '../semantic/colors' as c;
+@use 'sass:map';
+
+.card {
+  background-color: c.$color-bg;
+  padding: s.$card-padding;
+  border-radius: map.get(s.$radius, md);
+  box-shadow: map.get(s.$shadow, sm);
+  display: flex;
+  flex-direction: column;
+  gap: s.$spacing-gap;
+
+  // Optional: Add a subtle border as fallback for dark mode or accessibility
+  border: 1px solid c.$color-border-primary;
+
+
+}

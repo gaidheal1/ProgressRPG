@@ -7,18 +7,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0023_character_total_quests'),
+        ("gameplay", "0023_character_total_quests"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='questtimer',
-            name='character',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='quest_timer', to='gameplay.character'),
+            model_name="questtimer",
+            name="character",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="quest_timer",
+                to="gameplay.character",
+            ),
         ),
         migrations.AlterField(
-            model_name='questtimer',
-            name='duration',
+            model_name="questtimer",
+            name="duration",
             field=models.IntegerField(default=0),
         ),
     ]

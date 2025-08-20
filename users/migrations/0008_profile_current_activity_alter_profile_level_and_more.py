@@ -7,24 +7,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0016_character_coins_character_level_character_xp_and_more'),
-        ('users', '0007_profile_name'),
+        ("gameplay", "0016_character_coins_character_level_character_xp_and_more"),
+        ("users", "0007_profile_name"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='current_activity',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='profile_current_activity', to='gameplay.activity'),
+            model_name="profile",
+            name="current_activity",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="profile_current_activity",
+                to="gameplay.activity",
+            ),
         ),
         migrations.AlterField(
-            model_name='profile',
-            name='level',
+            model_name="profile",
+            name="level",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AlterField(
-            model_name='profile',
-            name='xp',
+            model_name="profile",
+            name="xp",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

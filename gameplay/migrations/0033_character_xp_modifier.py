@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0032_buff_rename_rewards_questresults_dynamic_rewards_and_more'),
+        ("gameplay", "0032_buff_rename_rewards_questresults_dynamic_rewards_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='character',
-            name='xp_modifier',
+            model_name="character",
+            name="xp_modifier",
             field=models.FloatField(default=1),
         ),
     ]

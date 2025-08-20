@@ -1,0 +1,37 @@
+@use '../two-columns' as tc;
+@use '../../styles/base/variables' as v;
+@use '../../styles/semantic/typography' as t;
+
+.gameSection {
+  //outline: 2px dashed blue;
+  @include tc.section-box;
+}
+
+.sectionHeader {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: v.$spacing-sm;
+}
+
+.sectionStatus {
+  display: flex;
+  gap: v.$spacing-gap;
+}
+
+.sectionStatusHeader,
+.sectionStatusMessage {
+  @include t.apply-text-style(t.$text-body);
+}
+
+.sectionBody {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: v.$spacing-gap;
+  @include t.apply-text-style(t.$text-body);
+}
+
+.sectionRow {
+  gap: v.$spacing-gap;
+}

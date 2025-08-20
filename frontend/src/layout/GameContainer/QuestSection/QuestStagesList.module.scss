@@ -1,0 +1,29 @@
+@use '../../../styles/base/variables' as v;
+@use '../../styles/semantic/typography' as t;
+
+.container {
+  padding: v.$padding-base;
+  gap: v.$spacing-gap;
+  align-self: stretch;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  margin-bottom: v.$spacing-sm;
+  @include t.apply-text-style(t.$text-heading-2);
+}
+
+.listWrapper {
+  background: v.$color-light;
+  border-radius: v.$border-radius;
+  padding: v.$padding-base;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  width: 100%;
+}
+
+.noProgress {
+  @include t.apply-text-style(t.$text-body);
+  padding: v.$padding-base;
+}

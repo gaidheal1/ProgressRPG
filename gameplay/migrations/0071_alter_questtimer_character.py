@@ -7,14 +7,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('character', '0003_characterrelationship_characterrole_and_more'),
-        ('gameplay', '0070_delete_character_delete_playercharacterlink'),
+        ("character", "0003_characterrelationship_characterrole_and_more"),
+        ("gameplay", "0070_delete_character_delete_playercharacterlink"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='questtimer',
-            name='character',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='quest_timer', to='character.character'),
+            model_name="questtimer",
+            name="character",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="quest_timer",
+                to="character.character",
+            ),
         ),
     ]

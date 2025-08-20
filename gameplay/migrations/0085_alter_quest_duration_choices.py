@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0084_appliedbuff_ends_at'),
+        ("gameplay", "0084_appliedbuff_ends_at"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='quest',
-            name='duration_choices',
+            model_name="quest",
+            name="duration_choices",
             field=models.JSONField(default=[300, 600, 900, 1200, 1500, 1800]),
         ),
     ]

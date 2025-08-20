@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0088_remove_servermessage_profile_servermessage_group'),
+        ("gameplay", "0088_remove_servermessage_profile_servermessage_group"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='servermessage',
-            name='is_draft',
+            model_name="servermessage",
+            name="is_draft",
             field=models.BooleanField(default=False),
         ),
     ]

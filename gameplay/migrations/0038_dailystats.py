@@ -6,18 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0037_character_xp_next_level'),
+        ("gameplay", "0037_character_xp_next_level"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DailyStats',
+            name="DailyStats",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('newUsers', models.PositiveIntegerField(default=0)),
-                ('questsCompleted', models.PositiveIntegerField(default=0)),
-                ('activitiesCompleted', models.PositiveIntegerField(default=0)),
-                ('activityTimeLogged', models.PositiveIntegerField(default=0)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("newUsers", models.PositiveIntegerField(default=0)),
+                ("questsCompleted", models.PositiveIntegerField(default=0)),
+                ("activitiesCompleted", models.PositiveIntegerField(default=0)),
+                ("activityTimeLogged", models.PositiveIntegerField(default=0)),
             ],
         ),
     ]

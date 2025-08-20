@@ -1,0 +1,26 @@
+@use '../../../styles/base/variables' as v;
+@use '../../styles/semantic/typography' as t;
+
+.currentQuestSection {
+  display: flex;
+  flex-direction: column;
+  gap: v.$spacing-gap;
+  padding: v.$spacing-sm v.$spacing-md;
+  background-color: v.$color-light;
+  border-radius: v.$border-radius;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.questText {
+  @include t.apply-text-style(t.$text-body);
+}
+
+.questLabel {
+  @include t.apply-text-style(t.$text-body);
+}
+
+.currentQuestTitle {
+  @include t.apply-text-style(t.$text-body);
+}

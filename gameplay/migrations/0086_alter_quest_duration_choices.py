@@ -7,13 +7,15 @@ import gameplay.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameplay', '0085_alter_quest_duration_choices'),
+        ("gameplay", "0085_alter_quest_duration_choices"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='quest',
-            name='duration_choices',
-            field=models.JSONField(default=gameplay.models.Quest.default_duration_choices),
+            model_name="quest",
+            name="duration_choices",
+            field=models.JSONField(
+                default=gameplay.models.Quest.default_duration_choices
+            ),
         ),
     ]

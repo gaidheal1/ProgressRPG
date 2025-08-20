@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class GameworldConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'gameworld'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "gameworld"

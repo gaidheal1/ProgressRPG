@@ -1,0 +1,65 @@
+name: 🐛 Bug Report
+description: Report something that isn’t working as expected in Progress RPG
+title: "[Bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping us improve **Progress RPG**! Please fill in the details below so we can investigate the bug.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: What’s the problem?
+      placeholder: e.g. "Quest timer resets immediately after starting"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: What exactly did you do, step-by-step?
+      placeholder: |
+        1. Go to the homepage
+        2. Start a quest
+        3. Wait for 10 seconds
+        4. See the timer reset to 0:00
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      description: Describe the behaviour you expected instead.
+      placeholder: e.g. "The quest timer should count down without resetting."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened?
+      description: What did you observe? Include error messages, screenshots, or anything unusual.
+      placeholder: e.g. "The timer went back to 0 after a few seconds. No error message showed up."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Browser info, device type, test environment, internet speed, anything that might help us reproduce it.
+      placeholder: e.g. "Firefox on Windows 11, slow internet connection"
+
+  - type: checkboxes
+    id: agree
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct.
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

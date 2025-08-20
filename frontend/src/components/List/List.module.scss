@@ -1,0 +1,55 @@
+@use '../../styles/base/variables' as v;
+@use '../../styles/utilities/mixins' as m;
+@use '../../styles/semantic/typography' as t;
+@use '../../styles/semantic/colors' as c;
+
+.listSection {
+  //padding: v.$spacing-xs 0;
+  gap: v.$spacing-gap;
+  align-self: stretch;
+  display: flex;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  margin: 0;
+  //gap: v.$spacing-xs;
+  width: 100%;
+  list-style: none;
+}
+
+.list li {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: v.$spacing-sm;
+  width: 100%;
+  padding: v.$spacing-xs v.$spacing-sm;
+  border-radius: v.$border-radius;
+
+  background-color: c.$color-bg;
+  @include t.apply-text-style(t.$text-body);
+  @include c.apply-list-variant(default, false);
+
+  &.hidden {
+    display: none !important;
+  }
+
+  &.selected {
+    @include c.apply-list-variant(default, true);
+  }
+
+}
+
+li:hover {
+  cursor: default;
+
+}
+
+.selectable li:hover {
+  cursor: pointer;
+}

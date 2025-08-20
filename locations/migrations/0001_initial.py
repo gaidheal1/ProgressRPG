@@ -8,303 +8,785 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Animal',
+            name="Animal",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255, unique=True)),
-                ('food_consumption_per_day', models.DecimalField(decimal_places=2, help_text='Food units per day', max_digits=5)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255, unique=True)),
+                (
+                    "food_consumption_per_day",
+                    models.DecimalField(
+                        decimal_places=2, help_text="Food units per day", max_digits=5
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='AnimalPen',
+            name="AnimalPen",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('fencing_state', models.IntegerField(default=80, help_text='Fencing health percentage')),
-                ('animal_health', models.IntegerField(default=80, help_text='Animal health percentage')),
-                ('capacity', models.IntegerField()),
-                ('cleanliness', models.IntegerField(default=80, help_text='Cleanliness percentage')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "fencing_state",
+                    models.IntegerField(
+                        default=80, help_text="Fencing health percentage"
+                    ),
+                ),
+                (
+                    "animal_health",
+                    models.IntegerField(
+                        default=80, help_text="Animal health percentage"
+                    ),
+                ),
+                ("capacity", models.IntegerField()),
+                (
+                    "cleanliness",
+                    models.IntegerField(default=80, help_text="Cleanliness percentage"),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Building',
+            name="Building",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('size', models.IntegerField(blank=True, null=True)),
-                ('condition', models.IntegerField(default=80)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("size", models.IntegerField(blank=True, null=True)),
+                ("condition", models.IntegerField(default=80)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='BuildingType',
+            name="BuildingType",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255, unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255, unique=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Crop',
+            name="Crop",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255, unique=True)),
-                ('growth_time', models.IntegerField(help_text='Growth time in days')),
-                ('yield_per_sq_meter', models.DecimalField(decimal_places=2, max_digits=5)),
-                ('food_unit_weight', models.IntegerField(default=500, help_text='Weight of one food unit in grams')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255, unique=True)),
+                ("growth_time", models.IntegerField(help_text="Growth time in days")),
+                (
+                    "yield_per_sq_meter",
+                    models.DecimalField(decimal_places=2, max_digits=5),
+                ),
+                (
+                    "food_unit_weight",
+                    models.IntegerField(
+                        default=500, help_text="Weight of one food unit in grams"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='FarmSpace',
+            name="FarmSpace",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('size', models.IntegerField(blank=True, null=True)),
-                ('in_use', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("size", models.IntegerField(blank=True, null=True)),
+                ("in_use", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Field',
+            name="Field",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('base_productivity_per_sq_metre', models.DecimalField(decimal_places=2, default=0.0, max_digits=5)),
-                ('water_availability', models.IntegerField(default=80)),
-                ('fertility', models.IntegerField(default=80)),
-                ('soil_health', models.IntegerField(default=80)),
-                ('farm_space', models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='field', to='locations.farmspace')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "base_productivity_per_sq_metre",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=5),
+                ),
+                ("water_availability", models.IntegerField(default=80)),
+                ("fertility", models.IntegerField(default=80)),
+                ("soil_health", models.IntegerField(default=80)),
+                (
+                    "farm_space",
+                    models.OneToOneField(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="field",
+                        to="locations.farmspace",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Location',
+            name="Location",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255, unique=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('parent_location', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='sub_locations', to='locations.location')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255, unique=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "parent_location",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="sub_locations",
+                        to="locations.location",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Orchard',
+            name="Orchard",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('base_productivity_per_sq_metre', models.DecimalField(decimal_places=2, default=0.0, max_digits=5)),
-                ('water_availability', models.IntegerField(default=80)),
-                ('fertility', models.IntegerField(default=80)),
-                ('tree_health', models.IntegerField(default=80)),
-                ('fruit_quality', models.IntegerField(default=80)),
-                ('farm_space', models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='orchard', to='locations.farmspace')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "base_productivity_per_sq_metre",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=5),
+                ),
+                ("water_availability", models.IntegerField(default=80)),
+                ("fertility", models.IntegerField(default=80)),
+                ("tree_health", models.IntegerField(default=80)),
+                ("fruit_quality", models.IntegerField(default=80)),
+                (
+                    "farm_space",
+                    models.OneToOneField(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="orchard",
+                        to="locations.farmspace",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Pasture',
+            name="Pasture",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('fencing_state', models.IntegerField(default=80, help_text='Fencing health percentage')),
-                ('animal_health', models.IntegerField(default=80, help_text='Animal health percentage')),
-                ('grazing_quality', models.IntegerField(default=80, help_text='Grass quality percentage')),
-                ('farm_space', models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='pasture', to='locations.farmspace')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "fencing_state",
+                    models.IntegerField(
+                        default=80, help_text="Fencing health percentage"
+                    ),
+                ),
+                (
+                    "animal_health",
+                    models.IntegerField(
+                        default=80, help_text="Animal health percentage"
+                    ),
+                ),
+                (
+                    "grazing_quality",
+                    models.IntegerField(
+                        default=80, help_text="Grass quality percentage"
+                    ),
+                ),
+                (
+                    "farm_space",
+                    models.OneToOneField(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="pasture",
+                        to="locations.farmspace",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='PopulationCentre',
+            name="PopulationCentre",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('description', models.TextField(blank=True, max_length=2000, null=True)),
-                ('population', models.IntegerField()),
-                ('is_unlocked', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                (
+                    "description",
+                    models.TextField(blank=True, max_length=2000, null=True),
+                ),
+                ("population", models.IntegerField()),
+                ("is_unlocked", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Position',
+            name="Position",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('x', models.IntegerField(default=0)),
-                ('y', models.IntegerField(default=0)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("x", models.IntegerField(default=0)),
+                ("y", models.IntegerField(default=0)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Region',
+            name="Region",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255, unique=True)),
-                ('description', models.TextField(blank=True, max_length=2000, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255, unique=True)),
+                (
+                    "description",
+                    models.TextField(blank=True, max_length=2000, null=True),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Tree',
+            name="Tree",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255, unique=True)),
-                ('growth_time', models.IntegerField(help_text='Growth time in days')),
-                ('yield_per_instance', models.DecimalField(decimal_places=2, max_digits=5)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255, unique=True)),
+                ("growth_time", models.IntegerField(help_text="Growth time in days")),
+                (
+                    "yield_per_instance",
+                    models.DecimalField(decimal_places=2, max_digits=5),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Workshop',
+            name="Workshop",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('productivity', models.IntegerField(default=80)),
-                ('tool_quality', models.IntegerField(default=80)),
-                ('building', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='workshop', to='locations.building')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("productivity", models.IntegerField(default=80)),
+                ("tool_quality", models.IntegerField(default=80)),
+                (
+                    "building",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="workshop",
+                        to="locations.building",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Storage',
+            name="Storage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('storage_type', models.CharField(choices=[('food', 'Food'), ('construction', 'Construction Materials'), ('cold', 'Cold')], max_length=50)),
-                ('capacity', models.IntegerField(default=100, help_text='Max storage units available')),
-                ('quantity', models.IntegerField(default=0, help_text='Quantity of item in storage')),
-                ('security_level', models.IntegerField(default=80)),
-                ('building', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='storage', to='locations.building')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "storage_type",
+                    models.CharField(
+                        choices=[
+                            ("food", "Food"),
+                            ("construction", "Construction Materials"),
+                            ("cold", "Cold"),
+                        ],
+                        max_length=50,
+                    ),
+                ),
+                (
+                    "capacity",
+                    models.IntegerField(
+                        default=100, help_text="Max storage units available"
+                    ),
+                ),
+                (
+                    "quantity",
+                    models.IntegerField(
+                        default=0, help_text="Quantity of item in storage"
+                    ),
+                ),
+                ("security_level", models.IntegerField(default=80)),
+                (
+                    "building",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="storage",
+                        to="locations.building",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Social',
+            name="Social",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('capacity', models.IntegerField(default=30)),
-                ('building', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='social', to='locations.building')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("capacity", models.IntegerField(default=30)),
+                (
+                    "building",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="social",
+                        to="locations.building",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Shop',
+            name="Shop",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('inventory_capacity', models.IntegerField(default=50)),
-                ('trade_rating', models.IntegerField(default=80)),
-                ('building', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='shop', to='locations.building')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("inventory_capacity", models.IntegerField(default=50)),
+                ("trade_rating", models.IntegerField(default=80)),
+                (
+                    "building",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="shop",
+                        to="locations.building",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Residence',
+            name="Residence",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('max_occupants', models.IntegerField(default=4)),
-                ('comfort_level', models.IntegerField(default=50, help_text='Comfort percentage')),
-                ('building', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='residence', to='locations.building')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("max_occupants", models.IntegerField(default=4)),
+                (
+                    "comfort_level",
+                    models.IntegerField(default=50, help_text="Comfort percentage"),
+                ),
+                (
+                    "building",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="residence",
+                        to="locations.building",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='PublicSpace',
+            name="PublicSpace",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('size', models.IntegerField(blank=True, null=True)),
-                ('cleanliness', models.IntegerField(default=80)),
-                ('capacity', models.IntegerField(default=30)),
-                ('condition', models.IntegerField(default=50)),
-                ('reputation', models.IntegerField(default=50)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('location', models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='publicspace', to='locations.location')),
-                ('position', models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='publicspace', to='locations.position')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("size", models.IntegerField(blank=True, null=True)),
+                ("cleanliness", models.IntegerField(default=80)),
+                ("capacity", models.IntegerField(default=30)),
+                ("condition", models.IntegerField(default=50)),
+                ("reputation", models.IntegerField(default=50)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "location",
+                    models.OneToOneField(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="publicspace",
+                        to="locations.location",
+                    ),
+                ),
+                (
+                    "position",
+                    models.OneToOneField(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="publicspace",
+                        to="locations.position",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='PenAnimal',
+            name="PenAnimal",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('count', models.IntegerField(default=1)),
-                ('animal', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pen_animals', to='locations.animal')),
-                ('pen', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pen_animals', to='locations.animalpen')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("count", models.IntegerField(default=1)),
+                (
+                    "animal",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="pen_animals",
+                        to="locations.animal",
+                    ),
+                ),
+                (
+                    "pen",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="pen_animals",
+                        to="locations.animalpen",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='PastureAnimal',
+            name="PastureAnimal",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('count', models.IntegerField(default=1)),
-                ('animal', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pasture_animals', to='locations.animal')),
-                ('pasture', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pasture_animals', to='locations.pasture')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("count", models.IntegerField(default=1)),
+                (
+                    "animal",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="pasture_animals",
+                        to="locations.animal",
+                    ),
+                ),
+                (
+                    "pasture",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="pasture_animals",
+                        to="locations.pasture",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Park',
+            name="Park",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('biodiversity', models.IntegerField(default=30)),
-                ('public_space', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='park', to='locations.publicspace')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("biodiversity", models.IntegerField(default=30)),
+                (
+                    "public_space",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="park",
+                        to="locations.publicspace",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='OrchardTree',
+            name="OrchardTree",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('count', models.IntegerField(default=1)),
-                ('crop', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='orchard_trees', to='locations.crop')),
-                ('orchard', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='orchard_trees', to='locations.orchard')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("count", models.IntegerField(default=1)),
+                (
+                    "crop",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="orchard_trees",
+                        to="locations.crop",
+                    ),
+                ),
+                (
+                    "orchard",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="orchard_trees",
+                        to="locations.orchard",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Market',
+            name="Market",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('public_space', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='market', to='locations.publicspace')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "public_space",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="market",
+                        to="locations.publicspace",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='FieldCrop',
+            name="FieldCrop",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('size', models.IntegerField(help_text='Area in sq meters for this crop')),
-                ('crop', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='field_crops', to='locations.crop')),
-                ('field', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='field_crops', to='locations.field')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "size",
+                    models.IntegerField(help_text="Area in sq meters for this crop"),
+                ),
+                (
+                    "crop",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="field_crops",
+                        to="locations.crop",
+                    ),
+                ),
+                (
+                    "field",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="field_crops",
+                        to="locations.field",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='farmspace',
-            name='location',
-            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='farmspace', to='locations.location'),
+            model_name="farmspace",
+            name="location",
+            field=models.OneToOneField(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="farmspace",
+                to="locations.location",
+            ),
         ),
         migrations.AddField(
-            model_name='farmspace',
-            name='position',
-            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='farmspace', to='locations.position'),
+            model_name="farmspace",
+            name="position",
+            field=models.OneToOneField(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="farmspace",
+                to="locations.position",
+            ),
         ),
         migrations.CreateModel(
-            name='Cemetary',
+            name="Cemetary",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('public_space', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='cemetary', to='locations.publicspace')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "public_space",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="cemetary",
+                        to="locations.publicspace",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='building',
-            name='location',
-            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='building', to='locations.location'),
+            model_name="building",
+            name="location",
+            field=models.OneToOneField(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="building",
+                to="locations.location",
+            ),
         ),
         migrations.AddField(
-            model_name='building',
-            name='position',
-            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='building', to='locations.position'),
+            model_name="building",
+            name="position",
+            field=models.OneToOneField(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="building",
+                to="locations.position",
+            ),
         ),
         migrations.AddField(
-            model_name='animalpen',
-            name='farm_space',
-            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='animal_pen', to='locations.farmspace'),
+            model_name="animalpen",
+            name="farm_space",
+            field=models.OneToOneField(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="animal_pen",
+                to="locations.farmspace",
+            ),
         ),
     ]

@@ -1,0 +1,69 @@
+@use '../../styles/utilities/mixins' as m;
+@use '../../styles/base/variables' as v;
+@use '../../styles/semantic/typography' as t;
+@use '../../styles/semantic/colors' as c;
+@use '../../styles/base/a11y' as a;
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: v.$spacing-gap;
+  width: 100%;
+  max-width: 30rem;
+
+  @include m.respond-to(sm) {
+    max-width: 100%;
+  }
+}
+
+.label {
+  //@include a.visually-hidden;
+  @include t.apply-text-style(t.$text-label)
+}
+
+.required {
+  //color: red;
+  margin-left: v.$spacing-xs;
+}
+
+.inputField {
+  padding: v.$padding-base;
+  max-width: 30rem;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: v.$border-radius;
+  transition: border 0.2s, background 0.2s;
+  @include t.apply-text-style(t.$text-body);
+
+  &:focus {
+    outline: none;
+    border-color: c.$color-border-primary;
+    background-color: c.$color-bg;
+    border-radius: v.$border-radius;
+  }
+
+  &:focus-visible {
+    outline: 2px solid c.$color-border-accent;
+    outline-offset: 2px;
+    border-color: c.$color-border-accent;
+  }
+
+  &.inputError {
+    border-color: red;
+    background-color: c.$color-bg;
+  }
+
+  &:disabled {
+    background-color: c.$color-bg;
+    cursor: not-allowed;
+  }
+}
+
+.helpText {
+  @include t.apply-text-style(t.$text-caption);
+
+}
+
+.errorText {
+  color: red;
+  @include t.apply-text-style(t.$text-caption);
+}

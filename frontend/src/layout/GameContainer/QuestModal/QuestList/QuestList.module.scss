@@ -1,0 +1,11 @@
+@use '../../../../styles/base/variables' as v;
+@use '../../../two-columns' as tc;
+@use '../../../../styles/semantic/typography' as t;
+@use '../../../../styles/semantic/colors' as c;
+
+.questList {
+  width: 35%;
+  padding: v.$padding-base;
+  overflow-y: auto;
+  @include tc.section-box;
+}

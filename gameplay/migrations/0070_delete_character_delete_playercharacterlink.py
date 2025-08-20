@@ -6,15 +6,15 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gameworld', '0008_alter_characterprogression_character_and_more'),
-        ('gameplay', '0069_remove_character_buffs_remove_character_parents_and_more'),
+        ("gameworld", "0008_alter_characterprogression_character_and_more"),
+        ("gameplay", "0069_remove_character_buffs_remove_character_parents_and_more"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='Character',
+            name="Character",
         ),
         migrations.DeleteModel(
-            name='PlayerCharacterLink',
+            name="PlayerCharacterLink",
         ),
     ]

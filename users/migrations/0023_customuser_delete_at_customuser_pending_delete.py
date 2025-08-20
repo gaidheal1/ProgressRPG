@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0022_alter_profile_last_login'),
+        ("users", "0022_alter_profile_last_login"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customuser',
-            name='delete_at',
+            model_name="customuser",
+            name="delete_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='customuser',
-            name='pending_delete',
+            model_name="customuser",
+            name="pending_delete",
             field=models.BooleanField(default=False),
         ),
     ]

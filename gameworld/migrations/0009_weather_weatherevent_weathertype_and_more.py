@@ -7,87 +7,134 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('locations', '0001_initial'),
-        ('gameworld', '0008_alter_characterprogression_character_and_more'),
+        ("locations", "0001_initial"),
+        ("gameworld", "0008_alter_characterprogression_character_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Weather',
+            name="Weather",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
-                ('season', models.CharField(choices=[('Spring', 'Spring'), ('Summer', 'Summer'), ('Autumn', 'Autumn'), ('Winter', 'Winter')], max_length=6)),
-                ('temperature', models.IntegerField()),
-                ('crop_growth_modifier', models.FloatField(default=1.0)),
-                ('travel_speed_modifier', models.FloatField(default=1.0)),
-                ('cleanliness_modifier', models.FloatField(default=1.0)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField()),
+                (
+                    "season",
+                    models.CharField(
+                        choices=[
+                            ("Spring", "Spring"),
+                            ("Summer", "Summer"),
+                            ("Autumn", "Autumn"),
+                            ("Winter", "Winter"),
+                        ],
+                        max_length=6,
+                    ),
+                ),
+                ("temperature", models.IntegerField()),
+                ("crop_growth_modifier", models.FloatField(default=1.0)),
+                ("travel_speed_modifier", models.FloatField(default=1.0)),
+                ("cleanliness_modifier", models.FloatField(default=1.0)),
             ],
         ),
         migrations.CreateModel(
-            name='WeatherEvent',
+            name="WeatherEvent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start_date', models.DateField()),
-                ('end_date', models.DateField()),
-                ('base_temperature', models.IntegerField()),
-                ('location', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='locations.location')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("start_date", models.DateField()),
+                ("end_date", models.DateField()),
+                ("base_temperature", models.IntegerField()),
+                (
+                    "location",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="locations.location",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='WeatherType',
+            name="WeatherType",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('min_temp_change', models.IntegerField()),
-                ('max_temp_change', models.IntegerField()),
-                ('typical_duration', models.IntegerField(default=3)),
-                ('crop_growth_modifier', models.FloatField(default=1.0)),
-                ('travel_speed_modifier', models.FloatField(default=1.0)),
-                ('cleanliness_modifier', models.FloatField(default=1.0)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
+                ("description", models.TextField(blank=True, null=True)),
+                ("min_temp_change", models.IntegerField()),
+                ("max_temp_change", models.IntegerField()),
+                ("typical_duration", models.IntegerField(default=3)),
+                ("crop_growth_modifier", models.FloatField(default=1.0)),
+                ("travel_speed_modifier", models.FloatField(default=1.0)),
+                ("cleanliness_modifier", models.FloatField(default=1.0)),
             ],
         ),
         migrations.AlterUniqueTogether(
-            name='characterrelationship',
+            name="characterrelationship",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='characterrelationship',
-            name='character1',
+            model_name="characterrelationship",
+            name="character1",
         ),
         migrations.RemoveField(
-            model_name='characterrelationship',
-            name='character2',
+            model_name="characterrelationship",
+            name="character2",
         ),
         migrations.RemoveField(
-            model_name='partnership',
-            name='partner1',
+            model_name="partnership",
+            name="partner1",
         ),
         migrations.RemoveField(
-            model_name='partnership',
-            name='partner2',
+            model_name="partnership",
+            name="partner2",
         ),
         migrations.DeleteModel(
-            name='CharacterProgression',
+            name="CharacterProgression",
         ),
         migrations.DeleteModel(
-            name='CharacterRelationship',
+            name="CharacterRelationship",
         ),
         migrations.DeleteModel(
-            name='CharacterRole',
+            name="CharacterRole",
         ),
         migrations.DeleteModel(
-            name='Partnership',
+            name="Partnership",
         ),
         migrations.AddField(
-            model_name='weatherevent',
-            name='weather_type',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='gameworld.weathertype'),
+            model_name="weatherevent",
+            name="weather_type",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="gameworld.weathertype",
+            ),
         ),
         migrations.AddField(
-            model_name='weather',
-            name='weather_event',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='gameworld.weatherevent'),
+            model_name="weather",
+            name="weather_event",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="gameworld.weatherevent"
+            ),
         ),
     ]
