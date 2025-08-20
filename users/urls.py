@@ -5,7 +5,7 @@ from . import views
 from .views import RegisterView, LoginView
 
 urlpatterns = [
-    path("", views.index_view, name="index"),  # stub index
+    path("django-index", views.index_view, name="index"),  # stub index
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", views.logout_view, name="logout"),  # Use auth_views
     path("register/", RegisterView.as_view(), name="register"),
