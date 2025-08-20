@@ -22,9 +22,9 @@ IFS='.' read -r major minor patch <<< "$version_number"
 
 # Ask user for bump type
 echo "Select version bump:"
-select choice in "Patch ($major.$minor.$((patch + 1)))" \
-                  "Minor ($major.$((minor + 1)).0)" \
-                  "Major ($((major + 1)).0.0)"; do
+select choice in "Patch ($major.$minor.$((patch + 1))$suffix)" \
+                  "Minor ($major.$((minor + 1)).0$suffix)" \
+                  "Major ($((major + 1)).0.0$suffix)"; do
   case $REPLY in
     1) new_tag="v$major.$minor.$((patch + 1))$suffix"; break ;;
     2) new_tag="v$major.$((minor + 1)).0$suffix"; break ;;
