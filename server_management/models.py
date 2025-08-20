@@ -30,7 +30,7 @@ class MaintenanceWindow(models.Model):
         logger.info("[SCHEDULE TASKS] Scheduling maintenance window tasks")
         now = timezone.now()
         if self.tasks_scheduled:
-            return False  # Prevent duplicate scheduling
+            return False
         if self.end_time < now:
             return False
 
@@ -68,9 +68,20 @@ class MaintenanceWindow(models.Model):
         logger.info("[ACTIVATE MAINTENANCE] Activating maintenance mode...")
         now = timezone.now()
         subprocess.run(["python", "manage.py", "pause_timers"])
-        async_to_sync(send_group_message)(
-            "online_users", {"type": "action", "action": "refresh", "success": True}
-        )
+        payload = {
+            "type": "action",
+            "action": "refresh",
+            "data": {
+                "maintenance_active": True,
+                "name": self.name,
+                "description": self.description,
+                "start_time": self.start_time.isoformat(),
+                "end_time": self.end_time.isoformat(),
+            },
+            "success": True,
+        }
+
+        async_to_sync(send_group_message)("online_users", payload)
 
         self.is_active = True
         self.save()
@@ -81,7 +92,17 @@ class MaintenanceWindow(models.Model):
         print("Deactivating maintenance mode... wrapping up!")
         self.is_active = False
         self.save()
-        # Add any additional activation logic here.
+
+        payload = {
+            "type": "action",
+            "action": "refresh",
+            "data": {
+                "maintenance_active": False,
+            },
+            "success": True,
+        }
+
+        async_to_sync(send_group_message)("online_users", payload)
 
     # def delete_scheduled_tasks(self):
     #     """Deletes scheduled tasks if necessary."""

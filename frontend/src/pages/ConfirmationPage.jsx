@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { API_BASE_URL } from "../config";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_URL = `${BASE_URL}/api/v1`;
+const API_URL = `${API_BASE_URL}/api/v1`;
 
 export default function ConfirmationPage() {
   const { key } = useParams();

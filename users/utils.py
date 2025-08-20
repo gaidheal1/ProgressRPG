@@ -46,7 +46,9 @@ def assign_character_to_profile(profile):
     :raises ValueError: If the tutorial quest is not found in the database.
     """
 
-    character = Character.objects.filter(is_npc=True, death_date__isnull=True).first()
+    character = Character.objects.filter(
+        is_npc=True, can_link=True, death_date__isnull=True
+    ).first()
 
     if not character:
         logger.warning(f"No available NPC character to assign to profile {profile.id}")

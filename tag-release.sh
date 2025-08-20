@@ -15,7 +15,10 @@ echo "Current version: $latest_tag"
 
 # Parse version
 version=${latest_tag#v}
-IFS='.' read -r major minor patch <<< "$version"
+version_number=${version%%-*}  # Gets everything before '-'
+suffix=${version#"$version_number"}  # Includes the '-' if present, e.g., '-dev'
+
+IFS='.' read -r major minor patch <<< "$version_number"
 
 # Ask user for bump type
 echo "Select version bump:"
@@ -23,9 +26,9 @@ select choice in "Patch ($major.$minor.$((patch + 1)))" \
                   "Minor ($major.$((minor + 1)).0)" \
                   "Major ($((major + 1)).0.0)"; do
   case $REPLY in
-    1) new_tag="v$major.$minor.$((patch + 1))"; break ;;
-    2) new_tag="v$major.$((minor + 1)).0"; break ;;
-    3) new_tag="v$((major + 1)).0.0"; break ;;
+    1) new_tag="v$major.$minor.$((patch + 1))$suffix"; break ;;
+    2) new_tag="v$major.$((minor + 1)).0$suffix"; break ;;
+    3) new_tag="v$((major + 1)).0.0$suffix"; break ;;
     *) echo "Invalid choice. Please enter 1, 2 or 3."; continue ;;
   esac
 done

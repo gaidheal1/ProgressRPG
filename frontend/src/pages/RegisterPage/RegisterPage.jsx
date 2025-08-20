@@ -80,7 +80,6 @@ export default function RegisterPage() {
               value: email,
               onChange: setEmail,
               required: true,
-              error: fieldErrors.email?.[0],
             },
             {
               name: 'password',
@@ -91,7 +90,6 @@ export default function RegisterPage() {
               value: password,
               onChange: setPassword,
               required: true,
-              error: fieldErrors.password1?.[0],
             },
             {
               name: 'confirmPassword',
@@ -102,7 +100,6 @@ export default function RegisterPage() {
               value: confirmPassword,
               onChange: setConfirmPassword,
               required: true,
-              error: fieldErrors.password2?.[0],
             },
             {
               name: 'invite_code',
@@ -112,7 +109,6 @@ export default function RegisterPage() {
               value: inviteCode,
               onChange: setInviteCode,
               required: true,
-              error: fieldErrors.invite_code?.[0],
             },
             {
               name: 'agree_to_terms',
@@ -133,7 +129,6 @@ export default function RegisterPage() {
               checked: agreeToTerms,
               onChange: e => setAgreeToTerms(e.target.checked),
               required: true,
-              error: fieldErrors.agree_to_terms?.[0],
             },
           ]}
           error={error}

@@ -12,6 +12,8 @@ export default function Input({
   required = false,
   autoComplete,
   checked,
+  minLength,
+  maxLength,
 }) {
   const isCheckbox = type === 'checkbox';
 
@@ -26,7 +28,7 @@ export default function Input({
       <input
         id={id}
         type={type}
-        className={`${styles.inputField} ${error ? styles.errorInput : ''}`}
+        className={`${styles.inputField} ${error ? styles.inputError : ''}`}
         value={isCheckbox ? undefined : value}
         checked={isCheckbox ? checked : undefined}
         onChange={(e) => {
@@ -38,6 +40,8 @@ export default function Input({
         aria-invalid={!!error}
         autoComplete={autoComplete}
         required={required}
+        minLength={minLength}
+        maxLength={maxLength}
       />
 
       {helpText && !error && (

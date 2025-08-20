@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useWebSocket } from '../context/WebSocketContext';
 
-export default function useWebSocketEvent(callback) {
+export function useWebSocketEvent(callback) {
   const { addEventHandler } = useWebSocket();
 
   useEffect(() => {

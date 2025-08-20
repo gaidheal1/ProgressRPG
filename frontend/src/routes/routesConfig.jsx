@@ -9,11 +9,12 @@ const ConfirmationPage = lazy(() => import("../pages/ConfirmationPage"));
 const OnboardingPage = lazy(() => import("../pages/OnboardingPage/OnboardingPage"));
 const Game = lazy(() => import("../pages/Game/Game"));
 const ProfilePage = lazy(() => import("../pages/Profile/Profile"));
+const MaintenancePage = lazy(() => import("../pages/MaintenancePage/MaintenancePage"));
 
 import PrivateRoute from "../components/PrivateRoute";
 import RequireOnboardingComplete from "../components/RequireOnboardingComplete";
 
-const routes = [
+export const routes = [
   {
     path: "/",
     element: <Home />,
@@ -33,6 +34,10 @@ const routes = [
   {
     path: "/confirm_email/:key",
     element: <ConfirmationPage />,
+  },
+  {
+    path: "/maintenance",
+    element: <MaintenancePage />,
   },
   {
     path: "/onboarding",
@@ -65,5 +70,3 @@ const routes = [
     element: <h2>404: Page Not Found</h2>,
   },
 ];
-
-export default routes;

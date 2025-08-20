@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from .base import *
 
 ROOT_URLCONF = "progress_rpg.urls"
-FRONTEND_URL = "http://localhost:5173"
 
 
 LOGGING = {
@@ -84,14 +83,17 @@ SECRET_KEY_FALLBACKS = [
 ]
 
 DEBUG = os.getenv("DEBUG", "True") == "True"
-DB_NAME = os.getenv("DB_NAME", default="progress_rpg")
 
-DB_USER = os.getenv("DB_USER", default="duncan")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-# print("DB_PASSWORD:", DB_PASSWORD)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-DB_HOST = os.getenv("DB_HOST", default="localhost")
-DB_PORT = os.getenv("DB_PORT", default=5432)
+if not DATABASE_URL:
+    DB_NAME = os.getenv("DB_NAME", default="progress_rpg")
+    DB_USER = os.getenv("DB_USER", default="duncan")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+    DB_HOST = os.getenv("DB_HOST", default="localhost")
+    DB_PORT = os.getenv("DB_PORT", default=5432)
+
+    DATABASE_URL = f"postgres://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
@@ -119,32 +121,11 @@ print("ALLOWED HOSTS:", ALLOWED_HOSTS)
 print("CORS:", CORS_ALLOWED_ORIGINS)
 
 
-DJANGO_VITE = {
-    "default": {
-        "dev_mode": DEBUG,  # True in dev, False in prod
-        "dev_server_port": 5173,
-        "dev_server_host": "localhost",
-        "static_url_prefix": "static/",
-        "manifest_path": BASE_DIR / "frontend" / "dist" / "manifest.json",
-    }
-}
-
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": DB_NAME,
-        "USER": DB_USER,
-        "PASSWORD": DB_PASSWORD,
-        "HOST": DB_HOST,
-        "PORT": DB_PORT,
-        "CONN_MAX_AGE": 60,
-    }
-}
+DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=60)}
 
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0")

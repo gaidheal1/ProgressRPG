@@ -1,18 +1,19 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, useLocation } from 'react-router-dom';
 
-import { GameProvider } from './context/GameContext';
-import { useMaintenanceStatus } from './hooks/useMaintenanceStatus';
-import { useAuth } from './context/AuthContext';
-import { WebSocketProvider } from './context/WebSocketContext';
+import { MaintenanceProvider } from './context/MaintenanceContext';
 import { ToastProvider } from './context/ToastContext';
+import { GameProvider } from './context/GameContext';
+import { WebSocketProvider } from './context/WebSocketContext';
+
+import { useAuth } from './context/AuthContext';
 
 import AppRoutes from "./routes/AppRoutes";
 import Navbar from './layout/Navbar/Navbar';
 import Footer from './layout/Footer/Footer';
 import FeedbackWidget from './components/FeedbackWidget/FeedbackWidget';
 import StaticBanner from './components/StaticBanner/StaticBanner';
-import MaintenancePage from "./pages/MaintenancePage";
+import MaintenanceWatcher from './components/MaintenanceWatcher';
 
 import { initGA, logPageView } from '../utils/analytics';
 
@@ -33,38 +34,32 @@ function RouteChangeTracker() {
 
 function App() {
   const { isAuthenticated } = useAuth();
-  const maintenance = useMaintenanceStatus();
 
   useEffect(() => {
     initGA();
   }, [])
 
 
-  if (maintenance.loading) {
-    return <div>Loading...</div>
-  }
-
-  if (maintenance.active) {
-    return <MaintenancePage {...maintenance.details} />;
-  }
-
   return (
-    <ToastProvider>
-      <GameProvider>
-        <WebSocketProvider>
-          <BrowserRouter>
-            <RouteChangeTracker />
-            <div className="app-container">
-              <Navbar />
-              <StaticBanner message={announcement} />
-              <AppRoutes />
-              <Footer />
-              {isAuthenticated && <FeedbackWidget />}
-            </div>
-          </BrowserRouter>
-        </WebSocketProvider>
-      </GameProvider>
-    </ToastProvider>
+    <MaintenanceProvider>
+      <ToastProvider>
+        <GameProvider>
+          <WebSocketProvider>
+            <BrowserRouter>
+              <RouteChangeTracker />
+              <MaintenanceWatcher />
+              <div className="app-container">
+                <Navbar />
+                <StaticBanner message={announcement} />
+                <AppRoutes />
+                <Footer />
+                {isAuthenticated && <FeedbackWidget />}
+              </div>
+            </BrowserRouter>
+          </WebSocketProvider>
+        </GameProvider>
+      </ToastProvider>
+    </MaintenanceProvider>
   );
 }
 

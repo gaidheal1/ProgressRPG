@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { apiFetch } from '../../utils/api';
+import { API_BASE_URL } from '../config';
 
 export function useWebSocketConnection(
   playerId,
@@ -53,7 +54,7 @@ export function useWebSocketConnection(
     try {
       const { uuid } = await apiFetch('/ws_auth/');
 
-      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const baseUrl = API_BASE_URL;
       const url = new URL(baseUrl);
       const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = `${protocol}//${url.hostname}:${url.port}/ws/profile_${playerId}/?uuid=${uuid}`;

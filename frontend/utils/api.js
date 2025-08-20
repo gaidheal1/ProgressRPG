@@ -1,7 +1,8 @@
 // src/utils/api.js
 import { jwtDecode } from "jwt-decode";
+import { API_BASE_URL } from "../src/config";
 
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
+const API_URL = `${API_BASE_URL}/api/v1`;
 
 
 function isTokenExpiringSoon(token, bufferSeconds = 60) {
@@ -83,6 +84,14 @@ export async function apiFetch(path, options = {}, explicitAccessToken=null) {
     if (response.status === 401) {
       clearAuthAndRedirect();
       throw new Error('Unauthorized');
+    }
+
+    if (response.status === 503) {
+      // optionally parse JSON if included
+      const data = await response.json().catch(() => ({}));
+      // redirect or show toast
+      window.location.href = "/maintenance";
+      return Promise.reject(new Error(data.detail || "Maintenance mode"));
     }
 
     if (!response.ok) {

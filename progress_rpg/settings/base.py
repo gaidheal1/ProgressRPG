@@ -16,15 +16,17 @@ from decouple import Config, RepositoryEnv, config
 import os
 from dotenv import load_dotenv
 import logging, ssl, sentry_sdk
+from .utils import is_vite_running
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-os.environ.setdefault("DEBUG", "True")
-DEBUG = os.getenv("DEBUG", "True") == "True"
-
-dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+dotenv_path = BASE_DIR / ".env"
 load_dotenv(dotenv_path)
+
+DEBUG = os.getenv("DEBUG", "True") == "True"
+os.environ.setdefault("DEBUG", "True")
+
 
 os.environ.setdefault(
     "DJANGO_SETTINGS_MODULE",
@@ -198,11 +200,44 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# Vite settings
+
+DEV_MODE = os.getenv("DJANGO_VITE_DEV_MODE", "True") == "True"
+print("DEV_MODE =", DEV_MODE)
+
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEV_MODE,
+        "dev_server_port": 5173,
+        "dev_server_host": "localhost",
+        "static_url_prefix": "frontend/",
+        "manifest_path": BASE_DIR / "static" / "frontend" / ".vite" / "manifest.json",
+    }
+}
+
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost")
+
+if FRONTEND_URL.startswith("http://localhost"):
+    if is_vite_running():
+        FRONTEND_URL = f"{FRONTEND_URL}:5173"
+        print("Vite status: Vite server is running!")
+    else:
+        FRONTEND_URL = f"{FRONTEND_URL}:8000"
+        print("Vite status: Django serving React from static files")
+
+
+# Static files
+
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-# STATICFILES_DIRS = [Path(BASE_DIR / 'static')]
+STATICFILES_BASE = BASE_DIR / "static"
+STATICFILES_DIRS = [
+    STATICFILES_BASE,
+]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

@@ -8,6 +8,7 @@ __pycache__/
 env.env
 env
 node_modules/
+/frontend/dist/
 test-results/
 .dockerignore
 gunicorn_config.py
@@ -20,3 +21,4 @@ logs/
 staticfiles/
 static/.sass-cache/
 mypy.ini
+celerybeat-schedule
