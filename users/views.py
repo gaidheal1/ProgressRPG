@@ -37,7 +37,7 @@ def index_view(request):
     :return: An HTTP response rendering the index template.
     :rtype: django.http.HttpResponse
     """
-    return render(request, "index.html")
+    return render(request, "users/index.html")
 
 
 def get_client_ip(request):
