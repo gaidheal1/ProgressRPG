@@ -7,12 +7,11 @@ const isProduction = process.env.NODE_ENV === 'production'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  const isProd = mode === 'production'
 
   return {
     plugins: [react()],
-    base: mode === 'staging'
-      ? '/static/frontend/'
-      : '/',
+    base: isProd ? '/static/frontend/' : '/',
     server: {
       open: true,
       host: true,
@@ -25,7 +24,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     build: {
-      outDir: mode === 'staging'
+      outDir: isProd
         ? path.resolve(__dirname, '../static/frontend')
         : path.resolve(__dirname, './dist'),
       assetsDir: 'assets',
