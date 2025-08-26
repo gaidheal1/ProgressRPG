@@ -7,7 +7,6 @@ import Button from '../../../components/Button/Button';
 import ButtonFrame from '../../../components/Button/ButtonFrame';
 import QuestTimer from '../../../components/Timer/QuestTimer';
 
-
 export default function QuestSection() {
   const { questTimer } = useGame();
   const { status, assignSubject } = questTimer;
@@ -33,6 +32,7 @@ export default function QuestSection() {
           Show quests
         </Button>
       </ButtonFrame>
+
       {modalOpen && (
         <QuestModal
           onClose={() => setModalOpen(false)}
