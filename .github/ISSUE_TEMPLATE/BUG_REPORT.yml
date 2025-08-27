@@ -56,10 +56,7 @@ body:
       label: Where does this bug occur?
       options:
         - label: Staging (staging.progressrpg.com)
-          value: staging
         - label: Production (app.progressrpg.com)
-          value: production
-      default: []
 
   - type: textarea
     id: context
@@ -76,10 +73,3 @@ body:
       options:
         - label: I agree to follow this project's Code of Conduct
           required: true
-
-# Use GitHub's "dynamic labels" feature
-dynamic_labels:
-  - name: "staging"
-    if: ${{contains(where, 'staging')}}
-  - name: "production"
-    if: ${{contains(where, 'production')}}
