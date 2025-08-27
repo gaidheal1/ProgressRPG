@@ -3,6 +3,7 @@ from asgiref.sync import async_to_sync
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth import login, logout, get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import DatabaseError, transaction
 from django.http import Http404  # , HttpResponseRedirect
@@ -45,6 +46,7 @@ from api.serializers import (
     ActivitySerializer,
     QuestSerializer,
     ActivityTimerSerializer,
+    CharacterQuestSerializer,
     QuestTimerSerializer,
     Step1Serializer,
     # Step2Serializer,
@@ -55,6 +57,8 @@ from api.serializers import (
 )
 
 from character.models import Character, PlayerCharacterLink
+from progression.models import CharacterQuest
+from progression.utils import copy_quest
 from progression.filters import ActivityFilter
 from gameplay.models import Quest, ActivityTimer, QuestTimer, ServerMessage
 from gameplay.utils import check_quest_eligibility, send_group_message
@@ -379,10 +383,18 @@ class FetchInfoAPIView(APIView):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 
-        if (
-            profile.activity_timer.status != "empty"
-            and profile.activity_timer.activity is None
-        ):
+        try:
+            at = profile.activity_timer
+        except ObjectDoesNotExist:
+            timer = None
+
+        activity = None
+        if at is not None:
+            try:
+                activity = at.activity
+            except ObjectDoesNotExist:
+                activity = None
+        if at.status != "empty" and activity is None:
             try:
                 profile.activity_timer.reset()
             except Exception as e:
@@ -555,6 +567,26 @@ class ActivityViewSet(viewsets.ModelViewSet):
         )
 
 
+class CharacterQuestViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint for CharacterQuest instances.
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = CharacterQuestSerializer
+
+    def get_queryset(self):
+        """
+        Return CharacterQuest objects for the current user's active character.
+        """
+        profile = self.request.user.profile
+        try:
+            character = PlayerCharacterLink.get_character(profile)
+        except ValueError:
+            return CharacterQuest.objects.none()
+        return CharacterQuest.objects.filter(character=character)
+
+
 class QuestViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = QuestSerializer
@@ -580,46 +612,6 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
             eligible_quests, many=True, context={"request": request}
         )
         return Response({"eligible_quests": serializer.data})
-
-    @action(detail=False, methods=["post"])
-    def complete(self, request):
-        profile = request.user.profile
-        try:
-            character = PlayerCharacterLink.get_character(profile)
-        except ValueError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            profile.activity_timer.refresh_from_db()
-            character.quest_timer.refresh_from_db()
-            completion_data = character.complete_quest()
-            if not completion_data:
-                raise ValidationError("Quest completion failed - data was None.")
-        except Exception as e:
-            return Response(
-                {"error": "Failed to complete quest: " + str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-        eligible_quests = check_quest_eligibility(character, profile)
-        quests_data = QuestSerializer(
-            eligible_quests, many=True, context={"request": request}
-        ).data
-        character_data = CharacterSerializer(
-            character, context={"request": request}
-        ).data
-
-        return Response(
-            {
-                "success": True,
-                "message": "Quest completed",
-                "quests": quests_data,
-                "character": character_data,
-                "activity_timer_status": profile.activity_timer.status,
-                "quest_timer_status": character.quest_timer.status,
-                "completion_data": completion_data,
-            }
-        )
 
 
 class BaseTimerViewSet(viewsets.ReadOnlyModelViewSet):
@@ -760,7 +752,8 @@ class QuestTimerViewSet(BaseTimerViewSet):
                     {"error": "Duration must be an integer."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-
+        character_quest = copy_quest(character, quest)
+        print("[TESTING] Character quest copied:", character_quest)
         try:
             timer.change_quest(quest, duration)
             timer.refresh_from_db()
@@ -775,14 +768,10 @@ class QuestTimerViewSet(BaseTimerViewSet):
     @action(detail=True, methods=["post"])
     def complete(self, request, pk=None):
         timer = self.get_object()
-        # logger.debug(f"You have arrived in the arrivals lounge.")
         if not timer.quest:
             return Response({"error": "No quest assigned to this timer."}, status=400)
-        quest_id = timer.quest.id
 
-        quest, error_response = self.handle_related_object(Quest, quest_id, "quest")
-        if error_response:
-            return error_response
+        quest = timer.quest
 
         try:
             qt_updated, character_updated = timer.complete()

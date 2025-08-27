@@ -12,7 +12,7 @@ from gameplay.models import (
     QuestTimer,
 )
 from users.models import Profile, InviteCode
-from progression.models import Activity
+from progression.models import Activity, CharacterQuest
 
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
@@ -150,12 +150,15 @@ class ActivitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = [
+            # TimeRecord fields
             "id",
             "name",
+            "description",
             "duration",
             "created_at",
             "last_updated",
             "completed_at",
+            # Activity specific fields
             "profile",
             "skill",
             "project",
@@ -183,9 +186,39 @@ class QuestSerializer(serializers.ModelSerializer):
             "duration_choices",
             "stages",
             "results",
+            "stagesFixed",
         ]
         read_only_fields = [
             "id",
+        ]
+
+
+class CharacterQuestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CharacterQuest
+        fields = [
+            # TimeRecord fields
+            "id",
+            "name",
+            "description",
+            "duration",
+            "created_at",
+            "last_updated",
+            "completed_at",
+            # CQ fields
+            "character",
+            "intro_text",
+            "outro_text",
+            "quest_duration",
+            "stages",
+            "stagesFixed",
+        ]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "last_updated",
+            "completed_at",
+            "character",
         ]
 
 

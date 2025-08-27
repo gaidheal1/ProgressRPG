@@ -19,6 +19,7 @@ from .views import (
     ProfileViewSet,
     CharacterViewSet,
     ActivityTimerViewSet,
+    CharacterQuestViewSet,
     QuestTimerViewSet,
     ActivityViewSet,
     QuestViewSet,
@@ -50,6 +51,7 @@ router.register(r"profile", ProfileViewSet, basename="profile")
 router.register(r"character", CharacterViewSet, basename="character")
 router.register(r"activities", ActivityViewSet, basename="activity")
 router.register(r"quests", QuestViewSet, basename="quest")
+router.register(r"character_quests", CharacterQuestViewSet, basename="characterquest")
 router.register(r"activity_timers", ActivityTimerViewSet, basename="activitytimer")
 router.register(r"quest_timers", QuestTimerViewSet, basename="questtimer")
 router.register(r"onboarding", OnboardingViewSet, basename="onboarding")
