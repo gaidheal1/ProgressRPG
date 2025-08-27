@@ -1,14 +1,18 @@
+# progression/tests.py
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from django.contrib.auth import get_user_model
 from .models import Activity, CharacterQuest
+from .utils import copy_quest
+
 from character.models import Character
+from gameplay.models import Quest
 
 import logging
 
 User = get_user_model()
 
-logging.getLogger("django").setLevel(logging.CRITICAL)
+logger = logging.getLogger("django")
 
 
 class ActivityCreation(TestCase):
@@ -71,3 +75,14 @@ class CharacterQuestCreation(TestCase):
         )
         self.assertEqual("test", character_quest.name)
         self.assertEqual(self.character, character_quest.character)
+
+
+class UtilityCopyQuest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.character = Character.objects.create(name="Bob", sex="Male")
+        cls.quest = Quest.objects.create(name="Test quest")
+
+    def test_copy_quest(self):
+        cq = copy_quest(self.character, self.quest)
+        self.assertIsInstance(cq, CharacterQuest)
