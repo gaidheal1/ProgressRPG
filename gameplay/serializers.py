@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
-from .models import Quest, Activity, QuestResults, ActivityTimer, QuestTimer
+from .models import Quest, QuestResults, ActivityTimer, QuestTimer
+
+from progression.serializers import ActivitySerializer
 
 
 class QuestResultSerializer(serializers.ModelSerializer):
@@ -24,14 +26,6 @@ class QuestSerializer(serializers.ModelSerializer):
             "stages",
             "result",
         ]
-
-
-class ActivitySerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
-
-    class Meta:
-        model = Activity
-        fields = ["id", "name", "duration", "created_at", "profile"]
 
 
 class ActivityTimerSerializer(serializers.ModelSerializer):

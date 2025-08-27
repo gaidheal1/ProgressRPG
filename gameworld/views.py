@@ -3,10 +3,9 @@ from django.shortcuts import render
 from django.http import JsonResponse
 
 from users.models import Profile
-from gameplay.models import Activity, QuestCompletion
+from gameplay.models import QuestCompletion
 from character.models import Character
-
-# Create your views here.
+from progression.models import Activity
 
 
 @login_required

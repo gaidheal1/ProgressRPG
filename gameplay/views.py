@@ -19,7 +19,7 @@ from django.views.decorators.http import require_GET
 from rest_framework.serializers import ValidationError
 import json, logging
 
-from .models import Quest, Activity, ServerMessage
+from .models import Quest, ServerMessage
 
 # from .models import QuestCompletion, ActivityTimer, QuestTimer
 from .serializers import (
@@ -35,6 +35,8 @@ from character.serializers import CharacterSerializer
 
 # from users.models import Profile
 from users.serializers import ProfileSerializer
+
+from progression.models import Activity
 
 logger = logging.getLogger("django")
 

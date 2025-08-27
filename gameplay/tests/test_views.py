@@ -7,7 +7,8 @@ from unittest import skip
 
 from users.models import Profile
 from character.models import Character, PlayerCharacterLink
-from gameplay.models import Activity, Quest
+from gameplay.models import Quest
+from progression.models import Activity
 
 import json, logging
 

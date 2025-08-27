@@ -8,11 +8,11 @@ from gameplay.models import (
     QuestResults,
     QuestRequirement,
     QuestCompletion,
-    Activity,
     ActivityTimer,
     QuestTimer,
 )
 from users.models import Profile, InviteCode
+from progression.models import Activity
 
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,

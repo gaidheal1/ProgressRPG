@@ -55,9 +55,10 @@ from api.serializers import (
 )
 
 from character.models import Character, PlayerCharacterLink
-from gameplay.filters import ActivityFilter
-from gameplay.models import Activity, Quest, ActivityTimer, QuestTimer, ServerMessage
+from progression.filters import ActivityFilter
+from gameplay.models import Quest, ActivityTimer, QuestTimer, ServerMessage
 from gameplay.utils import check_quest_eligibility, send_group_message
+from progression.models import Activity
 from server_management.models import MaintenanceWindow
 from users.models import Profile
 from users.utils import send_email_to_users

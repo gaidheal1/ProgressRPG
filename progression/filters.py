@@ -1,7 +1,7 @@
 # gameplay/filters.py
 
 import django_filters
-from .models import Activity
+from progression.models import Activity
 
 
 class ActivityFilter(django_filters.FilterSet):

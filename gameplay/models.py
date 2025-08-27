@@ -1,6 +1,6 @@
 """
 Models for the gameplay application, including quests, requirements, completions,
-activities, timers, and server messages. These models are used to manage in-game
+timers, and server messages. These models are used to manage in-game
 logic, track player progress, and handle rewards and buffs.
 
 Author: Duncan Appleby
@@ -367,100 +367,6 @@ class QuestCompletion(models.Model):
         return f"character {self.character.name} has completed {self.quest.name}"
 
 
-class Activity(models.Model):
-    """
-    Represents an activity undertaken by a profile, with tracking for time spent,
-    experience gained, and associated projects or skills.
-
-    Attributes:
-        profile (Profile): The user profile associated with the activity.
-        name (str): The name of the activity.
-        duration (int): The duration of the activity in seconds.
-        created_at (datetime): The timestamp when the activity was created.
-        last_updated (datetime): The timestamp of the last update.
-        xp_rate (int): The rate of experience points earned per second.
-        skill (Skill): The skill associated with the activity.
-        project (Project): The project associated with the activity.
-    """
-
-    profile = models.ForeignKey(
-        "users.Profile", on_delete=models.CASCADE, related_name="activities"
-    )
-    name = models.CharField(max_length=255)
-    duration = models.PositiveIntegerField(default=0)  # Time spent
-    created_at = models.DateTimeField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
-    xp_rate = models.IntegerField(default=1)
-    xp_gained = models.IntegerField(default=0)
-    skill = models.ForeignKey(
-        "Skill",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="activities",
-    )
-    project = models.ForeignKey(
-        "Project",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="activities",
-    )
-
-    class Meta:
-        ordering = ["-created_at"]  # Most recent activities first
-
-    def update_name(self, new_name: str):
-        """
-        Update the name of the activity.
-
-        :param new_name: The new name to set for the activity.
-        :type new_name: str
-        """
-        self.name = new_name
-        self.save(update_fields=["name"])
-
-    def add_time(self, num: int):
-        """
-        Add additional time to the activity's duration.
-
-        :param num: The amount of time to add, in seconds.
-        :type num: int
-        """
-        self.duration += num
-        self.save(update_fields=["duration"])
-
-    def new_time(self, num):
-        """
-        Set a new total duration for the activity.
-
-        :param num: The new total time for the activity, in seconds.
-        :type num: int
-        """
-        self.duration = num
-        self.save(update_fields=["duration"])
-
-    def complete(self):
-        self.completed_at = timezone.now()
-        self.save(update_fields=["completed_at"])
-
-    def calculate_xp_reward(self) -> int:
-        """
-        Calculate the experience points (XP) reward for the activity.
-
-        :return: The calculated XP reward, adjusted by any active buffs.
-        :rtype: int
-        """
-        base_xp = self.duration * self.xp_rate
-        final_xp = self.profile.apply_buffs(base_xp, "xp")
-        self.xp_gained = final_xp
-        return final_xp
-
-    def __str__(self):
-        return f"activity {self.name}, created {self.created_at}, duration {self.duration}, profile {self.profile.name}"
-
-
 class Skill(models.Model):
     profile = models.ForeignKey(
         "users.Profile", on_delete=models.CASCADE, related_name="skills"
@@ -641,7 +547,7 @@ class ActivityTimer(Timer):
         "users.profile", on_delete=models.CASCADE, related_name="activity_timer"
     )
     activity = models.ForeignKey(
-        "Activity",
+        "progression.Activity",
         on_delete=models.SET_NULL,
         related_name="activity_timer",
         null=True,
@@ -650,7 +556,7 @@ class ActivityTimer(Timer):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        logger.debug(f"Activity timer save: compute elapsed: {self.compute_elapsed()}")
+        logger.debug(f"[Activity timer save] Compute elapsed: {self.compute_elapsed()}")
 
     def __str__(self):
         return f"ActivityTimer {self.id} for {self.profile.name}"
@@ -665,6 +571,7 @@ class ActivityTimer(Timer):
         logger.debug(
             f"[ACTIVITYTIMER.new_activity]: Assigning new activity {name} to timer {self.pk}"
         )
+        from progression.models import Activity
 
         self.activity = Activity.objects.create(name=name, profile=self.profile)
 
@@ -747,7 +654,7 @@ class ActivityTimer(Timer):
         """
         super().reset()
         self.activity = None
-        self.save(update_fields=["activity", "status", "elapsed_time", "start_time"])
+        self.save()
 
     def calculate_xp(self):
         """

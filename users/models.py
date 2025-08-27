@@ -294,6 +294,7 @@ class Profile(Person):
         self.total_time += time
         self.total_activities += num
         if xp:
+            print(f"profile add_act, xp: {xp}")
             self.add_xp(xp)
         self.save()
 
