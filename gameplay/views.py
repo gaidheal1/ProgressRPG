@@ -734,12 +734,8 @@ def choose_quest(request):
 def complete_quest(request):
     """
     Completes the currently active quest for the logged-in user's character and processes rewards.
-
-    :param request: The HTTP POST request to complete the quest.
-    :type request: django.http.HttpRequest
-    :return: A JSON response containing the updated quest list, character info, and timer statuses.
-    :rtype: django.http.JsonResponse
     """
+
     if request.method != "POST":
         logger.warning(
             f"[COMPLETE QUEST] Invalid method {request.method} used by user {request.user.profile.id}"

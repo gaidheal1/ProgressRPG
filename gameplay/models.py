@@ -315,12 +315,6 @@ class QuestResults(models.Model):
 class QuestRequirement(models.Model):
     """
     Represents the prerequisite quests a quest needs, including required completions.
-
-    Attributes:
-        quest (Quest): The quest with the requirement.
-        prerequisite (Quest): The quest that must be completed first.
-        times_required (int): The number of times the prerequisite quest must be completed.
-        last_updated (datetime): The timestamp of the last update.
     """
 
     quest = models.ForeignKey(
@@ -343,12 +337,6 @@ class QuestCompletion(models.Model):
     """
     Tracks the completion details for a quest, including the number of times
     completed and the last completion timestamp.
-
-    Attributes:
-        character (Character): The character who completed the quest.
-        quest (Quest): The quest being tracked.
-        times_completed (int): The number of times the quest has been completed.
-        last_completed (datetime): The timestamp of the last completion.
     """
 
     character = models.ForeignKey(
@@ -402,13 +390,6 @@ class Timer(models.Model):
     """
     An abstract base model that represents a general timer for activities
     such as quests or projects.
-
-    Attributes:
-        start_time (datetime): The time the timer was started.
-        elapsed_time (int): The total elapsed time for the timer, in seconds.
-        created_at (datetime): The timestamp when the timer was created.
-        last_updated (datetime): The timestamp of the last timer update.
-        status (str): The current status of the timer (e.g., active, paused).
     """
 
     start_time = models.DateTimeField(null=True, blank=True)
@@ -696,12 +677,8 @@ class QuestTimer(Timer):
     def change_quest(self, quest: Quest, duration: int):
         """
         Reset the timer and change the associated quest.
-
-        :param quest: The new quest to associate with the timer.
-        :type quest: Quest
-        :param duration: The new duration for the quest, in seconds.
-        :type duration: int
         """
+
         self.reset()
         self.quest = quest
         self.duration = duration
@@ -711,10 +688,8 @@ class QuestTimer(Timer):
     def complete(self):
         """
         Mark the quest timer as complete and calculate XP for the quest.
-
-        :return: The calculated XP reward.
-        :rtype: int
         """
+
         # logger.debug(f"[QUESTTIMER.COMPLETE] {self}")
         self.refresh_from_db()
 
@@ -786,10 +761,8 @@ class QuestTimer(Timer):
     def calculate_xp(self) -> int:
         """
         Calculate the XP reward for the associated quest.
-
-        :return: The calculated XP reward.
-        :rtype: int
         """
+
         if self.quest and hasattr(self.quest, "results"):
             return self.quest.results.calculate_xp_reward(self.character, self.duration)
         return 0
@@ -797,10 +770,8 @@ class QuestTimer(Timer):
     def get_remaining_time(self):
         """
         Calculate the remaining time for the quest timer.
-
-        :return: The remaining time in seconds.
-        :rtype: int
         """
+
         if self.status == "active":
             remaining = self.duration - self.get_elapsed_time()
         else:
